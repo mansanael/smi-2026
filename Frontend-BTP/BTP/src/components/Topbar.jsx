@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Bell, LogOut, Settings, User, ChevronDown, Search, Menu } from 'lucide-react';
+import { LogOut, Settings, User, ChevronDown, Search, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import AlertesBadge from './AlertesBadge';
 
 const roleLabels = {
   directeur_general: 'Directeur Général',
@@ -23,11 +24,7 @@ export default function Topbar({ onToggleSidebar }) {
   const userDropdownRef = useRef(null);
   const notifDropdownRef = useRef(null);
 
-  const notifications = [
-    { id: 1, title: 'Nouveau projet créé', message: 'Projet PRJ-2026-001 ajouté', time: 'Il y a 5 min', unread: true },
-    { id: 2, title: 'Mise à jour budget', message: 'Budget du projet PRJ-2026-002 mis à jour', time: 'Il y a 1h', unread: true },
-    { id: 3, title: 'Document expiré', message: 'Permis de construction expiré', time: 'Il y a 2h', unread: false },
-  ];
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -70,45 +67,8 @@ export default function Topbar({ onToggleSidebar }) {
       </div>
 
       <div className="topbar-right">
-        {/* Notifications */}
-        <div className="notif-wrapper" ref={notifDropdownRef}>
-          <button
-            className="topbar-btn notif-btn"
-            onClick={() => setShowNotifications(!showNotifications)}
-            title="Notifications"
-          >
-            <Bell size={20} />
-            {notifications.filter(n => n.unread).length > 0 && (
-              <span className="notif-badge">
-                {notifications.filter(n => n.unread).length}
-              </span>
-            )}
-          </button>
-
-          {showNotifications && (
-            <div className="dropdown notif-dropdown">
-              <div className="dropdown-header">
-                <h4>Notifications</h4>
-                <span className="notif-count">{notifications.length}</span>
-              </div>
-              <div className="notif-list">
-                {notifications.map(notif => (
-                  <div key={notif.id} className={`notif-item ${notif.unread ? 'unread' : ''}`}>
-                    <div className="notif-dot" />
-                    <div className="notif-content">
-                      <div className="notif-title">{notif.title}</div>
-                      <div className="notif-message">{notif.message}</div>
-                      <div className="notif-time">{notif.time}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="dropdown-footer">
-                <button className="view-all-btn">Voir tout</button>
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Alertes proactives IA */}
+        <AlertesBadge />
 
         {/* User Dropdown */}
         <div className="user-wrapper" ref={userDropdownRef}>

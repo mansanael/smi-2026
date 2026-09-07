@@ -127,6 +127,78 @@ export const getRecapitulatif = (pid) => api(`/projets/${pid}/situations/recapit
 export const getDashboardGlobal = () => api('/dashboard');
 export const getDashboardProjet = (pid) => api(`/dashboard/projets/${pid}`);
 
+// Assistant IA
+export const chatAssistant = (messages, projetId) =>
+  api('/ai/chat', { method: 'POST', body: { messages, projetId: projetId || undefined } });
+
+// Streaming SSE — retourne un ReadableStream de chunks
+export function chatAssistantStream(messages, projetId, onChunk, onDone, onError) {
+  const token = getToken();
+  const controller = new AbortController();
+
+  fetch(`${API_BASE}/ai/chat/stream`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ messages, projetId: projetId || undefined }),
+    signal: controller.signal,
+  }).then(async (res) => {
+    if (!res.ok) {
+      onError?.('Erreur de connexion au service IA.');
+      return;
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const json = JSON.parse(line.slice(6));
+            if (json.error) { onError?.(json.error); return; }
+            if (json.done) { onDone?.(json.model); return; }
+            if (json.chunk !== undefined) onChunk?.(json.chunk);
+          } catch { /* ignore parse errors */ }
+        }
+      }
+    }
+  }).catch((err) => {
+    if (err.name !== 'AbortError') onError?.(err.message || 'Erreur de connexion.');
+  });
+
+  return controller; // caller peut appeler controller.abort() pour annuler
+}
+
+// Historique des conversations
+export const getHistorique = (projetId, limit) => {
+  const params = new URLSearchParams();
+  if (projetId) params.set('projetId', projetId);
+  if (limit) params.set('limit', String(limit));
+  return api(`/ai/history?${params}`);
+};
+export const effacerHistorique = (projetId) => {
+  const params = projetId ? `?projetId=${projetId}` : '';
+  return api(`/ai/history${params}`, { method: 'DELETE' });
+};
+
+// Alertes proactives
+export const getAlertes = (lu) => {
+  const params = lu !== undefined ? `?lu=${lu}` : '';
+  return api(`/ai/alertes${params}`);
+};
+export const getNombreAlertesNonLues = () => api('/ai/alertes/count');
+export const marquerAlerteLue = (id) => api(`/ai/alertes/${id}/lu`, { method: 'PATCH' });
+export const marquerToutesAlertesLues = () => api('/ai/alertes/tout-lu', { method: 'PATCH' });
+export const analyserAlertes = () => api('/ai/alertes/analyser');
+
 // Admin
 export const getUtilisateurs = () => api('/admin/utilisateurs');
 export const createUtilisateur = (data) => api('/admin/utilisateurs', { method: 'POST', body: data });

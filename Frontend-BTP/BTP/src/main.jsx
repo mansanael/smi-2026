@@ -19,6 +19,7 @@ import Facturation from './pages/facturation/Facturation';
 import Utilisateurs from './pages/admin/Utilisateurs';
 import Profil from './pages/profil/Profil';
 import Parametres from './pages/profil/Parametres';
+import AssistantIA from './pages/assistant/AssistantIA';
 
 
 createRoot(document.getElementById('root')).render(
@@ -78,6 +79,7 @@ createRoot(document.getElementById('root')).render(
             />
             <Route path="/profil" element={<Profil />} />
             <Route path="/parametres" element={<Parametres />} />
+            <Route path="/assistant" element={<AssistantIA />} />
 
 
           </Route>

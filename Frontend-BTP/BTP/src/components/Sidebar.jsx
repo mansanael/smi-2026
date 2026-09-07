@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, FolderKanban, CalendarDays, Wallet,
-  Users, ClipboardCheck, FileText, Truck, Receipt, ShieldCheck, X
+  Users, ClipboardCheck, FileText, Truck, Receipt, ShieldCheck, X, Bot
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -17,6 +17,7 @@ const navItems = [
   { to: '/approvisionnement', icon: Truck, label: 'Approvisionnement', roles: ['directeur_general', 'directeur_technique', 'responsable_admin_fin', 'magasinier'] },
   { to: '/facturation', icon: Receipt, label: 'Facturation', roles: ['directeur_general', 'directeur_technique', 'responsable_admin_fin'] },
   { to: '/admin/utilisateurs', icon: ShieldCheck, label: 'Utilisateurs', roles: ['directeur_general', 'directeur_technique'] },
+  { to: '/assistant', icon: Bot, label: 'Assistant IA' },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
