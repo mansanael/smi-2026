@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -41,13 +42,43 @@ Format de réponse (OBLIGATOIRE) :
 
 @Injectable()
 export class AiService {
-  chatStream(messages: ChatMessageDto[], user: { id: string; email: string; role: RoleUtilisateur; nom: string; prenom: string; }, projetId: string | undefined) {
+  chatStream(
+    _messages: ChatMessage[],
+    _user: {
+      id: string;
+      email: string;
+      role: RoleUtilisateur;
+      nom: string;
+      prenom: string;
+    },
+    _projetId: string | undefined,
+  ) {
     throw new Error('Method not implemented.');
   }
-  getHistory(user: { id: string; email: string; role: RoleUtilisateur; nom: string; prenom: string; }, projetId: string, arg2: number | undefined) {
+  getHistory(
+    _user: {
+      id: string;
+      email: string;
+      role: RoleUtilisateur;
+      nom: string;
+      prenom: string;
+    },
+
+    _projetId: string,
+    _arg2: number | undefined,
+  ) {
     throw new Error('Method not implemented.');
   }
-  deleteHistory(user: { id: string; email: string; role: RoleUtilisateur; nom: string; prenom: string; }, projetId: string) {
+  deleteHistory(
+    _user: {
+      id: string;
+      email: string;
+      role: RoleUtilisateur;
+      nom: string;
+      prenom: string;
+    },
+    _projetId: string,
+  ) {
     throw new Error('Method not implemented.');
   }
   private readonly apiKey: string;
