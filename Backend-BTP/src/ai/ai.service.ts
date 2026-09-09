@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AiContextService } from './ai-context.service';
@@ -40,6 +41,15 @@ Format de réponse (OBLIGATOIRE) :
 
 @Injectable()
 export class AiService {
+  chatStream(messages: ChatMessageDto[], user: { id: string; email: string; role: RoleUtilisateur; nom: string; prenom: string; }, projetId: string | undefined) {
+    throw new Error('Method not implemented.');
+  }
+  getHistory(user: { id: string; email: string; role: RoleUtilisateur; nom: string; prenom: string; }, projetId: string, arg2: number | undefined) {
+    throw new Error('Method not implemented.');
+  }
+  deleteHistory(user: { id: string; email: string; role: RoleUtilisateur; nom: string; prenom: string; }, projetId: string) {
+    throw new Error('Method not implemented.');
+  }
   private readonly apiKey: string;
   private readonly apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
   // Cascade de modèles : si l'un est en rate limit, on passe au suivant
@@ -229,6 +239,7 @@ ${RESPONSE_FORMAT_RULES}`;
         let retryAfterMs = 1000;
         try {
           const parsed = JSON.parse(errorBody);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           const msg: string = parsed?.error?.message || '';
           const match = msg.match(/try again in ([\d.]+)ms/i);
           if (match) retryAfterMs = Math.ceil(parseFloat(match[1])) + 100;
