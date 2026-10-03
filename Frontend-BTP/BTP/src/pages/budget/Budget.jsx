@@ -31,6 +31,10 @@ const CATEGORIES_DEPENSE = [
     { value: 'autre', label: 'Autre' },
 ];
 
+// Affiche le libellé lisible d'une valeur (ex. 'main_oeuvre' → « Main d'œuvre »)
+const labelDe = (liste, valeur) => liste.find(x => x.value === valeur)?.label || valeur;
+const formatDate = (d) => new Date(d).toLocaleDateString('fr-FR');
+
 export default function Budget() {
     const [projets, setProjets] = useState([]);
     const [projetId, setProjetId] = useState('');
@@ -152,20 +156,21 @@ export default function Budget() {
                         <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
                             <table className="data-table">
                                 <thead>
-                                    <tr><th>Désignation</th><th>Unité</th><th>Quantité</th><th>Prix unitaire</th><th>Total</th></tr>
+                                    <tr><th>Rubrique</th><th>Désignation</th><th>Unité</th><th>Quantité</th><th>Prix unitaire</th><th>Total</th></tr>
                                 </thead>
                                 <tbody>
                                     {devis.map(d => (
                                         <tr key={d.id}>
+                                            <td><span className="badge badge-blue">{labelDe(RUBRIQUES, d.rubrique)}</span></td>
                                             <td>{d.designation}</td>
                                             <td>{d.unite}</td>
-                                            <td>{d.quantite}</td>
+                                            <td>{Number(d.quantite).toLocaleString('fr-FR')}</td>
                                             <td className="montant">{formatFCFA(d.prixUnitaire)}</td>
                                             <td className="montant">{formatFCFA(d.quantite * d.prixUnitaire)}</td>
                                         </tr>
                                     ))}
                                     {devis.length === 0 && (
-                                        <tr><td colSpan="5" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucune ligne de devis</td></tr>
+                                        <tr><td colSpan="6" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucune ligne de devis</td></tr>
                                     )}
                                 </tbody>
                             </table>
@@ -174,18 +179,24 @@ export default function Budget() {
                         <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
                             <table className="data-table">
                                 <thead>
-                                    <tr><th>Libellé</th><th>Catégorie</th><th>Montant</th></tr>
+                                    <tr><th>Date</th><th>Libellé</th><th>Type</th><th>Catégorie</th><th>Montant</th></tr>
                                 </thead>
                                 <tbody>
                                     {depenses.map(d => (
                                         <tr key={d.id}>
+                                            <td>{formatDate(d.date)}</td>
                                             <td>{d.libelle}</td>
-                                            <td><span className="badge badge-teal">{d.categorie}</span></td>
+                                            <td>
+                                                <span className={`badge ${d.type === 'realisation' ? 'badge-green' : 'badge-amber'}`}>
+                                                    {d.type === 'realisation' ? 'Réalisation' : 'Engagement'}
+                                                </span>
+                                            </td>
+                                            <td><span className="badge badge-teal">{labelDe(CATEGORIES_DEPENSE, d.categorie)}</span></td>
                                             <td className="montant">{formatFCFA(d.montant)}</td>
                                         </tr>
                                     ))}
                                     {depenses.length === 0 && (
-                                        <tr><td colSpan="3" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucune dépense enregistrée</td></tr>
+                                        <tr><td colSpan="5" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucune dépense enregistrée</td></tr>
                                     )}
                                 </tbody>
                             </table>

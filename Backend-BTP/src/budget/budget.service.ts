@@ -14,7 +14,7 @@ export class BudgetService {
     @InjectRepository(LigneDevis) private ligneDevisRepo: Repository<LigneDevis>,
     @InjectRepository(Depense) private depenseRepo: Repository<Depense>,
     @InjectRepository(Avenant) private avenantRepo: Repository<Avenant>,
-  ) {}
+  ) { }
 
   // ─── DEVIS ────────────────────────────────────────────────────────────────
   async addLigneDevis(projetId: string, dto: CreateLigneDevisDto): Promise<LigneDevis> {
@@ -56,6 +56,7 @@ export class BudgetService {
     });
 
     const budgetInitial = montantMarche;
+    const montantDevise = lignes.reduce((s, l) => s + Number(l.montantHT), 0);
     const totalAvenants = avenants.reduce((s, a) => s + Number(a.montant), 0);
     const budgetRevise = budgetInitial + totalAvenants;
 
@@ -71,6 +72,10 @@ export class BudgetService {
     const tauxConsommation = budgetRevise > 0 ? (depensesRealisees / budgetRevise) * 100 : 0;
 
     return {
+      // champs utilisés par la page Budget
+      montantMarche: budgetRevise,
+      montantDevise,
+      montantDepense: depensesRealisees,
       budgetInitial,
       totalAvenants,
       budgetRevise,
