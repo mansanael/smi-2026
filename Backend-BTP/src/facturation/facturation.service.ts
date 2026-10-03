@@ -5,14 +5,14 @@ import { SituationTravaux, TVA_TAUX, TCS_TAUX, RETENUE_GARANTIE, AVANCE_DEMARRAG
 
 @Injectable()
 export class FacturationService {
-  constructor(@InjectRepository(SituationTravaux) private situationRepo: Repository<SituationTravaux>) {}
+  constructor(@InjectRepository(SituationTravaux) private situationRepo: Repository<SituationTravaux>) { }
 
   async createSituation(projetId: string, dto: any, montantMarche: number): Promise<SituationTravaux> {
     const montantHTNouveau = Number(dto.montantHTNouveau);
     const montantHTCumul = Number(dto.montantHTCumul);
 
     // Calculs automatiques conformes CDC §10.1 (marchés publics sénégalais)
-    const avanceDeduire = montantHTNouveau * AVANCE_DEMARRAGE * (montantHTCumul / montantMarche);
+    const avanceDeduire = montantHTNouveau * AVANCE_DEMARRAGE;
     const retenueGarantie = montantHTNouveau * RETENUE_GARANTIE;
     const montantTVA = montantHTNouveau * TVA_TAUX;
     const montantTCS = montantHTNouveau * TCS_TAUX;
