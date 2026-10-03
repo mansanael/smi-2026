@@ -70,8 +70,11 @@ export const deleteProjet = (id) => api(`/projets/${id}`, { method: 'DELETE' });
 export const getTaches = (pid) => api(`/projets/${pid}/taches`);
 export const createTache = (pid, data) => api(`/projets/${pid}/taches`, { method: 'POST', body: data });
 export const updateTache = (id, data) => api(`/taches/${id}`, { method: 'PATCH', body: data });
+export const deleteTache = (id) => api(`/taches/${id}`, { method: 'DELETE' });
 export const getJalons = (pid) => api(`/projets/${pid}/jalons`);
 export const createJalon = (pid, data) => api(`/projets/${pid}/jalons`, { method: 'POST', body: data });
+export const updateJalon = (id, data) => api(`/jalons/${id}`, { method: 'PATCH', body: data });
+export const deleteJalon = (id) => api(`/jalons/${id}`, { method: 'DELETE' });
 
 // Budget
 export const getDevis = (pid) => api(`/projets/${pid}/devis`);
@@ -104,6 +107,12 @@ export const getJournaux = (pid) => api(`/projets/${pid}/journaux`);
 export const createJournal = (pid, data) => api(`/projets/${pid}/journaux`, { method: 'POST', body: data });
 export const getIncidents = (pid) => api(`/projets/${pid}/incidents`);
 export const createIncident = (pid, data) => api(`/projets/${pid}/incidents`, { method: 'POST', body: data });
+export const getPhotosChantier = (pid, categorie) =>
+  api(`/projets/${pid}/photos${categorie && categorie !== 'tous' ? `?categorie=${encodeURIComponent(categorie)}` : ''}`);
+export const createPhotoChantier = (pid, data) =>
+  api(`/projets/${pid}/photos`, { method: 'POST', body: data });
+export const deletePhotoChantier = (pid, photoId) =>
+  api(`/projets/${pid}/photos/${photoId}`, { method: 'DELETE' });
 
 // Documents
 export const getDocuments = (pid) => api(`/projets/${pid}/documents`);

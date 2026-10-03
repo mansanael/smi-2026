@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, INestApplication } from '@nestjs/common';
+import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 
 let cachedApp: INestApplication | undefined;
@@ -7,6 +8,9 @@ let cachedApp: INestApplication | undefined;
 async function bootstrap(): Promise<INestApplication> {
   if (!cachedApp) {
     const app = await NestFactory.create(AppModule);
+
+    app.use(json({ limit: '25mb' }));
+    app.use(urlencoded({ extended: true, limit: '25mb' }));
 
     // CORS — autorise le frontend React (dev: 5173, prod: configurable)
     app.enableCors({

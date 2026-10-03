@@ -1,11 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Tache } from './entities/tache.entity';
+import { Tache, StatutTache } from './entities/tache.entity';
 import { Jalon } from './entities/jalon.entity';
 import { CreateTacheDto } from './dto/create-tache.dto';
 import { CreateJalonDto } from './dto/create-jalon.dto';
-import { PartialType } from '@nestjs/mapped-types';
 
 @Injectable()
 export class PlanningService {
@@ -17,6 +16,13 @@ export class PlanningService {
   // ─── TÂCHES ───────────────────────────────────────────────────────────────
   async createTache(projetId: string, dto: CreateTacheDto): Promise<Tache> {
     const tache = this.tacheRepo.create({ ...dto, projet: { id: projetId } as any });
+    if (Number(dto.pourcentageAvancement) >= 100) {
+      tache.statut = StatutTache.TERMINEE;
+      if (!tache.dateFinReelle) tache.dateFinReelle = new Date().toISOString().split('T')[0] as any;
+    } else if (Number(dto.pourcentageAvancement) > 0 && (!dto.statut || dto.statut === StatutTache.A_FAIRE)) {
+      tache.statut = StatutTache.EN_COURS;
+      if (!tache.dateDebutReelle) tache.dateDebutReelle = new Date().toISOString().split('T')[0] as any;
+    }
     return this.tacheRepo.save(tache);
   }
 
@@ -27,6 +33,25 @@ export class PlanningService {
   async updateTache(id: string, dto: Partial<CreateTacheDto>): Promise<Tache> {
     const tache = await this.tacheRepo.findOneBy({ id });
     if (!tache) throw new NotFoundException(`Tâche "${id}" introuvable.`);
+
+    if (dto.pourcentageAvancement !== undefined && !dto.statut) {
+      const val = Number(dto.pourcentageAvancement);
+      if (val >= 100) {
+        dto.statut = StatutTache.TERMINEE;
+        if (!tache.dateFinReelle) tache.dateFinReelle = new Date().toISOString().split('T')[0] as any;
+      } else if (val > 0 && tache.statut === StatutTache.A_FAIRE) {
+        dto.statut = StatutTache.EN_COURS;
+        if (!tache.dateDebutReelle) tache.dateDebutReelle = new Date().toISOString().split('T')[0] as any;
+      } else if (val === 0 && tache.statut === StatutTache.TERMINEE) {
+        dto.statut = StatutTache.A_FAIRE;
+      }
+    }
+
+    if (dto.statut === StatutTache.TERMINEE && (dto.pourcentageAvancement === undefined || Number(dto.pourcentageAvancement) < 100)) {
+      dto.pourcentageAvancement = 100;
+      if (!tache.dateFinReelle) tache.dateFinReelle = new Date().toISOString().split('T')[0] as any;
+    }
+
     Object.assign(tache, dto);
     return this.tacheRepo.save(tache);
   }
@@ -52,5 +77,11 @@ export class PlanningService {
     if (!jalon) throw new NotFoundException(`Jalon "${id}" introuvable.`);
     Object.assign(jalon, dto);
     return this.jalonRepo.save(jalon);
+  }
+
+  async removeJalon(id: string): Promise<void> {
+    const jalon = await this.jalonRepo.findOneBy({ id });
+    if (!jalon) throw new NotFoundException(`Jalon "${id}" introuvable.`);
+    await this.jalonRepo.delete(id);
   }
 }

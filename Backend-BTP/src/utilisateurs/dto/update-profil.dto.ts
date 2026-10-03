@@ -16,4 +16,8 @@ export class UpdateProfilDto {
     @IsOptional()
     @IsString()
     poste?: string;
+
+    @IsOptional()
+    @IsString()
+    photo?: string | null;
 }

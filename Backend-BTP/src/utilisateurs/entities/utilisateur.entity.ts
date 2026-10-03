@@ -48,6 +48,9 @@ export class Utilisateur {
   @Column({ nullable: true })
   poste: string;
 
+  @Column({ type: 'text', nullable: true })
+  photo: string;
+
   @CreateDateColumn()
   creeLe: Date;
 

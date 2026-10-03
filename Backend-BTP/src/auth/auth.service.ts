@@ -8,7 +8,7 @@ export class AuthService {
   constructor(
     private readonly utilisateursService: UtilisateursService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async login(dto: LoginDto) {
     // Récupère l'utilisateur avec son mot de passe hashé
@@ -40,6 +40,9 @@ export class AuthService {
         prenom: utilisateur.prenom,
         email: utilisateur.email,
         role: utilisateur.role,
+        telephone: utilisateur.telephone,
+        poste: utilisateur.poste,
+        photo: utilisateur.photo,
       },
     };
   }

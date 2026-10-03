@@ -24,14 +24,14 @@ export class UtilisateursService {
 
   async findAll(): Promise<Utilisateur[]> {
     return this.utilisateurRepository.find({
-      select: { id: true, nom: true, prenom: true, email: true, role: true, actif: true, telephone: true, poste: true, creeLe: true },
+      select: { id: true, nom: true, prenom: true, email: true, role: true, actif: true, telephone: true, poste: true, photo: true, creeLe: true },
     });
   }
 
   async findOneById(id: string): Promise<Utilisateur> {
     const utilisateur = await this.utilisateurRepository.findOne({
       where: { id },
-      select: { id: true, nom: true, prenom: true, email: true, role: true, actif: true, telephone: true, poste: true, creeLe: true },
+      select: { id: true, nom: true, prenom: true, email: true, role: true, actif: true, telephone: true, poste: true, photo: true, creeLe: true },
     });
     if (!utilisateur) {
       throw new NotFoundException(`Utilisateur "${id}" introuvable.`);
@@ -49,7 +49,7 @@ export class UtilisateursService {
       .getOne();
   }
 
-  async updateProfil(id: string, dto: { nom?: string; prenom?: string; telephone?: string; poste?: string }) {
+  async updateProfil(id: string, dto: { nom?: string; prenom?: string; telephone?: string; poste?: string; photo?: string | null }) {
     const utilisateur = await this.utilisateurRepository.findOneBy({ id });
     if (!utilisateur) {
       throw new NotFoundException(`Utilisateur "${id}" introuvable.`);
@@ -83,3 +83,4 @@ export class UtilisateursService {
     await this.utilisateurRepository.update(id, { actif: false });
   }
 }
+

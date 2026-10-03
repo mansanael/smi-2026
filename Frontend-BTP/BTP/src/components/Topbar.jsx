@@ -76,8 +76,12 @@ export default function Topbar({ onToggleSidebar }) {
             className="user-btn"
             onClick={() => setShowUserDropdown(!showUserDropdown)}
           >
-            <div className="user-avatar">
-              {user?.prenom?.[0]}{user?.nom?.[0]}
+            <div className="user-avatar" style={{ overflow: 'hidden', padding: 0 }}>
+              {user?.photo ? (
+                <img src={user.photo} alt={user?.prenom} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+              ) : (
+                <>{user?.prenom?.[0]}{user?.nom?.[0]}</>
+              )}
             </div>
             <div className="user-info">
               <span className="user-name">{user?.prenom} {user?.nom}</span>
@@ -89,8 +93,12 @@ export default function Topbar({ onToggleSidebar }) {
           {showUserDropdown && (
             <div className="dropdown user-dropdown">
               <div className="dropdown-header">
-                <div className="dropdown-avatar">
-                  {user?.prenom?.[0]}{user?.nom?.[0]}
+                <div className="dropdown-avatar" style={{ overflow: 'hidden', padding: 0 }}>
+                  {user?.photo ? (
+                    <img src={user.photo} alt={user?.prenom} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                  ) : (
+                    <>{user?.prenom?.[0]}{user?.nom?.[0]}</>
+                  )}
                 </div>
                 <div className="dropdown-user-info">
                   <div className="dropdown-user-name">{user?.prenom} {user?.nom}</div>

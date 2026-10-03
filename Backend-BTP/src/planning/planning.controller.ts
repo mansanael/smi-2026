@@ -46,4 +46,10 @@ export class PlanningController {
   updateJalon(@Param('id') id: string, @Body() dto: Partial<CreateJalonDto>) {
     return this.planningService.updateJalon(id, dto);
   }
+
+  @Delete('jalons/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  removeJalon(@Param('id') id: string) {
+    return this.planningService.removeJalon(id);
+  }
 }

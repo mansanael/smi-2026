@@ -56,7 +56,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   me(@UtilisateurCourant() user: any) {
-    return user;
+    return this.utilisateursService.findOneById(user.id);
   }
   /**
    * PATCH /api/auth/profil
