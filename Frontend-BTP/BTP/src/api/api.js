@@ -131,6 +131,8 @@ export const createMouvement = (pid, data) => api(`/projets/${pid}/stock`, { met
 export const getSituations = (pid) => api(`/projets/${pid}/situations`);
 export const createSituation = (pid, data) => api(`/projets/${pid}/situations`, { method: 'POST', body: data });
 export const getRecapitulatif = (pid) => api(`/projets/${pid}/situations/recapitulatif`);
+export const updateSituation = (pid, id, data) => api(`/projets/${pid}/situations/${id}`, { method: 'PATCH', body: data });
+export const updateStatutSituation = (pid, id, statut) => api(`/projets/${pid}/situations/${id}/statut`, { method: 'PATCH', body: { statut } });
 
 // Dashboard
 export const getDashboardGlobal = () => api('/dashboard');

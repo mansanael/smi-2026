@@ -1,12 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProjets, getSituations, createSituation, getRecapitulatif } from '../../api/api';
-import { Plus, X, Receipt, Wallet, CheckCircle2, Clock } from 'lucide-react';
+import { getProjets, getSituations, createSituation, updateSituation, updateStatutSituation, getRecapitulatif } from '../../api/api';
+import { Plus, X, Receipt, Wallet, CheckCircle2, Clock, Pencil } from 'lucide-react';
 
 const emptyForm = { numero: '', mois: '', montantHTCumul: '', montantHTNouveau: '', pourcentageAvancement: '' };
 
 const statutBadge = { brouillon: 'badge-gray', soumise: 'badge-blue', validee: 'badge-teal', payee: 'badge-green', rejetee: 'badge-red' };
 const statutLabels = { brouillon: 'Brouillon', soumise: 'Soumise', validee: 'Validée', payee: 'Payée', rejetee: 'Rejetée' };
+
+// Actions possibles selon le statut actuel (circuit de validation)
+const actionsStatut = {
+    brouillon: [{ valeur: 'soumise', label: 'Soumettre' }],
+    soumise: [{ valeur: 'validee', label: 'Valider' }, { valeur: 'rejetee', label: 'Rejeter' }],
+    validee: [{ valeur: 'payee', label: 'Marquer payée' }, { valeur: 'rejetee', label: 'Rejeter' }],
+    payee: [],
+    rejetee: [{ valeur: 'brouillon', label: 'Remettre en brouillon' }],
+};
 
 export default function Facturation() {
     const [projets, setProjets] = useState([]);
@@ -16,6 +25,7 @@ export default function Facturation() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [form, setForm] = useState(emptyForm);
+    const [editingId, setEditingId] = useState(null); // null = création, sinon id de la situation modifiée
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -35,18 +45,59 @@ export default function Facturation() {
 
     useEffect(() => { if (projetId) loadProjetData(projetId); }, [projetId]);
 
-    const handleAdd = async (e) => {
+    const messageErreur = (err) => [].concat(err?.message || 'Une erreur est survenue').join(', ');
+
+    const ouvrirCreation = () => {
+        setEditingId(null);
+        setForm(emptyForm);
+        setShowModal(true);
+    };
+
+    const ouvrirEdition = (s) => {
+        setEditingId(s.id);
+        setForm({
+            numero: String(s.numero),
+            mois: String(s.mois).slice(0, 10),
+            montantHTCumul: String(Number(s.montantHTCumul)),
+            montantHTNouveau: String(Number(s.montantHTNouveau)),
+            pourcentageAvancement: String(Number(s.pourcentageAvancement)),
+        });
+        setShowModal(true);
+    };
+
+    const fermerModal = () => {
+        setShowModal(false);
+        setEditingId(null);
+        setForm(emptyForm);
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        await createSituation(projetId, {
+        const data = {
             numero: Number(form.numero),
             mois: form.mois,
             montantHTCumul: Number(form.montantHTCumul),
             montantHTNouveau: Number(form.montantHTNouveau),
             pourcentageAvancement: Number(form.pourcentageAvancement) || 0,
-        });
-        setShowModal(false);
-        setForm(emptyForm);
-        loadProjetData(projetId);
+        };
+        try {
+            if (editingId) await updateSituation(projetId, editingId, data);
+            else await createSituation(projetId, data);
+            fermerModal();
+            loadProjetData(projetId);
+        } catch (err) {
+            alert(messageErreur(err));
+        }
+    };
+
+    const handleStatut = async (s, action) => {
+        if (!window.confirm(`${action.label} la situation n°${s.numero} ?`)) return;
+        try {
+            await updateStatutSituation(projetId, s.id, action.valeur);
+            loadProjetData(projetId);
+        } catch (err) {
+            alert(messageErreur(err));
+        }
     };
 
     const formatFCFA = (n) => `${Number(n || 0).toLocaleString('fr-FR')} FCFA`;
@@ -104,7 +155,7 @@ export default function Facturation() {
 
                     <div className="page-header" style={{ marginBottom: 12 }}>
                         <div />
-                        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                        <button className="btn btn-primary" onClick={ouvrirCreation}>
                             <Plus size={18} /> Situation de travaux
                         </button>
                     </div>
@@ -114,7 +165,7 @@ export default function Facturation() {
                             <thead>
                                 <tr>
                                     <th>N°</th><th>Mois</th><th>Montant HT (situation)</th><th>Avancement</th>
-                                    <th>Retenue garantie</th><th>TVA</th><th>Net à payer</th><th>Statut</th>
+                                    <th>Retenue garantie</th><th>TVA</th><th>Net à payer</th><th>Statut</th><th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -128,10 +179,24 @@ export default function Facturation() {
                                         <td className="montant">{formatFCFA(s.montantTVA)}</td>
                                         <td className="montant" style={{ fontWeight: 600 }}>{formatFCFA(s.netAPayer)}</td>
                                         <td><span className={`badge ${statutBadge[s.statut] || 'badge-gray'}`}>{statutLabels[s.statut] || s.statut}</span></td>
+                                        <td>
+                                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                                {(actionsStatut[s.statut] || []).map(a => (
+                                                    <button key={a.valeur} className="btn btn-secondary btn-sm" onClick={() => handleStatut(s, a)}>
+                                                        {a.label}
+                                                    </button>
+                                                ))}
+                                                {['brouillon', 'rejetee'].includes(s.statut) && (
+                                                    <button className="btn btn-secondary btn-sm btn-icon" title="Modifier" onClick={() => ouvrirEdition(s)}>
+                                                        <Pencil size={14} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))}
                                 {situations.length === 0 && (
-                                    <tr><td colSpan="8" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucune situation de travaux émise</td></tr>
+                                    <tr><td colSpan="9" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucune situation de travaux émise</td></tr>
                                 )}
                             </tbody>
                         </table>
@@ -140,13 +205,13 @@ export default function Facturation() {
             )}
 
             {showModal && (
-                <div className="modal-overlay" onClick={() => setShowModal(false)}>
+                <div className="modal-overlay" onClick={fermerModal}>
                     <div className="modal" onClick={e => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>Nouvelle situation de travaux</h2>
-                            <button className="modal-close" onClick={() => setShowModal(false)}><X size={20} /></button>
+                            <h2>{editingId ? 'Modifier la situation de travaux' : 'Nouvelle situation de travaux'}</h2>
+                            <button className="modal-close" onClick={fermerModal}><X size={20} /></button>
                         </div>
-                        <form onSubmit={handleAdd}>
+                        <form onSubmit={handleSubmit}>
                             <div className="form-row">
                                 <div className="form-group">
                                     <label>Numéro *</label>
@@ -173,8 +238,8 @@ export default function Facturation() {
                                 Les montants de TVA (18%), TCS (1%), retenue de garantie (5%) et avance à déduire sont calculés automatiquement par le serveur, conformément aux taux légaux en vigueur au Sénégal.
                             </p>
                             <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Annuler</button>
-                                <button type="submit" className="btn btn-primary"><Plus size={16} /> Générer</button>
+                                <button type="button" className="btn btn-secondary" onClick={fermerModal}>Annuler</button>
+                                <button type="submit" className="btn btn-primary">{editingId ? 'Enregistrer' : <><Plus size={16} /> Générer</>}</button>
                             </div>
                         </form>
                     </div>
