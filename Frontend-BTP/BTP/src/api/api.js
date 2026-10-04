@@ -214,3 +214,4 @@ export const analyserAlertes = () => api('/ai/alertes/analyser');
 export const getUtilisateurs = () => api('/admin/utilisateurs');
 export const createUtilisateur = (data) => api('/admin/utilisateurs', { method: 'POST', body: data });
 export const deleteUtilisateur = (id) => api(`/admin/utilisateurs/${id}`, { method: 'DELETE' });
+export const reactiverUtilisateur = (id) => api(`/admin/utilisateurs/${id}/reactiver`, { method: 'PATCH' });

@@ -82,5 +82,10 @@ export class UtilisateursService {
     await this.findOneById(id);
     await this.utilisateurRepository.update(id, { actif: false });
   }
+
+  async reactiver(id: string): Promise<void> {
+    await this.findOneById(id);
+    await this.utilisateurRepository.update(id, { actif: true });
+  }
 }
 

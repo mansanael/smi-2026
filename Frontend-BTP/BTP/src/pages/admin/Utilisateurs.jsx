@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getUtilisateurs, createUtilisateur, deleteUtilisateur } from '../../api/api';
-import { Plus, X, ShieldAlert, Trash2 } from 'lucide-react';
+import { getUtilisateurs, createUtilisateur, deleteUtilisateur, reactiverUtilisateur } from '../../api/api';
+import { Plus, X, ShieldAlert, Trash2, UserCheck } from 'lucide-react';
 
 const emptyForm = { nom: '', prenom: '', email: '', motDePasse: '', role: 'chef_projet', telephone: '', poste: '' };
 
@@ -73,6 +73,13 @@ export default function Utilisateurs() {
         );
     }
 
+    const handleReactivate = async (id, nom) => {
+        if (!confirm(`Réactiver le compte de ${nom} ?`)) return;
+        await reactiverUtilisateur(id);
+        load();
+    };
+
+
     return (
         <div>
             <div className="page-header">
@@ -103,9 +110,15 @@ export default function Utilisateurs() {
                                     {peutSupprimer && (
                                         <td>
                                             {u.id !== user.id && (
-                                                <button className="btn btn-sm btn-secondary" onClick={() => handleDelete(u.id, `${u.prenom} ${u.nom}`)} title="Désactiver">
-                                                    <Trash2 size={14} />
-                                                </button>
+                                                u.actif ? (
+                                                    <button className="btn btn-sm btn-secondary" onClick={() => handleDelete(u.id, `${u.prenom} ${u.nom}`)} title="Désactiver">
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                ) : (
+                                                    <button className="btn btn-sm btn-secondary" onClick={() => handleReactiver(u.id, `${u.prenom} ${u.nom}`)} title="Réactiver">
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                )
                                             )}
                                         </td>
                                     )}

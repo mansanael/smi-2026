@@ -8,6 +8,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Patch,
 } from '@nestjs/common';
 import { UtilisateursService } from './utilisateurs.service';
 import { CreateUtilisateurDto } from './dto/create-utilisateur.dto';
@@ -19,7 +20,7 @@ import { RoleUtilisateur } from './entities/utilisateur.entity';
 @Controller('admin/utilisateurs')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UtilisateursController {
-  constructor(private readonly utilisateursService: UtilisateursService) {}
+  constructor(private readonly utilisateursService: UtilisateursService) { }
 
   /**
    * POST /api/admin/utilisateurs
@@ -59,5 +60,16 @@ export class UtilisateursController {
   @Roles(RoleUtilisateur.DIRECTEUR_GENERAL)
   desactiver(@Param('id') id: string) {
     return this.utilisateursService.desactiver(id);
+  }
+
+  /**
+ * PATCH /api/admin/utilisateurs/:id/reactiver
+ * Réactive un compte désactivé — réservé DG uniquement
+ */
+  @Patch(':id/reactiver')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles(RoleUtilisateur.DIRECTEUR_GENERAL)
+  reactiver(@Param('id') id: string) {
+    return this.utilisateursService.reactiver(id);
   }
 }
