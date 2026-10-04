@@ -14,9 +14,13 @@ export class SuiviChantierService {
     private incidentRepo: Repository<Incident>,
     @InjectRepository(PhotoChantier)
     private photoRepo: Repository<PhotoChantier>,
-  ) {}
+  ) { }
 
-  createJournal(projetId: string, dto: Partial<JournalChantier>) {
+  async createJournal(projetId: string, dto: Partial<JournalChantier>) {
+    if (dto.id) {
+      const existant = await this.journalRepo.findOne({ where: { id: dto.id } });
+      if (existant) return existant; // déjà synchronisé : on ne recrée pas
+    }
     return this.journalRepo.save(
       this.journalRepo.create({ ...dto, projet: { id: projetId } as any }),
     );
@@ -28,7 +32,11 @@ export class SuiviChantierService {
     });
   }
 
-  createIncident(projetId: string, dto: Partial<Incident>) {
+  async createIncident(projetId: string, dto: Partial<Incident>) {
+    if (dto.id) {
+      const existant = await this.incidentRepo.findOne({ where: { id: dto.id } });
+      if (existant) return existant;
+    }
     return this.incidentRepo.save(
       this.incidentRepo.create({ ...dto, projet: { id: projetId } as any }),
     );
@@ -40,7 +48,11 @@ export class SuiviChantierService {
     });
   }
 
-  createPhoto(projetId: string, dto: Partial<PhotoChantier>) {
+  async createPhoto(projetId: string, dto: Partial<PhotoChantier>) {
+    if (dto.id) {
+      const existant = await this.photoRepo.findOne({ where: { id: dto.id } });
+      if (existant) return existant;
+    }
     return this.photoRepo.save(
       this.photoRepo.create({ ...dto, projet: { id: projetId } as any }),
     );

@@ -9,14 +9,19 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const token = localStorage.getItem('batipme_token');
-    if (token) {
-      getMe()
-        .then(u => { setUserState(u); setUser(u); })
-        .catch(() => { removeToken(); setUserState(null); })
-        .finally(() => setLoading(false));
-    } else {
+    if (!token) {
       setLoading(false);
+      return;
     }
+    getMe()
+      .then(u => { if (u) { setUserState(u); setUser(u); } })
+      .catch((err) => {
+        // Hors ligne : on garde l'utilisateur enregistré localement
+        if (err?.offline) return;
+        removeToken();
+        setUserState(null);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const login = async (email, motDePasse) => {

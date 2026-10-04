@@ -17,7 +17,7 @@ export class RessourcesService {
     @InjectRepository(SousTraitant) private sousTraitantRepo: Repository<SousTraitant>,
     @InjectRepository(AffectationEngin) private affEnginRepo: Repository<AffectationEngin>,
     @InjectRepository(AffectationSousTraitant) private affSTRepo: Repository<AffectationSousTraitant>,
-  ) {}
+  ) { }
 
   // ─── PERSONNEL ────────────────────────────────────────────────────────────
   createPersonnel(dto: Partial<Personnel>) { return this.personnelRepo.save(this.personnelRepo.create(dto)); }
@@ -51,6 +51,10 @@ export class RessourcesService {
 
   // ─── POINTAGE ─────────────────────────────────────────────────────────────
   async createPointage(dto: Partial<Pointage> & { personnelId: string; projetId: string }): Promise<Pointage> {
+    if (dto.id) {
+      const existant = await this.pointageRepo.findOne({ where: { id: dto.id } });
+      if (existant) return existant;
+    }
     const personnel = await this.findPersonnel(dto.personnelId);
     // Calcul automatique du montant journalier (SMIG si pas de taux spécifique)
     const tauxJour = Number(personnel.tauxJournalier) || SMIG_JOURNALIER_2026;

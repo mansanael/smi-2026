@@ -19,9 +19,15 @@ export default function Login() {
     try {
       await login(email, motDePasse);
       navigate('/');
-    } catch {
-      setError('Email ou mot de passe incorrect.');
-    } finally {
+    }
+    catch (err) {
+      if (err?.offline) {
+        setError('Impossible de joindre le serveur. Vérifiez votre connexion.');
+      } else {
+        setError('Email ou mot de passe incorrect.');
+      }
+    }
+    finally {
       setLoading(false);
     }
   };

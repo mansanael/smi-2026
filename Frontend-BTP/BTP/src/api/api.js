@@ -1,3 +1,5 @@
+import { cacheGet, cacheSet, cacheClear } from './cache';
+import { enqueue, syncQueue } from './queue';
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 function getToken() {
@@ -11,6 +13,7 @@ export function setToken(token) {
 export function removeToken() {
   localStorage.removeItem('batipme_token');
   localStorage.removeItem('batipme_user');
+  cacheClear();
 }
 
 export function getUser() {
@@ -22,6 +25,8 @@ export function setUser(user) {
   localStorage.setItem('batipme_user', JSON.stringify(user));
 }
 
+const TIMEOUT_AVEC_CACHE_MS = 5000;
+
 export async function api(path, options = {}) {
   const { method = 'GET', body, noAuth = false } = options;
   const headers = { 'Content-Type': 'application/json' };
@@ -30,13 +35,32 @@ export async function api(path, options = {}) {
     if (token) headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_BASE}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  // Seules les lectures sont mises en cache (pas l'IA, qui est trop dynamique)
+  const useCache = method === 'GET' && !noAuth && !path.startsWith('/ai/');
+  const cacheKey = `${getUser()?.id ?? 'anon'}:${path}`;
+  const enCache = useCache ? await cacheGet(cacheKey) : undefined;
 
-  if (res.status === 401) {
+  let res;
+  try {
+    const controller = new AbortController();
+    // Délai d'attente seulement si on a une copie à afficher à la place
+    const timer = enCache ? setTimeout(() => controller.abort(), TIMEOUT_AVEC_CACHE_MS) : null;
+    try {
+      res = await fetch(`${API_BASE}${path}`, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+        signal: controller.signal,
+      });
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  } catch {
+    if (enCache) return enCache.data; // serveur injoignable : dernières données connues
+    throw { offline: true, status: 0, message: 'Serveur injoignable (hors ligne).' };
+  }
+
+  if (res.status === 401 && !noAuth) {
     removeToken();
     window.location.href = '/login';
     return null;
@@ -46,8 +70,45 @@ export async function api(path, options = {}) {
 
   const data = await res.json();
   if (!res.ok) throw { status: res.status, ...data };
+
+  if (useCache) cacheSet(cacheKey, data);
   return data;
 }
+
+// Écriture avec secours hors ligne : l'id est créé ici, le serveur le garde (pas de doublon)
+async function ecrire(path, data, label) {
+  const body = { ...data, id: data.id ?? crypto.randomUUID() };
+  try {
+    return await api(path, { method: 'POST', body });
+  } catch (err) {
+    if (err?.offline) {
+      await enqueue({ method: 'POST', path, body, label });
+      return { ...body, enAttente: true };
+    }
+    throw err;
+  }
+}
+
+async function envoyerElement(item) {
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${item.path}`, {
+      method: item.method,
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify(item.body),
+    });
+  } catch {
+    return { type: 'reseau' };
+  }
+  if (res.ok) return { type: 'ok' };
+  if (res.status === 401) return { type: 'auth' }; // on garde tout, l'utilisateur doit se reconnecter
+  if (res.status >= 500) return { type: 'serveur' };
+  let message = '';
+  try { message = String((await res.json()).message ?? ''); } catch { /* ignore */ }
+  return { type: 'rejet', status: res.status, message };
+}
+
+export const synchroniser = () => syncQueue(envoyerElement);
 
 // ─── Raccourcis ───
 export const login = (email, motDePasse) =>
@@ -89,7 +150,9 @@ export const getBudgetKpi = (pid) => api(`/projets/${pid}/budget`);
 export const getPersonnel = () => api('/personnel');
 export const createPersonnel = (data) => api('/personnel', { method: 'POST', body: data });
 export const getPointages = (pid) => api(`/projets/${pid}/pointages`);
-export const createPointage = (pid, data) => api(`/projets/${pid}/pointages`, { method: 'POST', body: data });
+export function createPointage(pid, data) {
+  return ecrire(`/projets/${pid}/pointages`, data, 'Pointage');
+}
 export const getEngins = () => api('/engins');
 export const createEngin = (data) => api('/engins', { method: 'POST', body: data });
 export const getSousTraitants = () => api('/sous-traitants');
@@ -104,13 +167,12 @@ export const affecterSousTraitant = (pid, data) => api(`/projets/${pid}/sous-tra
 
 // Suivi chantier
 export const getJournaux = (pid) => api(`/projets/${pid}/journaux`);
-export const createJournal = (pid, data) => api(`/projets/${pid}/journaux`, { method: 'POST', body: data });
+export const createJournal = (pid, data) => ecrire(`/projets/${pid}/journaux`, data, 'Journal de chantier');
 export const getIncidents = (pid) => api(`/projets/${pid}/incidents`);
-export const createIncident = (pid, data) => api(`/projets/${pid}/incidents`, { method: 'POST', body: data });
+export const createIncident = (pid, data) => ecrire(`/projets/${pid}/incidents`, data, 'Incident');
 export const getPhotosChantier = (pid, categorie) =>
   api(`/projets/${pid}/photos${categorie && categorie !== 'tous' ? `?categorie=${encodeURIComponent(categorie)}` : ''}`);
-export const createPhotoChantier = (pid, data) =>
-  api(`/projets/${pid}/photos`, { method: 'POST', body: data });
+export const createPhotoChantier = (pid, data) => ecrire(`/projets/${pid}/photos`, data, 'Photo de chantier');
 export const deletePhotoChantier = (pid, photoId) =>
   api(`/projets/${pid}/photos/${photoId}`, { method: 'DELETE' });
 
