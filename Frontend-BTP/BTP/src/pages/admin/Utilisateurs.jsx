@@ -57,8 +57,22 @@ export default function Utilisateurs() {
 
     const handleDelete = async (id, nom) => {
         if (!confirm(`Désactiver le compte de ${nom} ? Cette personne ne pourra plus se connecter.`)) return;
-        await deleteUtilisateur(id);
-        load();
+        try {
+            await deleteUtilisateur(id);
+            load();
+        } catch (err) {
+            alert(err.message || 'Erreur lors de la désactivation du compte');
+        }
+    };
+
+    const handleReactiver = async (id, nom) => {
+        if (!confirm(`Réactiver le compte de ${nom} ?`)) return;
+        try {
+            await reactiverUtilisateur(id);
+            load();
+        } catch (err) {
+            alert(err.message || 'Erreur lors de la réactivation du compte');
+        }
     };
 
     if (!estAutorise) {
@@ -72,13 +86,6 @@ export default function Utilisateurs() {
             </div>
         );
     }
-
-    const handleReactivate = async (id, nom) => {
-        if (!confirm(`Réactiver le compte de ${nom} ?`)) return;
-        await reactiverUtilisateur(id);
-        load();
-    };
-
 
     return (
         <div>
@@ -116,7 +123,7 @@ export default function Utilisateurs() {
                                                     </button>
                                                 ) : (
                                                     <button className="btn btn-sm btn-secondary" onClick={() => handleReactiver(u.id, `${u.prenom} ${u.nom}`)} title="Réactiver">
-                                                        <Trash2 size={14} />
+                                                        <UserCheck size={14} /> Réactiver
                                                     </button>
                                                 )
                                             )}
