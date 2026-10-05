@@ -301,10 +301,10 @@ export default function Planning() {
         prev.map(t =>
           t.id === avancementTarget.id
             ? {
-                ...t,
-                pourcentageAvancement: Number(avancementTarget.pourcentageAvancement),
-                statut: avancementTarget.statut,
-              }
+              ...t,
+              pourcentageAvancement: Number(avancementTarget.pourcentageAvancement),
+              statut: avancementTarget.statut,
+            }
             : t
         )
       );
@@ -1033,12 +1033,12 @@ export default function Planning() {
                   {avancementTarget.pourcentageAvancement === 100
                     ? '🎉 Tâche complètement achevée'
                     : avancementTarget.pourcentageAvancement >= 75
-                    ? 'Presque terminée'
-                    : avancementTarget.pourcentageAvancement >= 50
-                    ? 'À mi-parcours'
-                    : avancementTarget.pourcentageAvancement > 0
-                    ? 'Démarrée / En cours'
-                    : 'Non encore commencée (0%)'}
+                      ? 'Presque terminée'
+                      : avancementTarget.pourcentageAvancement >= 50
+                        ? 'À mi-parcours'
+                        : avancementTarget.pourcentageAvancement > 0
+                          ? 'Démarrée / En cours'
+                          : 'Non encore commencée (0%)'}
                 </div>
 
                 {/* Barre de progression visuelle */}
