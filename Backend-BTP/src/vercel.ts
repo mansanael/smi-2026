@@ -13,8 +13,14 @@ async function bootstrap(): Promise<INestApplication> {
     app.use(urlencoded({ extended: true, limit: '25mb' }));
 
     // CORS — autorise le frontend React (dev: 5173, prod: configurable)
+    // CORS — autorise le frontend React (plusieurs origines possibles, séparées par des virgules)
+    const origins = (process.env.FRONTEND_URL ?? 'http://localhost:5173,http://localhost:4173')
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean);
+
     app.enableCors({
-      origin: process.env.FRONTEND_URL ?? 'http://localhost:5173',
+      origin: origins,
       methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
       credentials: true,

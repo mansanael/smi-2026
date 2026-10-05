@@ -85,6 +85,7 @@ export default function AlertesBadge() {
     await chargerCount();
     setLoading(false);
   }
+  const mobile = window.matchMedia('(max-width: 768px)').matches;
 
   return (
     <div style={{ position: 'relative' }} ref={panelRef}>
@@ -133,11 +134,10 @@ export default function AlertesBadge() {
       {/* Panel des alertes */}
       {open && (
         <div style={{
-          position: 'absolute',
-          top: 'calc(100% + 8px)',
-          right: 0,
-          width: '380px',
-          maxHeight: '500px',
+          position: mobile ? 'fixed' : 'absolute',
+          top: mobile ? 'calc(var(--topbar-height) + 8px)' : 'calc(100% + 8px)',
+          ...(mobile ? { left: 12, right: 12 } : { right: 0, width: '380px' }),
+          maxHeight: mobile ? 'calc(100dvh - var(--topbar-height) - 24px)' : '500px',
           background: 'var(--bg-secondary)',
           border: '1px solid var(--surface-border)',
           borderRadius: '12px',
