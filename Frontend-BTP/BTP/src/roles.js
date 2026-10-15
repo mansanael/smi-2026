@@ -4,6 +4,8 @@
 export const ROLES_GESTION_PROJET = ['directeur_general', 'directeur_technique', 'chef_projet'];
 export const ROLES_GESTION_MEMBRES = ['directeur_general', 'directeur_technique'];
 export const ROLES_BUDGET = ['directeur_general', 'directeur_technique', 'responsable_admin_fin', 'chef_projet'];
+export const ROLES_LECTURE_PAIEMENTS = [...ROLES_BUDGET, 'maitre_ouvrage_externe'];
+export const ROLES_SAISIE_PAIEMENTS = ['directeur_general', 'responsable_admin_fin'];
 // Le chef de projet consulte le budget mais ne saisit ni devis ni dépense
 export const ROLES_SAISIE_BUDGET = ['directeur_general', 'directeur_technique', 'responsable_admin_fin'];
 export const ROLES_INTERNES = [

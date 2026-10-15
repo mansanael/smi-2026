@@ -21,6 +21,18 @@ export const ROLES_BUDGET: RoleUtilisateur[] = [
   RoleUtilisateur.CHEF_PROJET,
 ];
 
+/** Consultent les paiements du client (le client voit ceux de son chantier) */
+export const ROLES_LECTURE_PAIEMENTS: RoleUtilisateur[] = [
+  ...ROLES_BUDGET,
+  RoleUtilisateur.MAITRE_OUVRAGE_EXTERNE,
+];
+
+/** Enregistrent l'échéancier, les versements et les relances */
+export const ROLES_SAISIE_PAIEMENTS: RoleUtilisateur[] = [
+  RoleUtilisateur.DIRECTEUR_GENERAL,
+  RoleUtilisateur.RESPONSABLE_ADMIN_FIN,
+];
+
 export const ROLES_FACTURATION: RoleUtilisateur[] = [
   RoleUtilisateur.DIRECTEUR_GENERAL,
   RoleUtilisateur.DIRECTEUR_TECHNIQUE,

@@ -16,12 +16,13 @@ import Ressources from './pages/ressources/Ressources'
 import Documents from './pages/documents/Documents'
 import Approvisionnement from './pages/approvisionnement/Approvisionnement'
 import Facturation from './pages/facturation/Facturation';
+import Paiements from './pages/paiements/Paiements';
 import Utilisateurs from './pages/admin/Utilisateurs';
 import Profil from './pages/profil/Profil';
 import Parametres from './pages/profil/Parametres';
 import AssistantIA from './pages/assistant/AssistantIA';
 import PwaStatus from './components/PwaStatus';
-import { ROLES_BUDGET, ROLES_INTERNES } from './roles';
+import { ROLES_BUDGET, ROLES_INTERNES, ROLES_LECTURE_PAIEMENTS } from './roles';
 
 
 createRoot(document.getElementById('root')).render(
@@ -76,6 +77,14 @@ createRoot(document.getElementById('root')).render(
               element={
                 <ProtectedRoute roles={['directeur_general', 'directeur_technique', 'responsable_admin_fin']}>
                   <Facturation />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/paiements"
+              element={
+                <ProtectedRoute roles={ROLES_LECTURE_PAIEMENTS}>
+                  <Paiements />
                 </ProtectedRoute>
               }
             />

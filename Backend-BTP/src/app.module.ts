@@ -12,6 +12,7 @@ import { SuiviChantierModule } from './suivi-chantier/suivi-chantier.module'; //
 import { DocumentsModule } from './documents/documents.module'; // M6
 import { ApprovisionnementsModule } from './approvisionnement/approvisionnements.module'; // M7
 import { FacturationModule } from './facturation/facturation.module'; // M8
+import { PaiementsModule } from './paiements/paiements.module'; // M8 – paiements du client
 import { DashboardModule } from './dashboard/dashboard.module'; // M9
 import { AuthModule } from './auth/auth.module'; // M10
 import { UtilisateursModule } from './utilisateurs/utilisateurs.module'; // M10
@@ -50,6 +51,7 @@ import { ScheduleModule } from '@nestjs/schedule'; // M11 – Assistant IA
     DocumentsModule,
     ApprovisionnementsModule,
     FacturationModule,
+    PaiementsModule,
     DashboardModule,
     AuthModule,
     UtilisateursModule,

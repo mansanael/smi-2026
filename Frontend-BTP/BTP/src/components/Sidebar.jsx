@@ -1,10 +1,10 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, FolderKanban, CalendarDays, Wallet,
-  Users, ClipboardCheck, FileText, Truck, Receipt, ShieldCheck, X, Bot
+  Users, ClipboardCheck, FileText, Truck, Receipt, ShieldCheck, X, Bot, Banknote
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { ROLES_BUDGET, ROLES_INTERNES } from '../roles';
+import { ROLES_BUDGET, ROLES_INTERNES, ROLES_LECTURE_PAIEMENTS } from '../roles';
 
 // roles: si absent, visible pour tout utilisateur connecté
 const navItems = [
@@ -17,6 +17,7 @@ const navItems = [
   { to: '/documents', icon: FileText, label: 'Documents' },
   { to: '/approvisionnement', icon: Truck, label: 'Approvisionnement', roles: ['directeur_general', 'directeur_technique', 'responsable_admin_fin', 'magasinier'] },
   { to: '/facturation', icon: Receipt, label: 'Facturation', roles: ['directeur_general', 'directeur_technique', 'responsable_admin_fin'] },
+  { to: '/paiements', icon: Banknote, label: 'Paiements client', roles: ROLES_LECTURE_PAIEMENTS },
   { to: '/admin/utilisateurs', icon: ShieldCheck, label: 'Utilisateurs', roles: ['directeur_general', 'directeur_technique'] },
   { to: '/assistant', icon: Bot, label: 'Assistant IA' },
 ];

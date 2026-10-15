@@ -7,15 +7,16 @@ function creerService(aAcces: boolean) {
   const dashboardService = { getDashboardGlobal: jest.fn().mockResolvedValue({}) };
   const planningService = { findTachesProjet: jest.fn().mockResolvedValue([]) };
   const approService = { getStockChantier: jest.fn().mockResolvedValue([]), getBonsCommande: jest.fn().mockResolvedValue([]) };
+  const paiementsService = { getSuivi: jest.fn().mockResolvedValue({ echeances: [], paiements: [] }) };
   const acces = {
     aAcces: jest.fn().mockResolvedValue(aAcces),
     projetIdsAutorises: jest.fn().mockResolvedValue(['p1']),
   };
   const service = new AiContextService(
     dashboardService as any, {} as any, {} as any, planningService as any, {} as any,
-    {} as any, {} as any, approService as any, {} as any, {} as any, acces as any,
+    {} as any, {} as any, approService as any, {} as any, {} as any, acces as any, paiementsService as any,
   );
-  return { service, dashboardService, planningService };
+  return { service, dashboardService, planningService, paiementsService };
 }
 
 describe('AiContextService.executeTool — droits d’accès', () => {
@@ -36,6 +37,19 @@ describe('AiContextService.executeTool — droits d’accès', () => {
     const { service, dashboardService } = creerService(true);
     await service.executeTool('get_portfolio', {}, user(RoleUtilisateur.CHEF_PROJET));
     expect(dashboardService.getDashboardGlobal).toHaveBeenCalledWith(['p1']);
+  });
+
+  it('le client peut demander les paiements de son chantier', async () => {
+    const { service, paiementsService } = creerService(true);
+    await service.executeTool('get_project_payments', { projetId: 'p1' }, user(RoleUtilisateur.MAITRE_OUVRAGE_EXTERNE));
+    expect(paiementsService.getSuivi).toHaveBeenCalledWith('p1');
+  });
+
+  it('le conducteur de travaux n’a pas accès aux paiements', async () => {
+    const { service, paiementsService } = creerService(true);
+    const res = JSON.parse(await service.executeTool('get_project_payments', { projetId: 'p1' }, user(RoleUtilisateur.CONDUCTEUR_TRAVAUX)));
+    expect(res.error).toBeDefined();
+    expect(paiementsService.getSuivi).not.toHaveBeenCalled();
   });
 
   it('le client n’a pas accès au stock, même de son chantier', async () => {

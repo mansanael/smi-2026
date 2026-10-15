@@ -19,6 +19,7 @@ import { DocumentsModule } from '../documents/documents.module';
 import { ApprovisionnementsModule } from '../approvisionnement/approvisionnements.module';
 import { RessourcesModule } from '../ressources/ressources.module';
 import { UtilisateursModule } from '../utilisateurs/utilisateurs.module';
+import { PaiementsModule } from '../paiements/paiements.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { UtilisateursModule } from '../utilisateurs/utilisateurs.module';
     ApprovisionnementsModule,
     RessourcesModule,
     UtilisateursModule,
+    PaiementsModule,
   ],
   controllers: [AiController, AlertesController],
   providers: [

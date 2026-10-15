@@ -15,6 +15,7 @@ export enum TypeAlerte {
   DOCUMENT_EXPIRE = 'document_expire',
   INCIDENT_HSE = 'incident_hse',
   AVANCEMENT_FAIBLE = 'avancement_faible',
+  PAIEMENT_EN_RETARD = 'paiement_en_retard',
 }
 
 @Entity('ai_alertes')

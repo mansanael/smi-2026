@@ -196,6 +196,14 @@ export const createMouvement = (pid, data) => api(`/projets/${pid}/stock`, { met
 export const getSituations = (pid) => api(`/projets/${pid}/situations`);
 export const createSituation = (pid, data) => api(`/projets/${pid}/situations`, { method: 'POST', body: data });
 export const getRecapitulatif = (pid) => api(`/projets/${pid}/situations/recapitulatif`);
+
+// ─── PAIEMENTS DU CLIENT ───────────────────────────────────────────────────
+export const getPaiements = (pid) => api(`/projets/${pid}/paiements`);
+export const addVersement = (pid, data) => api(`/projets/${pid}/paiements/versements`, { method: 'POST', body: data });
+export const deleteVersement = (pid, id) => api(`/projets/${pid}/paiements/versements/${id}`, { method: 'DELETE' });
+export const addEcheance = (pid, data) => api(`/projets/${pid}/paiements/echeances`, { method: 'POST', body: data });
+export const deleteEcheance = (pid, id) => api(`/projets/${pid}/paiements/echeances/${id}`, { method: 'DELETE' });
+export const relancerEcheance = (pid, id) => api(`/projets/${pid}/paiements/echeances/${id}/relance`, { method: 'POST' });
 export const updateSituation = (pid, id, data) => api(`/projets/${pid}/situations/${id}`, { method: 'PATCH', body: data });
 export const updateStatutSituation = (pid, id, statut) => api(`/projets/${pid}/situations/${id}/statut`, { method: 'PATCH', body: { statut } });
 

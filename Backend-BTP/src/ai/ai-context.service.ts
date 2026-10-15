@@ -11,7 +11,8 @@ import { RessourcesService } from '../ressources/ressources.service';
 import { UtilisateursService } from '../utilisateurs/utilisateurs.service';
 import { RoleUtilisateur } from '../utilisateurs/entities/utilisateur.entity';
 import { ProjetAccesService } from '../acces/projet-acces.service';
-import { ROLES_BUDGET, ROLES_FACTURATION, ROLES_INTERNES, ROLES_RH } from '../auth/roles';
+import { ROLES_BUDGET, ROLES_FACTURATION, ROLES_INTERNES, ROLES_LECTURE_PAIEMENTS, ROLES_RH } from '../auth/roles';
+import { PaiementsService } from '../paiements/paiements.service';
 
 interface JwtUser {
   id: string;
@@ -38,6 +39,7 @@ export class AiContextService {
     private readonly ressourcesService: RessourcesService,
     private readonly utilisateursService: UtilisateursService,
     private readonly acces: ProjetAccesService,
+    private readonly paiementsService: PaiementsService,
   ) {}
 
   getToolDefinitions() {
@@ -165,6 +167,21 @@ export class AiContextService {
         function: {
           name: 'get_project_billing',
           description: 'Récapitulatif facturation et encaissements d\'un projet (situations de travaux, net à payer, statuts de paiement).',
+          parameters: {
+            type: 'object',
+            properties: {
+              projetId: { type: 'string', description: 'UUID du projet' },
+            },
+            required: ['projetId'],
+          },
+        },
+      },
+
+      {
+        type: 'function',
+        function: {
+          name: 'get_project_payments',
+          description: 'Paiements du client sur un projet : échéancier, versements reçus, total reçu, reste à payer, échéances en retard. Répond à "combien le client a payé", "qui est en retard de paiement".',
           parameters: {
             type: 'object',
             properties: {
@@ -495,6 +512,25 @@ export class AiContextService {
               statut: s.statut,
               netAPayer: s.netAPayer,
               avancementPhysique: s.pourcentageAvancement,
+            })),
+          });
+        }
+
+        // ─── PAIEMENTS DU CLIENT ─────────────────────────────────────────────
+        case 'get_project_payments': {
+          if (!ROLES_LECTURE_PAIEMENTS.includes(user.role)) {
+            return JSON.stringify({ error: 'Accès aux paiements non autorisé pour votre rôle.' });
+          }
+          const suivi = await this.paiementsService.getSuivi(String(args.projetId));
+          return JSON.stringify({
+            ...suivi,
+            echeances: suivi.echeances.map(e => ({
+              libelle: e.libelle, montant: e.montant, dateLimite: e.dateLimite,
+              montantRegle: e.montantRegle, resteDu: e.resteDu, statut: e.statut,
+              joursRetard: e.joursRetard, nombreRelances: e.nombreRelances,
+            })),
+            paiements: suivi.paiements.slice(0, 10).map(p => ({
+              date: p.date, montant: p.montant, mode: p.mode, reference: p.reference,
             })),
           });
         }

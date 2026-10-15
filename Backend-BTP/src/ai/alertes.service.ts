@@ -10,6 +10,7 @@ import { DocumentsService } from '../documents/documents.service';
 import { SuiviChantierService } from '../suivi-chantier/suivi-chantier.service';
 import { GraviteIncident } from '../suivi-chantier/entities/incident.entity';
 import { BudgetService } from '../budget/budget.service';
+import { PaiementsService } from '../paiements/paiements.service';
 
 @Injectable()
 export class AlertesService {
@@ -24,6 +25,7 @@ export class AlertesService {
     private readonly documentsService: DocumentsService,
     private readonly suiviService: SuiviChantierService,
     private readonly budgetService: BudgetService,
+    private readonly paiementsService: PaiementsService,
   ) {}
 
   // ─── Cron : analyse chaque matin à 7h ─────────────────────────────────────
@@ -59,10 +61,11 @@ export class AlertesService {
 
       // ── Analyse par projet ───────────────────────────────────────────────
       for (const p of portfolio.projetsActifs) {
-        const [dashboard, taches, incidents] = await Promise.all([
+        const [dashboard, taches, incidents, paiements] = await Promise.all([
           this.dashboardService.getDashboardProjet(p.id),
           this.planningService.findTachesProjet(p.id),
           this.suiviService.getIncidents(p.id),
+          this.paiementsService.getSuivi(p.id),
         ]);
 
         if (!dashboard) continue;
@@ -116,6 +119,18 @@ export class AlertesService {
             projetId: p.id,
             projetReference: ref,
             message: `📊 [${ref}] Déséquilibre : avancement financier (${Math.round(dashboard.avancement.financier)}%) dépasse l'avancement physique (${Math.round(dashboard.avancement.physique)}%) de plus de 15 points.`,
+          });
+        }
+
+        // Échéances de paiement du client dépassées (impact direct sur la trésorerie)
+        if (paiements.nombreEcheancesEnRetard > 0) {
+          const plusAncienne = paiements.echeances.find(e => e.statut === 'en_retard');
+          alertesACreer.push({
+            type: TypeAlerte.PAIEMENT_EN_RETARD,
+            gravite: GraviteAlerte.DANGER,
+            projetId: p.id,
+            projetReference: ref,
+            message: `💰 [${ref}] ${paiements.nombreEcheancesEnRetard} échéance(s) client impayée(s) : ${paiements.montantEnRetard.toLocaleString('fr-FR')} FCFA en retard${plusAncienne ? ` (« ${plusAncienne.libelle} », ${plusAncienne.joursRetard} j de retard)` : ''}.`,
           });
         }
 
