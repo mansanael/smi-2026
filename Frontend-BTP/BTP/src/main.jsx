@@ -21,6 +21,7 @@ import Profil from './pages/profil/Profil';
 import Parametres from './pages/profil/Parametres';
 import AssistantIA from './pages/assistant/AssistantIA';
 import PwaStatus from './components/PwaStatus';
+import { ROLES_BUDGET, ROLES_INTERNES } from './roles';
 
 
 createRoot(document.getElementById('root')).render(
@@ -47,13 +48,20 @@ createRoot(document.getElementById('root')).render(
             <Route
               path="/budget"
               element={
-                <ProtectedRoute roles={['directeur_general', 'directeur_technique', 'responsable_admin_fin']}>
+                <ProtectedRoute roles={ROLES_BUDGET}>
                   <Budget />
                 </ProtectedRoute>
               }
             />
             <Route path="/suivi" element={<SuiviChantier />} />
-            <Route path="/ressources" element={<Ressources />} />
+            <Route
+              path="/ressources"
+              element={
+                <ProtectedRoute roles={ROLES_INTERNES}>
+                  <Ressources />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/documents" element={<Documents />} />
             <Route
               path="/approvisionnement"

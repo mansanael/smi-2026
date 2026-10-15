@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProjets, getBudgetKpi, getDevis, addLigneDevis, getDepenses, addDepense } from '../../api/api';
 import { Plus, X, Wallet, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { ROLES_SAISIE_BUDGET } from '../../roles';
 
 const emptyLigneDevis = { rubrique: 'materiaux', designation: '', unite: '', quantite: '', prixUnitaire: '' };
 const emptyDepense = { type: 'engagement', libelle: '', montant: '', categorie: 'materiaux', date: new Date().toISOString().slice(0, 10) };
@@ -47,6 +49,8 @@ export default function Budget() {
     const [formDevis, setFormDevis] = useState(emptyLigneDevis);
     const [formDepense, setFormDepense] = useState(emptyDepense);
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const peutSaisir = ROLES_SAISIE_BUDGET.includes(user?.role);
 
     useEffect(() => {
         getProjets().then(list => {
@@ -147,9 +151,11 @@ export default function Budget() {
 
                     <div className="page-header" style={{ marginBottom: 12 }}>
                         <div />
-                        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-                            <Plus size={18} /> {tab === 'devis' ? 'Ligne de devis' : 'Dépense'}
-                        </button>
+                        {peutSaisir && (
+                            <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                                <Plus size={18} /> {tab === 'devis' ? 'Ligne de devis' : 'Dépense'}
+                            </button>
+                        )}
                     </div>
 
                     {tab === 'devis' ? (
