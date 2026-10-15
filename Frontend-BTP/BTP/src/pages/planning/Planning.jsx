@@ -26,6 +26,8 @@ import {
   ListTodo,
   CheckSquare,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { estLectureSeule } from '../../roles';
 
 const lotOptions = [
   { value: 'installation_chantier', label: 'Installation de chantier' },
@@ -68,6 +70,8 @@ const statutBadges = {
 };
 
 export default function Planning() {
+  const { user } = useAuth();
+  const lectureSeule = estLectureSeule(user);
   const [projets, setProjets] = useState([]);
   const [projetId, setProjetId] = useState('');
   const [taches, setTaches] = useState([]);
@@ -379,7 +383,7 @@ export default function Planning() {
           <h1>Planning & Délais</h1>
           <p className="subtitle">Pilotage des tâches, suivi de l'avancement physique et jalons contractuels</p>
         </div>
-        {projetId && (
+        {projetId && !lectureSeule && (
           <div style={{ display: 'flex', gap: 10 }}>
             <button className="btn btn-secondary" onClick={() => setShowJalonModal(true)}>
               <Flag size={16} /> Nouveau jalon
@@ -487,12 +491,16 @@ export default function Planning() {
                   Tâches du chantier ({taches.length})
                 </h3>
                 <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
-                  Utilisez les boutons rapides (+10%, 100%, curseur) pour indiquer et faire progresser l'avancement de chaque tâche.
+                  {lectureSeule
+                    ? "Avancement de chaque étape de votre chantier, mis à jour par l'équipe."
+                    : "Utilisez les boutons rapides (+10%, 100%, curseur) pour indiquer et faire progresser l'avancement de chaque tâche."}
                 </p>
               </div>
-              <button className="btn btn-primary btn-sm" onClick={() => setShowCreateModal(true)}>
-                <Plus size={16} /> Ajouter une tâche
-              </button>
+              {!lectureSeule && (
+                <button className="btn btn-primary btn-sm" onClick={() => setShowCreateModal(true)}>
+                  <Plus size={16} /> Ajouter une tâche
+                </button>
+              )}
             </div>
 
             {taches.length > 0 ? (
@@ -506,7 +514,7 @@ export default function Planning() {
                       <th>Planning</th>
                       <th style={{ minWidth: 320 }}>Avancement physique</th>
                       <th>Responsable</th>
-                      <th style={{ textAlign: 'right' }}>Actions</th>
+                      {!lectureSeule && <th style={{ textAlign: 'right' }}>Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -553,9 +561,9 @@ export default function Planning() {
                               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <div
                                   className="progress-bar"
-                                  style={{ width: 100, height: 8, cursor: 'pointer' }}
-                                  title="Cliquez pour ajuster précisément l'avancement"
-                                  onClick={() => openAvancementModal(t)}
+                                  style={{ width: 100, height: 8, cursor: lectureSeule ? 'default' : 'pointer' }}
+                                  title={lectureSeule ? undefined : "Cliquez pour ajuster précisément l'avancement"}
+                                  onClick={lectureSeule ? undefined : () => openAvancementModal(t)}
                                 >
                                   <div
                                     className={`progress-fill ${avancement >= 80 ? 'green' : avancement >= 40 ? 'blue' : avancement > 0 ? 'amber' : ''}`}
@@ -568,17 +576,17 @@ export default function Planning() {
                                     fontWeight: 700,
                                     minWidth: 42,
                                     color: avancement === 100 ? '#34d399' : avancement > 0 ? '#60a5fa' : 'var(--text-muted)',
-                                    cursor: 'pointer',
+                                    cursor: lectureSeule ? 'default' : 'pointer',
                                   }}
-                                  onClick={() => openAvancementModal(t)}
-                                  title="Cliquez pour ajuster"
+                                  onClick={lectureSeule ? undefined : () => openAvancementModal(t)}
+                                  title={lectureSeule ? undefined : 'Cliquez pour ajuster'}
                                 >
                                   {avancement}%
                                 </span>
                               </div>
 
                               {/* Boutons d'ajustement direct */}
-                              <div className="avancement-control-row">
+                              {!lectureSeule && <div className="avancement-control-row">
                                 <button
                                   type="button"
                                   className="avancement-btn"
@@ -615,7 +623,7 @@ export default function Planning() {
                                 >
                                   <Sliders size={12} /> Régler
                                 </button>
-                              </div>
+                              </div>}
                             </div>
                           </td>
 
@@ -624,7 +632,7 @@ export default function Planning() {
                           </td>
 
                           {/* ── ACTIONS ── */}
-                          <td style={{ verticalAlign: 'middle', textAlign: 'right' }}>
+                          {!lectureSeule && <td style={{ verticalAlign: 'middle', textAlign: 'right' }}>
                             <div style={{ display: 'inline-flex', gap: 6 }}>
                               <button
                                 type="button"
@@ -643,7 +651,7 @@ export default function Planning() {
                                 <Trash2 size={15} />
                               </button>
                             </div>
-                          </td>
+                          </td>}
                         </tr>
                       );
                     })}
@@ -653,9 +661,11 @@ export default function Planning() {
             ) : (
               <div className="empty-state" style={{ padding: 32 }}>
                 <p>Aucune tâche planifiée pour ce projet.</p>
-                <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setShowCreateModal(true)}>
-                  <Plus size={16} /> Créer la première tâche
-                </button>
+                {!lectureSeule && (
+                  <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setShowCreateModal(true)}>
+                    <Plus size={16} /> Créer la première tâche
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -668,12 +678,14 @@ export default function Planning() {
                   Jalons contractuels & clés ({jalons.length})
                 </h3>
                 <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>
-                  Étapes majeures du marché (démarrage, hors d'eau, réception provisoire, etc.). Cliquez sur le bouton pour valider un jalon atteint.
+                  Étapes majeures du marché (démarrage, hors d'eau, réception provisoire, etc.).{!lectureSeule && ' Cliquez sur le bouton pour valider un jalon atteint.'}
                 </p>
               </div>
-              <button className="btn btn-secondary btn-sm" onClick={() => setShowJalonModal(true)}>
-                <Plus size={16} /> Ajouter un jalon
-              </button>
+              {!lectureSeule && (
+                <button className="btn btn-secondary btn-sm" onClick={() => setShowJalonModal(true)}>
+                  <Plus size={16} /> Ajouter un jalon
+                </button>
+              )}
             </div>
 
             {jalons.length > 0 ? (
@@ -686,7 +698,7 @@ export default function Planning() {
                       <th>Date prévue</th>
                       <th>Date réelle</th>
                       <th>Statut / Validation</th>
-                      <th style={{ textAlign: 'right' }}>Actions</th>
+                      {!lectureSeule && <th style={{ textAlign: 'right' }}>Actions</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -697,6 +709,11 @@ export default function Planning() {
                         <td>{j.datePrevu || '—'}</td>
                         <td>{j.dateReel || <span style={{ color: 'var(--text-muted)' }}>Non renseignée</span>}</td>
                         <td>
+                          {lectureSeule ? (
+                            <span className={`badge ${j.atteint ? 'badge-green' : 'badge-amber'}`}>
+                              {j.atteint ? 'Atteint ✓' : 'En attente'}
+                            </span>
+                          ) : (
                           <button
                             type="button"
                             className="btn btn-sm"
@@ -718,8 +735,9 @@ export default function Planning() {
                               </>
                             )}
                           </button>
+                          )}
                         </td>
-                        <td style={{ textAlign: 'right' }}>
+                        {!lectureSeule && <td style={{ textAlign: 'right' }}>
                           <button
                             type="button"
                             className="btn btn-danger btn-icon"
@@ -728,7 +746,7 @@ export default function Planning() {
                           >
                             <Trash2 size={15} />
                           </button>
-                        </td>
+                        </td>}
                       </tr>
                     ))}
                   </tbody>
@@ -737,9 +755,11 @@ export default function Planning() {
             ) : (
               <div className="empty-state" style={{ padding: 32 }}>
                 <p>Aucun jalon défini pour ce chantier.</p>
-                <button className="btn btn-secondary" style={{ marginTop: 12 }} onClick={() => setShowJalonModal(true)}>
-                  <Plus size={16} /> Définir un jalon
-                </button>
+                {!lectureSeule && (
+                  <button className="btn btn-secondary" style={{ marginTop: 12 }} onClick={() => setShowJalonModal(true)}>
+                    <Plus size={16} /> Définir un jalon
+                  </button>
+                )}
               </div>
             )}
           </div>

@@ -11,6 +11,9 @@ export const ROLES_INTERNES = [
   'responsable_admin_fin', 'magasinier',
 ];
 
+// Le client (maître d'ouvrage) consulte son chantier sans rien modifier
+export const estLectureSeule = (user) => user?.role === 'maitre_ouvrage_externe';
+
 export const roleLabels = {
   directeur_general: 'Directeur Général',
   directeur_technique: 'Directeur Technique',

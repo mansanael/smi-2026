@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProjets, getDocuments, createDocument, getExpirations } from '../../api/api';
 import { Plus, X, FileText, AlertCircle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { estLectureSeule } from '../../roles';
 
 const emptyForm = { nom: '', type: 'plan', phase: 'execution', cheminFichier: '', dateExpiration: '', deposePar: '' };
 
@@ -22,6 +24,8 @@ const phaseBadge = {
 };
 
 export default function Documents() {
+    const { user } = useAuth();
+    const lectureSeule = estLectureSeule(user);
     const [projets, setProjets] = useState([]);
     const [projetId, setProjetId] = useState('');
     const [documents, setDocuments] = useState([]);
@@ -88,9 +92,11 @@ export default function Documents() {
 
             <div className="page-header" style={{ marginBottom: 12 }}>
                 <div />
-                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-                    <Plus size={18} /> Document
-                </button>
+                {!lectureSeule && (
+                    <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                        <Plus size={18} /> Document
+                    </button>
+                )}
             </div>
 
             {loading ? <div className="spinner" /> : (

@@ -26,6 +26,8 @@ import {
     UploadCloud,
     Filter,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { estLectureSeule } from '../../roles';
 
 const emptyJournal = {
     date: '',
@@ -104,6 +106,8 @@ const categorieBadge = {
 };
 
 export default function SuiviChantier() {
+    const { user } = useAuth();
+    const lectureSeule = estLectureSeule(user);
     const [projets, setProjets] = useState([]);
     const [projetId, setProjetId] = useState('');
     const [journaux, setJournaux] = useState([]);
@@ -361,7 +365,7 @@ export default function SuiviChantier() {
                             )}
                         </div>
 
-                        <button
+                        {!lectureSeule && <button
                             className="btn btn-primary"
                             onClick={() => {
                                 if (tab === 'photos') {
@@ -379,7 +383,7 @@ export default function SuiviChantier() {
                                     <Plus size={18} /> {tab === 'journal' ? 'Rapport journalier' : 'Incident'}
                                 </>
                             )}
-                        </button>
+                        </button>}
                     </div>
 
                     {/* ═══ ONGLET 1: JOURNAL DE CHANTIER ═══ */}
@@ -494,15 +498,17 @@ export default function SuiviChantier() {
                                         Prenez des photos en direct sur le terrain avec votre smartphone ou importez des clichés
                                         pour documenter l'avancement des travaux.
                                     </p>
-                                    <button
-                                        className="btn btn-primary"
-                                        onClick={() => {
-                                            setFormPhoto(getInitialPhotoState());
-                                            setShowModal(true);
-                                        }}
-                                    >
-                                        <Camera size={16} /> Prendre la première photo
-                                    </button>
+                                    {!lectureSeule && (
+                                        <button
+                                            className="btn btn-primary"
+                                            onClick={() => {
+                                                setFormPhoto(getInitialPhotoState());
+                                                setShowModal(true);
+                                            }}
+                                        >
+                                            <Camera size={16} /> Prendre la première photo
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 <div
@@ -640,18 +646,20 @@ export default function SuiviChantier() {
                                                         >
                                                             <Eye size={13} />
                                                         </button>
-                                                        <button
-                                                            className="btn btn-sm"
-                                                            style={{
-                                                                padding: '4px 8px',
-                                                                color: 'var(--accent-red)',
-                                                                borderColor: 'rgba(239, 68, 68, 0.3)',
-                                                            }}
-                                                            onClick={() => handleDeletePhoto(p.id)}
-                                                            title="Supprimer la photo"
-                                                        >
-                                                            <Trash2 size={13} />
-                                                        </button>
+                                                        {!lectureSeule && (
+                                                            <button
+                                                                className="btn btn-sm"
+                                                                style={{
+                                                                    padding: '4px 8px',
+                                                                    color: 'var(--accent-red)',
+                                                                    borderColor: 'rgba(239, 68, 68, 0.3)',
+                                                                }}
+                                                                onClick={() => handleDeletePhoto(p.id)}
+                                                                title="Supprimer la photo"
+                                                            >
+                                                                <Trash2 size={13} />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
