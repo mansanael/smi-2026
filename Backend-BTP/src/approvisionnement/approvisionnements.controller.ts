@@ -4,6 +4,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RoleUtilisateur } from '../utilisateurs/entities/utilisateur.entity';
+import { ProjetAccesGuard } from '../acces/projet-acces.guard';
+import { ROLES_INTERNES } from '../auth/roles';
 
 const ROLES_GESTION_APPRO = [
   RoleUtilisateur.DIRECTEUR_GENERAL,
@@ -12,8 +14,10 @@ const ROLES_GESTION_APPRO = [
   RoleUtilisateur.MAGASINIER,
 ];
 
+// Lecture : personnel interne ; écriture : précisée par route
 @Controller()
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, ProjetAccesGuard)
+@Roles(...ROLES_INTERNES)
 export class ApprovisionnementsController {
   constructor(private readonly service: ApprovisionnementsService) { }
 

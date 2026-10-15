@@ -6,9 +6,10 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UtilisateurCourant } from '../auth/decorators/utilisateur-courant.decorator';
 import { RoleUtilisateur } from '../utilisateurs/entities/utilisateur.entity';
+import { ProjetAccesGuard } from '../acces/projet-acces.guard';
 
 @Controller('projets/:projetId')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, ProjetAccesGuard)
 export class FacturationController {
   constructor(
     private readonly facturationService: FacturationService,

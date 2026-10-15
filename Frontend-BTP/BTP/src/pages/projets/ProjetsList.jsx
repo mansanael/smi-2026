@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProjets, createProjet } from '../../api/api';
 import { Plus, X, MapPin } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { ROLES_GESTION_PROJET } from '../../roles';
 
 const statutLabels = {
   en_etude: 'En étude', soumissionne: 'Soumissionné', attribue: 'Attribué',
@@ -27,6 +29,7 @@ export default function ProjetsList() {
   const [form, setForm] = useState(emptyForm);
   const [filter, setFilter] = useState('');
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const load = () => getProjets().then(setProjets).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
@@ -53,9 +56,11 @@ export default function ProjetsList() {
           <h1>Projets</h1>
           <p className="subtitle">{projets.length} projet(s) au total</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          <Plus size={18} /> Nouveau projet
-        </button>
+        {ROLES_GESTION_PROJET.includes(user?.role) && (
+          <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+            <Plus size={18} /> Nouveau projet
+          </button>
+        )}
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>

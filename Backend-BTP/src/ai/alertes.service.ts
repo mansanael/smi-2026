@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, In, Repository } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Alerte, GraviteAlerte, TypeAlerte } from './alerte.entity';
 import { DashboardService } from '../dashboard/dashboard.service';
@@ -147,25 +147,37 @@ export class AlertesService {
   }
 
   // ─── API : récupérer les alertes ──────────────────────────────────────────
-  async getAlertes(lu?: boolean): Promise<Alerte[]> {
-    const where: Partial<Alerte> = lu !== undefined ? { lu } : {};
+  // projetIds : projets accessibles à l'utilisateur, null = toutes les alertes
+  // (les alertes sans projet, comme les documents, ne sont visibles qu'avec null)
+  private filtre(projetIds: string[] | null, lu?: boolean): FindOptionsWhere<Alerte> {
+    return {
+      ...(lu !== undefined ? { lu } : {}),
+      ...(projetIds !== null ? { projetId: In(projetIds) } : {}),
+    };
+  }
+
+  async getAlertes(projetIds: string[] | null, lu?: boolean): Promise<Alerte[]> {
+    if (projetIds?.length === 0) return [];
     return this.alerteRepo.find({
-      where,
+      where: this.filtre(projetIds, lu),
       order: { creeLe: 'DESC' },
       take: 50,
     });
   }
 
-  async getNombreNonLues(): Promise<number> {
-    return this.alerteRepo.count({ where: { lu: false } });
+  async getNombreNonLues(projetIds: string[] | null): Promise<number> {
+    if (projetIds?.length === 0) return 0;
+    return this.alerteRepo.count({ where: this.filtre(projetIds, false) });
   }
 
-  async marquerCommeLu(id: string): Promise<void> {
-    await this.alerteRepo.update(id, { lu: true });
+  async marquerCommeLu(id: string, projetIds: string[] | null): Promise<void> {
+    if (projetIds?.length === 0) return;
+    await this.alerteRepo.update({ id, ...this.filtre(projetIds) }, { lu: true });
   }
 
-  async marquerToutCommeLu(): Promise<void> {
-    await this.alerteRepo.update({ lu: false }, { lu: true });
+  async marquerToutCommeLu(projetIds: string[] | null): Promise<void> {
+    if (projetIds?.length === 0) return;
+    await this.alerteRepo.update(this.filtre(projetIds, false), { lu: true });
   }
 
   async toutEffacer(): Promise<void> {

@@ -16,6 +16,7 @@ import { DashboardModule } from './dashboard/dashboard.module'; // M9
 import { AuthModule } from './auth/auth.module'; // M10
 import { UtilisateursModule } from './utilisateurs/utilisateurs.module'; // M10
 import { AiModule } from './ai/ai.module';
+import { AccesModule } from './acces/acces.module';
 import { ScheduleModule } from '@nestjs/schedule'; // M11 – Assistant IA
 
 @Module({
@@ -40,6 +41,7 @@ import { ScheduleModule } from '@nestjs/schedule'; // M11 – Assistant IA
             : false,
       }),
     }),
+    AccesModule,
     RessourcesModule,
     ProjetsModule,
     PlanningModule,

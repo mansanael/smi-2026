@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Projet, StatutProjet } from '../projets/entities/projet.entity';
 import { Tache } from '../planning/entities/tache.entity';
 import { Depense, TypeDepense } from '../budget/entities/depense.entity';
@@ -18,8 +18,12 @@ export class DashboardService {
   ) {}
 
   // ─── TABLEAU DE BORD GLOBAL (CDC §11.1) ───────────────────────────────────
-  async getDashboardGlobal() {
-    const projets = await this.projetRepo.find();
+  // projetIds : projets accessibles à l'utilisateur, null = tous les projets
+  async getDashboardGlobal(projetIds: string[] | null = null) {
+    const projets =
+      projetIds === null ? await this.projetRepo.find()
+        : projetIds.length === 0 ? []
+          : await this.projetRepo.find({ where: { id: In(projetIds) } });
     const projetsActifs = projets.filter(p => p.statut === StatutProjet.EN_COURS || p.statut === StatutProjet.EN_PREPARATION);
     const valeurTotale = projets.reduce((s, p) => s + Number(p.montantMarche || 0), 0);
     const repartitionStatut: Record<string, number> = {};

@@ -1,9 +1,15 @@
 import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { RessourcesService } from './ressources.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { ProjetAccesGuard } from '../acces/projet-acces.guard';
+import { ROLES_INTERNES } from '../auth/roles';
 
+// Données internes (salaires, CNI…) : jamais visibles par le client
 @Controller()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, ProjetAccesGuard)
+@Roles(...ROLES_INTERNES)
 export class RessourcesController {
   constructor(private readonly ressourcesService: RessourcesService) {}
 

@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProjet, getDashboardProjet, updateProjet, deleteProjet } from '../../api/api';
-import { ArrowLeft, Edit, Trash2, MapPin, Calendar, Building2, Wallet } from 'lucide-react';
+import { ArrowLeft, Trash2, MapPin, Calendar, Building2, Wallet } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { ROLES_GESTION_PROJET, ROLES_INTERNES } from '../../roles';
+import EquipeProjet from '../../components/EquipeProjet';
 
 const statutLabels = { en_etude: 'En étude', soumissionne: 'Soumissionné', attribue: 'Attribué', en_preparation: 'En préparation', en_cours: 'En cours', travaux_termines: 'Travaux terminés', en_garantie: 'En garantie', cloture: 'Clôturé' };
 const statutOptions = ['en_etude','soumissionne','attribue','en_preparation','en_cours','travaux_termines','en_garantie','cloture'];
@@ -9,6 +12,9 @@ const statutOptions = ['en_etude','soumissionne','attribue','en_preparation','en
 export default function ProjetDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const peutModifier = ROLES_GESTION_PROJET.includes(user?.role);
+  const peutSupprimer = user?.role === 'directeur_general';
   const [projet, setProjet] = useState(null);
   const [dash, setDash] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,10 +51,14 @@ export default function ProjetDetail() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <select className="form-select" style={{ width: 180 }} value={projet.statut} onChange={e => handleStatut(e.target.value)}>
-            {statutOptions.map(s => <option key={s} value={s}>{statutLabels[s]}</option>)}
-          </select>
-          <button className="btn btn-danger btn-sm" onClick={handleDelete}><Trash2 size={16} /></button>
+          {peutModifier ? (
+            <select className="form-select" style={{ width: 180 }} value={projet.statut} onChange={e => handleStatut(e.target.value)}>
+              {statutOptions.map(s => <option key={s} value={s}>{statutLabels[s]}</option>)}
+            </select>
+          ) : (
+            <span className="badge badge-blue">{statutLabels[projet.statut]}</span>
+          )}
+          {peutSupprimer && <button className="btn btn-danger btn-sm" onClick={handleDelete}><Trash2 size={16} /></button>}
         </div>
       </div>
 
@@ -101,14 +111,19 @@ export default function ProjetDetail() {
               <span style={{ color: 'var(--text-muted)' }}>Tâches terminées</span>
               <strong>{dash?.avancement?.tachesTerminees || 0} / {dash?.avancement?.nombreTaches || 0}</strong>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Dépenses réalisées</span>
-              <strong className="montant">{Number(dash?.budget?.depensesRealisees || 0).toLocaleString('fr-FR')} FCFA</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Reste à dépenser</span>
-              <strong className="montant">{Number(dash?.budget?.resteADepenser || 0).toLocaleString('fr-FR')} FCFA</strong>
-            </div>
+            {/* Le serveur n'envoie pas le budget au client */}
+            {dash?.budget && (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Dépenses réalisées</span>
+                  <strong className="montant">{Number(dash.budget.depensesRealisees || 0).toLocaleString('fr-FR')} FCFA</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Reste à dépenser</span>
+                  <strong className="montant">{Number(dash.budget.resteADepenser || 0).toLocaleString('fr-FR')} FCFA</strong>
+                </div>
+              </>
+            )}
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Situations facturées</span>
               <strong>{dash?.facturation?.nombreSituations || 0}</strong>
@@ -127,6 +142,8 @@ export default function ProjetDetail() {
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7 }}>{projet.description}</p>
         </div>
       )}
+
+      {ROLES_INTERNES.includes(user?.role) && <EquipeProjet projetId={id} userRole={user?.role} />}
     </div>
   );
 }

@@ -10,9 +10,10 @@ import {
 } from '@nestjs/common';
 import { SuiviChantierService } from './suivi-chantier.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ProjetAccesGuard } from '../acces/projet-acces.guard';
 
 @Controller('projets/:projetId')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ProjetAccesGuard)
 export class SuiviChantierController {
   constructor(private readonly service: SuiviChantierService) {}
 
@@ -46,7 +47,7 @@ export class SuiviChantierController {
     return this.service.getPhotos(id, categorie);
   }
   @Delete('photos/:photoId')
-  deletePhoto(@Param('photoId') photoId: string) {
-    return this.service.deletePhoto(photoId);
+  deletePhoto(@Param('projetId') id: string, @Param('photoId') photoId: string) {
+    return this.service.deletePhoto(id, photoId);
   }
 }

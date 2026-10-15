@@ -1,0 +1,46 @@
+import { AiContextService } from './ai-context.service';
+import { RoleUtilisateur } from '../utilisateurs/entities/utilisateur.entity';
+
+const user = (role: RoleUtilisateur) => ({ id: 'u', email: 'u@test.sn', nom: 'Test', prenom: 'U', role });
+
+function creerService(aAcces: boolean) {
+  const dashboardService = { getDashboardGlobal: jest.fn().mockResolvedValue({}) };
+  const planningService = { findTachesProjet: jest.fn().mockResolvedValue([]) };
+  const approService = { getStockChantier: jest.fn().mockResolvedValue([]), getBonsCommande: jest.fn().mockResolvedValue([]) };
+  const acces = {
+    aAcces: jest.fn().mockResolvedValue(aAcces),
+    projetIdsAutorises: jest.fn().mockResolvedValue(['p1']),
+  };
+  const service = new AiContextService(
+    dashboardService as any, {} as any, {} as any, planningService as any, {} as any,
+    {} as any, {} as any, approService as any, {} as any, {} as any, acces as any,
+  );
+  return { service, dashboardService, planningService };
+}
+
+describe('AiContextService.executeTool — droits d’accès', () => {
+  it('refuse les données d’un projet non autorisé', async () => {
+    const { service, planningService } = creerService(false);
+    const res = JSON.parse(await service.executeTool('get_project_tasks', { projetId: 'p2' }, user(RoleUtilisateur.CHEF_PROJET)));
+    expect(res.error).toBeDefined();
+    expect(planningService.findTachesProjet).not.toHaveBeenCalled();
+  });
+
+  it('répond sur un projet autorisé', async () => {
+    const { service, planningService } = creerService(true);
+    await service.executeTool('get_project_tasks', { projetId: 'p1' }, user(RoleUtilisateur.CHEF_PROJET));
+    expect(planningService.findTachesProjet).toHaveBeenCalledWith('p1');
+  });
+
+  it('limite le portefeuille aux projets accessibles', async () => {
+    const { service, dashboardService } = creerService(true);
+    await service.executeTool('get_portfolio', {}, user(RoleUtilisateur.CHEF_PROJET));
+    expect(dashboardService.getDashboardGlobal).toHaveBeenCalledWith(['p1']);
+  });
+
+  it('le client n’a pas accès au stock, même de son chantier', async () => {
+    const { service } = creerService(true);
+    const res = JSON.parse(await service.executeTool('get_project_stock', { projetId: 'p1' }, user(RoleUtilisateur.MAITRE_OUVRAGE_EXTERNE)));
+    expect(res.error).toBeDefined();
+  });
+});

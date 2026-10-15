@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Utilisateur } from '../../utilisateurs/entities/utilisateur.entity';
 
 export enum StatutProjet {
   EN_ETUDE = 'en_etude',
@@ -115,6 +116,16 @@ export class Projet {
   // Statut / cycle de vie
   @Column({ type: 'enum', enum: StatutProjet, default: StatutProjet.EN_ETUDE })
   statut: StatutProjet;
+
+  // Équipe du projet : chef de projet, conducteurs, magasiniers, client…
+  // (la direction et le resp. admin & finance voient tous les projets sans être membres)
+  @ManyToMany(() => Utilisateur)
+  @JoinTable({
+    name: 'projet_membres',
+    joinColumn: { name: 'projet_id' },
+    inverseJoinColumn: { name: 'utilisateur_id' },
+  })
+  membres: Utilisateur[];
 
   @CreateDateColumn()
   creeLe: Date;

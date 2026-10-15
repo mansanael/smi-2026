@@ -10,6 +10,8 @@ import { ApprovisionnementsService } from '../approvisionnement/approvisionnemen
 import { RessourcesService } from '../ressources/ressources.service';
 import { UtilisateursService } from '../utilisateurs/utilisateurs.service';
 import { RoleUtilisateur } from '../utilisateurs/entities/utilisateur.entity';
+import { ProjetAccesService } from '../acces/projet-acces.service';
+import { ROLES_BUDGET, ROLES_FACTURATION, ROLES_INTERNES, ROLES_RH } from '../auth/roles';
 
 interface JwtUser {
   id: string;
@@ -18,27 +20,6 @@ interface JwtUser {
   nom: string;
   prenom: string;
 }
-
-const ROLES_BUDGET = new Set([
-  RoleUtilisateur.DIRECTEUR_GENERAL,
-  RoleUtilisateur.DIRECTEUR_TECHNIQUE,
-  RoleUtilisateur.RESPONSABLE_ADMIN_FIN,
-  RoleUtilisateur.CHEF_PROJET,
-]);
-
-const ROLES_FACTURATION = new Set([
-  RoleUtilisateur.DIRECTEUR_GENERAL,
-  RoleUtilisateur.DIRECTEUR_TECHNIQUE,
-  RoleUtilisateur.RESPONSABLE_ADMIN_FIN,
-]);
-
-const ROLES_RH = new Set([
-  RoleUtilisateur.DIRECTEUR_GENERAL,
-  RoleUtilisateur.DIRECTEUR_TECHNIQUE,
-  RoleUtilisateur.RESPONSABLE_ADMIN_FIN,
-  RoleUtilisateur.CHEF_PROJET,
-  RoleUtilisateur.CONDUCTEUR_TRAVAUX,
-]);
 
 @Injectable()
 export class AiContextService {
@@ -56,6 +37,7 @@ export class AiContextService {
     private readonly approService: ApprovisionnementsService,
     private readonly ressourcesService: RessourcesService,
     private readonly utilisateursService: UtilisateursService,
+    private readonly acces: ProjetAccesService,
   ) {}
 
   getToolDefinitions() {
@@ -281,7 +263,8 @@ export class AiContextService {
       return cached.data;
     }
 
-    const portfolio = await this.dashboardService.getDashboardGlobal();
+    // L'IA ne voit que les projets accessibles à l'utilisateur
+    const portfolio = await this.dashboardService.getDashboardGlobal(await this.acces.projetIdsAutorises(user));
     const snapshot: Record<string, unknown> = {
       utilisateur: {
         nom: `${user.prenom} ${user.nom}`.trim(),
@@ -304,13 +287,16 @@ export class AiContextService {
       },
     };
 
-    if (projetId) {
+    if (projetId && (await this.acces.aAcces(user, projetId))) {
       const [projet, dashboardProjet] = await Promise.all([
         this.projetsService.findOne(projetId).catch(() => null),
         this.dashboardService.getDashboardProjet(projetId),
       ]);
 
       if (projet && dashboardProjet) {
+        const voitBudget = ROLES_BUDGET.includes(user.role);
+        // Sans droit budget, on retire les coûts internes des KPIs
+        const { budget: _budget, ...kpisSansBudget } = dashboardProjet;
         snapshot.projetSelectionne = {
           id: projet.id,
           reference: projet.reference,
@@ -323,7 +309,7 @@ export class AiContextService {
           maitreOeuvre: projet.maitreOeuvre,
           dateDemarrage: projet.dateDemarrage,
           dureeContractuelleJours: projet.dureeContractuelleJours,
-          kpis: dashboardProjet,
+          kpis: voitBudget ? dashboardProjet : kpisSansBudget,
         };
 
         // Charger toutes les données du projet en parallèle
@@ -367,18 +353,20 @@ export class AiContextService {
           description: String(i.description || '').slice(0, 150),
         }));
 
-        (snapshot.projetSelectionne as Record<string, unknown>).ressourcesHumaines = {
-          nombrePersonnelAffecte: personnel.length,
-          nombreEnginsAffectes: engins.length,
-          nombreSousTraitants: sousTraitants.length,
-          personnel: personnel.slice(0, 10).map(p => ({
-            nom: `${p.prenom} ${p.nom}`.trim(),
-            poste: p.poste,
-            categorie: p.categorie,
-          })),
-        };
+        if (ROLES_RH.includes(user.role)) {
+          (snapshot.projetSelectionne as Record<string, unknown>).ressourcesHumaines = {
+            nombrePersonnelAffecte: personnel.length,
+            nombreEnginsAffectes: engins.length,
+            nombreSousTraitants: sousTraitants.length,
+            personnel: personnel.slice(0, 10).map(p => ({
+              nom: `${p.prenom} ${p.nom}`.trim(),
+              poste: p.poste,
+              categorie: p.categorie,
+            })),
+          };
+        }
 
-        if (ROLES_BUDGET.has(user.role)) {
+        if (voitBudget) {
           const budget = await this.budgetService.getKpiBudget(projetId, Number(projet.montantMarche));
           (snapshot.projetSelectionne as Record<string, unknown>).budget = budget;
         }
@@ -393,11 +381,16 @@ export class AiContextService {
 
   async executeTool(name: string, args: Record<string, unknown>, user: JwtUser): Promise<string> {
     try {
+      // Mêmes règles d'accès que l'application : pas de données d'un projet non autorisé
+      if (args.projetId !== undefined && !(await this.acces.aAcces(user, String(args.projetId)))) {
+        return JSON.stringify({ error: "Vous n'avez pas accès à ce projet." });
+      }
+
       switch (name) {
 
         // ─── PORTEFEUILLE ────────────────────────────────────────────────────
         case 'get_portfolio':
-          return JSON.stringify(await this.dashboardService.getDashboardGlobal());
+          return JSON.stringify(await this.dashboardService.getDashboardGlobal(await this.acces.projetIdsAutorises(user)));
 
         // ─── PROJET — SYNTHÈSE ───────────────────────────────────────────────
         case 'get_project_summary': {
@@ -429,7 +422,7 @@ export class AiContextService {
 
         // ─── BUDGET ─────────────────────────────────────────────────────────
         case 'get_project_budget': {
-          if (!ROLES_BUDGET.has(user.role)) {
+          if (!ROLES_BUDGET.includes(user.role)) {
             return JSON.stringify({ error: 'Accès budget non autorisé pour votre rôle.' });
           }
           const projetId = String(args.projetId);
@@ -489,7 +482,7 @@ export class AiContextService {
 
         // ─── FACTURATION ─────────────────────────────────────────────────────
         case 'get_project_billing': {
-          if (!ROLES_FACTURATION.has(user.role)) {
+          if (!ROLES_FACTURATION.includes(user.role)) {
             return JSON.stringify({ error: 'Accès facturation non autorisé pour votre rôle.' });
           }
           const projetId = String(args.projetId);
@@ -508,6 +501,9 @@ export class AiContextService {
 
         // ─── APPROVISIONNEMENT / STOCK ────────────────────────────────────────
         case 'get_project_stock': {
+          if (!ROLES_INTERNES.includes(user.role)) {
+            return JSON.stringify({ error: 'Accès au stock non autorisé pour votre rôle.' });
+          }
           const stock = await this.approService.getStockChantier(String(args.projetId));
           const bons = await this.approService.getBonsCommande(String(args.projetId));
           return JSON.stringify({
@@ -523,7 +519,7 @@ export class AiContextService {
 
         // ─── RESSOURCES HUMAINES ─────────────────────────────────────────────
         case 'get_project_resources': {
-          if (!ROLES_RH.has(user.role)) {
+          if (!ROLES_RH.includes(user.role)) {
             return JSON.stringify({ error: 'Accès ressources non autorisé pour votre rôle.' });
           }
           const projetId = String(args.projetId);
@@ -561,7 +557,7 @@ export class AiContextService {
         }
 
         case 'get_project_payroll': {
-          if (!ROLES_RH.has(user.role)) {
+          if (!ROLES_RH.includes(user.role)) {
             return JSON.stringify({ error: 'Accès masse salariale non autorisé pour votre rôle.' });
           }
           const projetId = String(args.projetId);
@@ -595,7 +591,7 @@ export class AiContextService {
         }
 
         case 'get_all_personnel': {
-          if (!ROLES_RH.has(user.role)) {
+          if (!ROLES_RH.includes(user.role)) {
             return JSON.stringify({ error: 'Accès personnel non autorisé pour votre rôle.' });
           }
           const personnel = await this.ressourcesService.findAllPersonnel();
@@ -612,7 +608,10 @@ export class AiContextService {
 
         // ─── DOCUMENTS ───────────────────────────────────────────────────────
         case 'get_expiring_documents': {
-          const docs = await this.documentsService.findExpiring();
+          if (!ROLES_INTERNES.includes(user.role)) {
+            return JSON.stringify({ error: 'Accès aux documents administratifs non autorisé pour votre rôle.' });
+          }
+          const docs = await this.documentsService.findExpiring(await this.acces.projetIdsAutorises(user));
           return JSON.stringify(docs.map(d => ({
             nom: d.nom,
             type: d.type,

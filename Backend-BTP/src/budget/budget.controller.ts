@@ -8,9 +8,13 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RoleUtilisateur } from '../utilisateurs/entities/utilisateur.entity';
 import { ProjetsService } from '../projets/projets.service';
+import { ProjetAccesGuard } from '../acces/projet-acces.guard';
+import { ROLES_BUDGET } from '../auth/roles';
 
+// Lecture : rôles budget (le chef de projet, seulement sur ses projets) ; écriture : précisée par route
 @Controller('projets/:projetId')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, ProjetAccesGuard)
+@Roles(...ROLES_BUDGET)
 export class BudgetController {
   constructor(
     private readonly budgetService: BudgetService,

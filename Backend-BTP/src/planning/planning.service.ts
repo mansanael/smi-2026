@@ -26,6 +26,13 @@ export class PlanningService {
     return this.tacheRepo.save(tache);
   }
 
+  /** Projet auquel appartient une tâche (pour vérifier l'accès) */
+  async findProjetIdTache(id: string): Promise<string> {
+    const tache = await this.tacheRepo.findOne({ where: { id }, relations: { projet: true } });
+    if (!tache) throw new NotFoundException(`Tâche "${id}" introuvable.`);
+    return tache.projet.id;
+  }
+
   async findTachesProjet(projetId: string): Promise<Tache[]> {
     return this.tacheRepo.find({ where: { projet: { id: projetId } }, order: { creeLe: 'ASC' } });
   }
@@ -66,6 +73,13 @@ export class PlanningService {
   async createJalon(projetId: string, dto: CreateJalonDto): Promise<Jalon> {
     const jalon = this.jalonRepo.create({ ...dto, projet: { id: projetId } as any });
     return this.jalonRepo.save(jalon);
+  }
+
+  /** Projet auquel appartient un jalon (pour vérifier l'accès) */
+  async findProjetIdJalon(id: string): Promise<string> {
+    const jalon = await this.jalonRepo.findOne({ where: { id }, relations: { projet: true } });
+    if (!jalon) throw new NotFoundException(`Jalon "${id}" introuvable.`);
+    return jalon.projet.id;
   }
 
   async findJalonsProjet(projetId: string): Promise<Jalon[]> {

@@ -4,14 +4,15 @@ import {
   Users, ClipboardCheck, FileText, Truck, Receipt, ShieldCheck, X, Bot
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { ROLES_BUDGET, ROLES_INTERNES } from '../roles';
 
 // roles: si absent, visible pour tout utilisateur connecté
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/projets', icon: FolderKanban, label: 'Projets' },
   { to: '/planning', icon: CalendarDays, label: 'Planning' },
-  { to: '/budget', icon: Wallet, label: 'Budget', roles: ['directeur_general', 'directeur_technique', 'responsable_admin_fin'] },
-  { to: '/ressources', icon: Users, label: 'Ressources' },
+  { to: '/budget', icon: Wallet, label: 'Budget', roles: ROLES_BUDGET },
+  { to: '/ressources', icon: Users, label: 'Ressources', roles: ROLES_INTERNES },
   { to: '/suivi', icon: ClipboardCheck, label: 'Suivi Chantier' },
   { to: '/documents', icon: FileText, label: 'Documents' },
   { to: '/approvisionnement', icon: Truck, label: 'Approvisionnement', roles: ['directeur_general', 'directeur_technique', 'responsable_admin_fin', 'magasinier'] },

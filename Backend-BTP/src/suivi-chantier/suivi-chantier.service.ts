@@ -69,8 +69,9 @@ export class SuiviChantierService {
     });
   }
 
-  async deletePhoto(id: string) {
-    const photo = await this.photoRepo.findOne({ where: { id } });
+  async deletePhoto(projetId: string, id: string) {
+    // La photo doit appartenir au projet de la route (dont l'accès a été vérifié)
+    const photo = await this.photoRepo.findOne({ where: { id, projet: { id: projetId } } });
     if (!photo) {
       throw new NotFoundException('Photo non trouvée');
     }

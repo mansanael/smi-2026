@@ -126,6 +126,9 @@ export const getProjet = (id) => api(`/projets/${id}`);
 export const createProjet = (data) => api('/projets', { method: 'POST', body: data });
 export const updateProjet = (id, data) => api(`/projets/${id}`, { method: 'PATCH', body: data });
 export const deleteProjet = (id) => api(`/projets/${id}`, { method: 'DELETE' });
+export const getMembresProjet = (id) => api(`/projets/${id}/membres`);
+export const setMembresProjet = (id, utilisateurIds) =>
+  api(`/projets/${id}/membres`, { method: 'PUT', body: { utilisateurIds } });
 
 // Planning
 export const getTaches = (pid) => api(`/projets/${pid}/taches`);

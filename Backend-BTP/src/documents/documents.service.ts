@@ -13,14 +13,16 @@ export class DocumentsService {
   findAll(projetId: string) {
     return this.documentRepo.find({ where: { projet: { id: projetId } }, order: { creeLe: 'DESC' } });
   }
-  findExpiring() {
+  // projetIds : projets accessibles à l'utilisateur, null = tous les projets
+  async findExpiring(projetIds: string[] | null = null) {
+    if (projetIds !== null && projetIds.length === 0) return [];
     const inThirtyDays = new Date();
     inThirtyDays.setDate(inThirtyDays.getDate() + 30);
-    return this.documentRepo
+    const query = this.documentRepo
       .createQueryBuilder('d')
       .where('d.dateExpiration IS NOT NULL')
-      .andWhere('d.dateExpiration <= :date', { date: inThirtyDays })
-      .orderBy('d.dateExpiration', 'ASC')
-      .getMany();
+      .andWhere('d.dateExpiration <= :date', { date: inThirtyDays });
+    if (projetIds !== null) query.andWhere('d.projet_id IN (:...projetIds)', { projetIds });
+    return query.orderBy('d.dateExpiration', 'ASC').getMany();
   }
 }
