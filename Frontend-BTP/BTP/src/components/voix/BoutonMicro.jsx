@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Mic, Square, Loader2 } from 'lucide-react';
 import { transcrireAudio } from '../../api/api';
@@ -6,8 +7,9 @@ import { useEnregistreur, blobEnBase64, formatDuree, micAccessible } from '../..
 /**
  * Dictée : un clic pour parler, un clic pour arrêter, le texte reconnu est
  * passé à onTexte. Demande une connexion (pour une note hors ligne, voir NotesVocales).
+ * onDemarrer est appelé au clic qui lance l'enregistrement.
  */
-export default function BoutonMicro({ onTexte, disabled = false, className = 'btn btn-secondary btn-sm', taille = 16 }) {
+export default function BoutonMicro({ onTexte, onDemarrer, disabled = false, className = 'btn btn-secondary btn-sm', taille = 16 }) {
   const [transcription, setTranscription] = useState(false);
   const [erreurEnvoi, setErreurEnvoi] = useState('');
 
@@ -32,7 +34,10 @@ export default function BoutonMicro({ onTexte, disabled = false, className = 'bt
   const clic = () => {
     setErreurEnvoi('');
     if (enregistrement) arreter();
-    else demarrer();
+    else {
+      onDemarrer?.();
+      demarrer();
+    }
   };
 
   return (

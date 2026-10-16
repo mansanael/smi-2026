@@ -1,9 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bot, Send, Sparkles, Trash2, AlertCircle, FolderKanban, Database } from 'lucide-react';
+import { Bot, Send, Sparkles, Trash2, AlertCircle, FolderKanban, Database, Volume2, VolumeX, Square } from 'lucide-react';
 import { getProjets, chatAssistant } from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
 import MessageContent from '../../components/assistant/MessageContent';
 import BoutonMicro from '../../components/voix/BoutonMicro';
+import { useLecteurVocal, lectureDisponible } from '../../hooks/useLecteurVocal';
+
+const CLE_MODE_VOCAL = 'assistant-mode-vocal';
+
+function lireModeVocal() {
+  try {
+    return localStorage.getItem(CLE_MODE_VOCAL) === '1';
+  } catch {
+    return false;
+  }
+}
 
 const SUGGESTIONS_GLOBAL = [
   { label: 'Vue portefeuille', prompt: 'Donne-moi un résumé de l\'état de mon portefeuille de projets avec les chiffres clés.' },
@@ -31,6 +42,10 @@ export default function AssistantIA() {
   const [error, setError] = useState('');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  // Mode vocal : la question dictée part toute seule et la réponse est lue à voix haute
+  const [modeVocal, setModeVocal] = useState(lireModeVocal);
+  const { enLecture, lire, arreter: arreterLecture, deverrouiller } = useLecteurVocal();
+  const envoyerRef = useRef(null);
 
   const selectedProjet = projets.find(p => p.id === projetId);
   const suggestions = projetId ? SUGGESTIONS_PROJET : SUGGESTIONS_GLOBAL;
@@ -50,10 +65,11 @@ export default function AssistantIA() {
     inputRef.current?.focus();
   }, []);
 
-  const sendMessage = async (text) => {
+  const sendMessage = async (text, { aVoixHaute = false } = {}) => {
     const content = text || input.trim();
     if (!content || loading) return;
 
+    arreterLecture();
     setError('');
     const userMsg = { role: 'user', content };
     const updatedMessages = [...messages, userMsg];
@@ -65,6 +81,7 @@ export default function AssistantIA() {
       const data = await chatAssistant(updatedMessages, projetId || undefined);
       if (data?.reply) {
         setMessages([...updatedMessages, { role: 'assistant', content: data.reply }]);
+        if (aVoixHaute) lire(data.reply);
       } else {
         setError('Aucune réponse reçue du service IA.');
       }
@@ -75,6 +92,21 @@ export default function AssistantIA() {
       inputRef.current?.focus();
     }
   };
+  // La dictée se termine après coup : on appelle la version à jour de sendMessage
+  useEffect(() => { envoyerRef.current = sendMessage; });
+
+  const recevoirDictee = (texte) => {
+    if (modeVocal) envoyerRef.current?.(texte, { aVoixHaute: true });
+    else setInput((avant) => (avant.trim() ? `${avant.trim()} ${texte}` : texte));
+  };
+
+  const basculerModeVocal = () => {
+    const actif = !modeVocal;
+    setModeVocal(actif);
+    try { localStorage.setItem(CLE_MODE_VOCAL, actif ? '1' : '0'); } catch { /* préférence non retenue */ }
+    if (actif) deverrouiller();
+    else arreterLecture();
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -84,6 +116,7 @@ export default function AssistantIA() {
   };
 
   const clearChat = () => {
+    arreterLecture();
     setMessages([]);
     setError('');
     inputRef.current?.focus();
@@ -115,6 +148,19 @@ export default function AssistantIA() {
               ))}
             </select>
           </div>
+          {lectureDisponible() && (
+            <button
+              className={`btn btn-sm ${modeVocal ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={basculerModeVocal}
+              aria-pressed={modeVocal}
+              title={modeVocal
+                ? 'Mode vocal activé : la question dictée part toute seule et la réponse est lue'
+                : 'Activer le mode vocal'}
+            >
+              {modeVocal ? <Volume2 size={16} /> : <VolumeX size={16} />}
+              <span className="btn-label-desktop">Mode vocal</span>
+            </button>
+          )}
           {messages.length > 0 && (
             <button className="btn btn-secondary btn-sm" onClick={clearChat} title="Effacer la conversation">
               <Trash2 size={16} />
@@ -171,7 +217,19 @@ export default function AssistantIA() {
                 )}
                 <div className="message-bubble">
                   {msg.role === 'assistant' ? (
-                    <MessageContent content={msg.content} />
+                    <>
+                      <MessageContent content={msg.content} />
+                      {lectureDisponible() && (
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          style={{ marginTop: 8 }}
+                          onClick={() => lire(msg.content)}
+                          title="Écouter la réponse"
+                        >
+                          <Volume2 size={14} /> Écouter
+                        </button>
+                      )}
+                    </>
                   ) : (
                     <p className="user-text">{msg.content}</p>
                   )}
@@ -218,12 +276,13 @@ export default function AssistantIA() {
             disabled={loading}
             id="ai-chat-input"
           />
-          {/* Dictée de la question : le texte reconnu s'ajoute à la zone de saisie */}
+          {/* Dictée : le texte s'ajoute à la zone de saisie, ou part tout seul en mode vocal */}
           <BoutonMicro
             className="send-btn mic-btn"
             taille={20}
             disabled={loading}
-            onTexte={(texte) => setInput((avant) => (avant.trim() ? `${avant.trim()} ${texte}` : texte))}
+            onDemarrer={modeVocal ? deverrouiller : arreterLecture}
+            onTexte={recevoirDictee}
           />
           <button
             className="send-btn"
@@ -234,7 +293,17 @@ export default function AssistantIA() {
             <Send size={20} />
           </button>
         </div>
-        <p className="input-hint">Entrée pour envoyer · Shift+Entrée pour un saut de ligne</p>
+        {enLecture ? (
+          <button className="btn btn-secondary btn-sm" style={{ margin: '8px auto 0', display: 'flex' }} onClick={arreterLecture}>
+            <Square size={14} /> Arrêter la lecture
+          </button>
+        ) : (
+          <p className="input-hint">
+            {modeVocal
+              ? 'Mode vocal : touchez le micro, parlez, touchez à nouveau — la réponse sera lue à voix haute'
+              : 'Entrée pour envoyer · Shift+Entrée pour un saut de ligne'}
+          </p>
+        )}
       </div>
 
       <style>{`
