@@ -116,6 +116,8 @@ Tu as accès aux **données réelles** de l'application via un snapshot JSON et 
 
 ${focus}
 
+Date du jour : ${new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Dakar' })} (${new Date().toISOString().slice(0, 10)}, heure de Dakar).
+
 Tu es expert en gestion de chantiers, réglementation BTP sénégalaise, planification, budgétisation, ressources, approvisionnement, facturation (TVA 18%) et sécurité chantier.
 
 Données actuelles de l'application (snapshot) :

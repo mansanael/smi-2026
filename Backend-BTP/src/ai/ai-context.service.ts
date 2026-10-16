@@ -13,6 +13,7 @@ import { RoleUtilisateur } from '../utilisateurs/entities/utilisateur.entity';
 import { ProjetAccesService } from '../acces/projet-acces.service';
 import { ROLES_BUDGET, ROLES_FACTURATION, ROLES_INTERNES, ROLES_LECTURE_PAIEMENTS, ROLES_RH } from '../auth/roles';
 import { PaiementsService } from '../paiements/paiements.service';
+import { NotesVocalesService } from '../voix/notes-vocales.service';
 
 interface JwtUser {
   id: string;
@@ -40,6 +41,7 @@ export class AiContextService {
     private readonly utilisateursService: UtilisateursService,
     private readonly acces: ProjetAccesService,
     private readonly paiementsService: PaiementsService,
+    private readonly notesVocalesService: NotesVocalesService,
   ) {}
 
   getToolDefinitions() {
@@ -155,6 +157,22 @@ export class AiContextService {
             type: 'object',
             properties: {
               projetId: { type: 'string', description: 'UUID du projet' },
+            },
+            required: ['projetId'],
+          },
+        },
+      },
+      {
+        type: 'function',
+        function: {
+          name: 'get_project_voice_notes',
+          description: 'Notes vocales dictées sur le chantier par l\'équipe (texte transcrit, auteur, heure, problème signalé). Répond à "que s\'est-il passé aujourd\'hui sur le chantier", "quels problèmes ont été signalés".',
+          parameters: {
+            type: 'object',
+            properties: {
+              projetId: { type: 'string', description: 'UUID du projet' },
+              date: { type: 'string', description: 'Jour précis au format AAAA-MM-JJ (facultatif)' },
+              limit: { type: 'number', description: 'Nombre max de notes sans date (défaut 15)' },
             },
             required: ['projetId'],
           },
@@ -495,6 +513,21 @@ export class AiContextService {
         case 'get_project_incidents': {
           const incidents = await this.suiviService.getIncidents(String(args.projetId));
           return JSON.stringify(incidents);
+        }
+
+        case 'get_project_voice_notes': {
+          // Notes internes à l'équipe : le client n'y a pas accès
+          if (!ROLES_INTERNES.includes(user.role)) {
+            return JSON.stringify({ error: 'Accès aux notes vocales non autorisé pour votre rôle.' });
+          }
+          const projetId = String(args.projetId);
+          const notes = typeof args.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(args.date)
+            ? await this.notesVocalesService.findDuJour(projetId, args.date)
+            : (await this.notesVocalesService.findAll(projetId)).slice(0, Number(args.limit) || 15);
+          return JSON.stringify(notes.map(n => ({
+            enregistreeLe: n.enregistreeLe, auteur: n.auteurNom, texte: n.texte,
+            problemeSignale: n.probleme ? n.resumeProbleme : null,
+          })));
         }
 
         // ─── FACTURATION ─────────────────────────────────────────────────────

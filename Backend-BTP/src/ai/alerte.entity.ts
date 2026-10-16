@@ -16,6 +16,7 @@ export enum TypeAlerte {
   INCIDENT_HSE = 'incident_hse',
   AVANCEMENT_FAIBLE = 'avancement_faible',
   PAIEMENT_EN_RETARD = 'paiement_en_retard',
+  PROBLEME_CHANTIER = 'probleme_chantier', // signalé dans une note vocale
 }
 
 @Entity('ai_alertes')

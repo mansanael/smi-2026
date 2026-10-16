@@ -26,11 +26,15 @@ import {
     UploadCloud,
     Filter,
     Mic,
+    Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { estLectureSeule } from '../../roles';
 import NotesVocales from '../../components/voix/NotesVocales';
 import BoutonMicro from '../../components/voix/BoutonMicro';
+import JournalDetail from '../../components/voix/JournalDetail';
+
+const memeJour = (a, b) => String(a).slice(0, 10) === String(b).slice(0, 10);
 
 const emptyJournal = {
     date: '',
@@ -38,6 +42,8 @@ const emptyJournal = {
     temperature: '',
     nombreOuvriers: '',
     travauxRealises: '',
+    resteAFaire: '',
+    problemes: '',
     materiaux_receptionnes: '',
     visitesDuJour: '',
     observations: '',
@@ -129,6 +135,7 @@ export default function SuiviChantier() {
     // Photo specific states
     const [filterCategory, setFilterCategory] = useState('tous');
     const [previewPhoto, setPreviewPhoto] = useState(null);
+    const [journalOuvert, setJournalOuvert] = useState(null);
     const [isCompressing, setIsCompressing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -401,7 +408,16 @@ export default function SuiviChantier() {
                     </div>
 
                     {/* ═══ NOTES VOCALES ═══ */}
-                    {tab === 'notes' && !lectureSeule && <NotesVocales projetId={projetId} />}
+                    {tab === 'notes' && !lectureSeule && (
+                        <NotesVocales
+                            projetId={projetId}
+                            photos={photos}
+                            onRapportEnregistre={() => {
+                                loadProjetData(projetId);
+                                setTab('journal');
+                            }}
+                        />
+                    )}
 
                     {/* ═══ ONGLET 1: JOURNAL DE CHANTIER ═══ */}
                     {tab === 'journal' && (
@@ -418,8 +434,11 @@ export default function SuiviChantier() {
                                 </thead>
                                 <tbody>
                                     {journaux.map((j) => (
-                                        <tr key={j.id}>
-                                            <td>{new Date(j.date).toLocaleDateString('fr-FR')}</td>
+                                        <tr key={j.id} onClick={() => setJournalOuvert(j)} style={{ cursor: 'pointer' }} title="Voir le rapport complet">
+                                            <td>
+                                                {new Date(j.date).toLocaleDateString('fr-FR')}
+                                                {j.genereParIa && <Sparkles size={12} style={{ marginLeft: 6, color: 'var(--accent-blue)' }} />}
+                                            </td>
                                             <td>
                                                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                                     <CloudSun size={14} />
@@ -689,6 +708,18 @@ export default function SuiviChantier() {
                 </>
             )}
 
+            {journalOuvert && (
+                <JournalDetail
+                    journal={journalOuvert}
+                    photosDuJour={photos.filter((p) => memeJour(p.datePrise, journalOuvert.date))}
+                    onFermer={() => setJournalOuvert(null)}
+                    onVoirPhoto={(p) => {
+                        setJournalOuvert(null);
+                        setPreviewPhoto(p);
+                    }}
+                />
+            )}
+
             {/* ═══ MODAL: NOUVEAU RAPPORT JOURNALIER ═══ */}
             {showModal && tab === 'journal' && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
@@ -768,6 +799,26 @@ export default function SuiviChantier() {
                                 />
                             </div>
                             <div className="form-group">
+                                <label>Reste à faire</label>
+                                <textarea
+                                    className="form-input"
+                                    rows="2"
+                                    value={formJournal.resteAFaire}
+                                    onChange={(e) => setFormJournal({ ...formJournal, resteAFaire: e.target.value })}
+                                    placeholder="Ferraillage dalle R+1..."
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Problèmes rencontrés</label>
+                                <textarea
+                                    className="form-input"
+                                    rows="2"
+                                    value={formJournal.problemes}
+                                    onChange={(e) => setFormJournal({ ...formJournal, problemes: e.target.value })}
+                                    placeholder="Manque de fer de 10, panne de bétonnière..."
+                                />
+                            </div>
+                            <div className="form-group">
                                 <label>Matériaux réceptionnés</label>
                                 <textarea
                                     className="form-input"
@@ -801,7 +852,7 @@ export default function SuiviChantier() {
                                     className="form-input"
                                     value={formJournal.redige_par}
                                     onChange={(e) => setFormJournal({ ...formJournal, redige_par: e.target.value })}
-                                    placeholder="Nom du conducteur de travaux"
+                                    placeholder={user ? `${user.prenom} ${user.nom} (par défaut)` : 'Nom du conducteur de travaux'}
                                 />
                             </div>
                             <div className="modal-footer">

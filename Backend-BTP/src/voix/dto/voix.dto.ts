@@ -19,3 +19,9 @@ export class CreateNoteVocaleDto extends AudioDto {
 
   @IsOptional() @IsDateString() enregistreeLe?: string;
 }
+
+export class CompteRenduDto {
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'Date attendue au format AAAA-MM-JJ.' })
+  @IsDateString()
+  date: string;
+}

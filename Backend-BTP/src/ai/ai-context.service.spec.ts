@@ -8,6 +8,10 @@ function creerService(aAcces: boolean) {
   const planningService = { findTachesProjet: jest.fn().mockResolvedValue([]) };
   const approService = { getStockChantier: jest.fn().mockResolvedValue([]), getBonsCommande: jest.fn().mockResolvedValue([]) };
   const paiementsService = { getSuivi: jest.fn().mockResolvedValue({ echeances: [], paiements: [] }) };
+  const notesVocalesService = {
+    findAll: jest.fn().mockResolvedValue([]),
+    findDuJour: jest.fn().mockResolvedValue([]),
+  };
   const acces = {
     aAcces: jest.fn().mockResolvedValue(aAcces),
     projetIdsAutorises: jest.fn().mockResolvedValue(['p1']),
@@ -15,8 +19,9 @@ function creerService(aAcces: boolean) {
   const service = new AiContextService(
     dashboardService as any, {} as any, {} as any, planningService as any, {} as any,
     {} as any, {} as any, approService as any, {} as any, {} as any, acces as any, paiementsService as any,
+    notesVocalesService as any,
   );
-  return { service, dashboardService, planningService, paiementsService };
+  return { service, dashboardService, planningService, paiementsService, notesVocalesService };
 }
 
 describe('AiContextService.executeTool — droits d’accès', () => {
@@ -56,5 +61,18 @@ describe('AiContextService.executeTool — droits d’accès', () => {
     const { service } = creerService(true);
     const res = JSON.parse(await service.executeTool('get_project_stock', { projetId: 'p1' }, user(RoleUtilisateur.MAITRE_OUVRAGE_EXTERNE)));
     expect(res.error).toBeDefined();
+  });
+
+  it('le conducteur lit les notes vocales d’un jour précis', async () => {
+    const { service, notesVocalesService } = creerService(true);
+    await service.executeTool('get_project_voice_notes', { projetId: 'p1', date: '2026-10-16' }, user(RoleUtilisateur.CONDUCTEUR_TRAVAUX));
+    expect(notesVocalesService.findDuJour).toHaveBeenCalledWith('p1', '2026-10-16');
+  });
+
+  it('le client ne lit pas les notes vocales internes', async () => {
+    const { service, notesVocalesService } = creerService(true);
+    const res = JSON.parse(await service.executeTool('get_project_voice_notes', { projetId: 'p1' }, user(RoleUtilisateur.MAITRE_OUVRAGE_EXTERNE)));
+    expect(res.error).toBeDefined();
+    expect(notesVocalesService.findAll).not.toHaveBeenCalled();
   });
 });

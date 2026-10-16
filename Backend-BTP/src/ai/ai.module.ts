@@ -20,6 +20,7 @@ import { ApprovisionnementsModule } from '../approvisionnement/approvisionnement
 import { RessourcesModule } from '../ressources/ressources.module';
 import { UtilisateursModule } from '../utilisateurs/utilisateurs.module';
 import { PaiementsModule } from '../paiements/paiements.module';
+import { VoixModule } from '../voix/voix.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { PaiementsModule } from '../paiements/paiements.module';
     RessourcesModule,
     UtilisateursModule,
     PaiementsModule,
+    VoixModule,
   ],
   controllers: [AiController, AlertesController],
   providers: [

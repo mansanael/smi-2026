@@ -31,6 +31,13 @@ export class NoteVocale {
   @Column()
   auteurNom: string;
 
+  // Problème repéré par l'IA dans la note (manque de matériel, accident…) : une alerte est créée
+  @Column({ default: false })
+  probleme: boolean;
+
+  @Column({ type: 'varchar', nullable: true })
+  resumeProbleme: string | null;
+
   @CreateDateColumn()
   creeLe: Date;
 }

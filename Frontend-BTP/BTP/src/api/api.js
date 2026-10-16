@@ -216,6 +216,9 @@ export const getNotesVocales = (pid) => api(`/projets/${pid}/notes-vocales`);
 export const createNoteVocale = (pid, data) =>
   ecrire(`/projets/${pid}/notes-vocales`, data, 'Note vocale', { reessaierPlusTard: true });
 export const deleteNoteVocale = (pid, id) => api(`/projets/${pid}/notes-vocales/${id}`, { method: 'DELETE' });
+// Proposition de rapport journalier rédigée par l'IA (rien n'est enregistré avant validation)
+export const preparerCompteRendu = (pid, date) =>
+  api(`/projets/${pid}/notes-vocales/compte-rendu`, { method: 'POST', body: { date } });
 
 // ─── PAIEMENTS DU CLIENT ───────────────────────────────────────────────────
 export const getPaiements = (pid) => api(`/projets/${pid}/paiements`);

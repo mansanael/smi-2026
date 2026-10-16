@@ -37,6 +37,12 @@ export class JournalChantier {
   travauxRealises: string; // Description libre des travaux du jour
 
   @Column({ type: 'text', nullable: true })
+  resteAFaire: string;
+
+  @Column({ type: 'text', nullable: true })
+  problemes: string; // Difficultés du jour (manques, pannes, retards…)
+
+  @Column({ type: 'text', nullable: true })
   materiaux_receptionnes: string;
 
   @Column({ type: 'text', nullable: true })
@@ -47,6 +53,10 @@ export class JournalChantier {
 
   @Column({ nullable: true })
   redige_par: string;
+
+  // Compte rendu préparé par l'IA à partir des notes vocales, relu et validé par redige_par
+  @Column({ default: false })
+  genereParIa: boolean;
 
   @CreateDateColumn()
   creeLe: Date;

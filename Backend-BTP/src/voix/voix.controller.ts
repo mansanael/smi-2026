@@ -5,7 +5,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { UtilisateurCourant } from '../auth/decorators/utilisateur-courant.decorator';
 import { ProjetAccesGuard } from '../acces/projet-acces.guard';
 import { ROLES_INTERNES } from '../auth/roles';
-import { AudioDto, CreateNoteVocaleDto } from './dto/voix.dto';
+import { AudioDto, CompteRenduDto, CreateNoteVocaleDto } from './dto/voix.dto';
 import { TranscriptionService } from './transcription.service';
 import { NotesVocalesService } from './notes-vocales.service';
 import { RoleUtilisateur } from '../utilisateurs/entities/utilisateur.entity';
@@ -45,6 +45,13 @@ export class NotesVocalesController {
   @Get()
   getNotes(@Param('projetId') projetId: string) {
     return this.notes.findAll(projetId);
+  }
+
+  // Prépare le rapport journalier à partir des notes du jour ; l'utilisateur le valide ensuite
+  @Post('compte-rendu')
+  @HttpCode(HttpStatus.OK)
+  preparerCompteRendu(@Param('projetId') projetId: string, @Body() dto: CompteRenduDto) {
+    return this.notes.preparerCompteRendu(projetId, dto.date);
   }
 
   @Delete(':id')

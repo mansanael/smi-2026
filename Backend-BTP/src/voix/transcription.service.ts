@@ -61,8 +61,9 @@ export class TranscriptionService {
           body: form,
         });
       } catch (err) {
-        this.logger.error('Groq injoignable pour la transcription', err);
-        break;
+        // Coupure réseau : une seconde tentative (avec le modèle suivant) avant d'abandonner
+        this.logger.error(`Groq injoignable pour la transcription (${modele}) : ${(err as Error).message}`);
+        continue;
       }
 
       if (res.ok) {
