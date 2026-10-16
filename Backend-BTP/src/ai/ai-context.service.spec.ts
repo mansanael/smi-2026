@@ -11,6 +11,10 @@ function creerService(aAcces: boolean) {
   const notesVocalesService = {
     findAll: jest.fn().mockResolvedValue([]),
     findDuJour: jest.fn().mockResolvedValue([]),
+    problemesRecents: jest.fn().mockResolvedValue([{
+      projet: { reference: 'PRJ-001' }, enregistreeLe: new Date(), auteurNom: 'Awa Diop',
+      resumeProbleme: 'Bétonnière en panne', texte: 'La bétonnière est en panne', probleme: true,
+    }]),
   };
   const acces = {
     aAcces: jest.fn().mockResolvedValue(aAcces),
@@ -67,6 +71,23 @@ describe('AiContextService.executeTool — droits d’accès', () => {
     const { service, notesVocalesService } = creerService(true);
     await service.executeTool('get_project_voice_notes', { projetId: 'p1', date: '2026-10-16' }, user(RoleUtilisateur.CONDUCTEUR_TRAVAUX));
     expect(notesVocalesService.findDuJour).toHaveBeenCalledWith('p1', '2026-10-16');
+  });
+
+  it('le contexte de l’IA contient toujours les problèmes signalés à la voix, même avec le cache', async () => {
+    const { service, notesVocalesService } = creerService(true);
+    const cp = user(RoleUtilisateur.CHEF_PROJET);
+    await service.buildSnapshot(cp);
+    const snapshot = JSON.parse(await service.buildSnapshot(cp)); // 2e appel : résumé en cache
+    expect(snapshot.problemesSignalesALaVoix).toEqual([expect.objectContaining({ projet: 'PRJ-001', probleme: 'Bétonnière en panne' })]);
+    expect(notesVocalesService.problemesRecents).toHaveBeenCalledTimes(2);
+    expect(notesVocalesService.problemesRecents).toHaveBeenCalledWith(['p1']);
+  });
+
+  it('le contexte du client ne contient pas les notes vocales', async () => {
+    const { service, notesVocalesService } = creerService(true);
+    const snapshot = JSON.parse(await service.buildSnapshot(user(RoleUtilisateur.MAITRE_OUVRAGE_EXTERNE)));
+    expect(snapshot.problemesSignalesALaVoix).toBeUndefined();
+    expect(notesVocalesService.problemesRecents).not.toHaveBeenCalled();
   });
 
   it('le client ne lit pas les notes vocales internes', async () => {

@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Between, In, MoreThanOrEqual, Repository } from 'typeorm';
 import { NoteVocale } from './entities/note-vocale.entity';
 import { CreateNoteVocaleDto } from './dto/voix.dto';
 import { TranscriptionService } from './transcription.service';
@@ -84,6 +84,21 @@ export class NotesVocalesService {
     return this.noteRepo.find({
       where: { projet: { id: projetId }, enregistreeLe: Between(debut, fin) },
       order: { enregistreeLe: 'ASC' },
+    });
+  }
+
+  /** Notes qui signalent un problème, sur les projets donnés (null = tous), les derniers jours */
+  problemesRecents(projetIds: string[] | null, jours = 7): Promise<NoteVocale[]> {
+    if (projetIds?.length === 0) return Promise.resolve([]);
+    return this.noteRepo.find({
+      where: {
+        probleme: true,
+        enregistreeLe: MoreThanOrEqual(new Date(Date.now() - jours * 24 * 3600 * 1000)),
+        ...(projetIds ? { projet: { id: In(projetIds) } } : {}),
+      },
+      relations: { projet: true },
+      order: { enregistreeLe: 'DESC' },
+      take: 20,
     });
   }
 

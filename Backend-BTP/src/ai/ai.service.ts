@@ -126,6 +126,7 @@ ${snapshot}
 \`\`\`
 
 Utilise les outils disponibles pour compléter ou actualiser les données si la question le nécessite.
+Les observations dictées par l'équipe sur le chantier (notes vocales) font partie du suivi : quand on te parle de problèmes, de difficultés, d'incidents ou de ce qui s'est passé sur le chantier, appuie-toi sur problemesSignalesALaVoix et notesVocalesDuJour en plus des incidents déclarés, et ne dis jamais qu'il n'y a aucun problème sans les avoir consultés.
 ${RESPONSE_FORMAT_RULES}`;
   }
 

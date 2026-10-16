@@ -294,10 +294,37 @@ export class AiContextService {
   async buildSnapshot(user: JwtUser, projetId?: string): Promise<string> {
     const cacheKey = `${user.id}_${projetId || 'global'}`;
     const cached = this.snapshotCache.get(cacheKey);
-    if (cached && cached.expiresAt > Date.now()) {
-      return cached.data;
-    }
+    const base = cached && cached.expiresAt > Date.now()
+      ? cached.data
+      : await this.construireSnapshotEnCache(user, projetId, cacheKey);
+    // Les notes vocales changent d'une minute à l'autre : toujours relues, jamais mises en cache
+    return JSON.stringify({ ...JSON.parse(base), ...(await this.notesVocalesRecentes(user, projetId)) });
+  }
 
+  // Problèmes signalés à la voix (7 derniers jours) et notes du jour du chantier sélectionné.
+  // Notes internes à l'équipe : rien pour le client.
+  private async notesVocalesRecentes(user: JwtUser, projetId?: string): Promise<Record<string, unknown>> {
+    if (!ROLES_INTERNES.includes(user.role)) return {};
+    const heure = (d: Date) => new Date(d).toLocaleString('fr-FR', { timeZone: 'Africa/Dakar', dateStyle: 'short', timeStyle: 'short' });
+    const projetIds = await this.acces.projetIdsAutorises(user);
+    const problemes = await this.notesVocalesService.problemesRecents(projetId ? [projetId].filter(id => !projetIds || projetIds.includes(id)) : projetIds);
+    const resultat: Record<string, unknown> = {
+      problemesSignalesALaVoix: problemes.map(n => ({
+        projet: n.projet?.reference, le: heure(n.enregistreeLe), par: n.auteurNom,
+        probleme: n.resumeProbleme, noteComplete: n.texte.slice(0, 300),
+      })),
+    };
+    if (projetId && (!projetIds || projetIds.includes(projetId))) {
+      const duJour = await this.notesVocalesService.findDuJour(projetId, new Date().toISOString().slice(0, 10));
+      resultat.notesVocalesDuJour = duJour.slice(-10).map(n => ({
+        le: heure(n.enregistreeLe), par: n.auteurNom, texte: n.texte.slice(0, 300),
+        problemeSignale: n.probleme ? n.resumeProbleme : null,
+      }));
+    }
+    return resultat;
+  }
+
+  private async construireSnapshotEnCache(user: JwtUser, projetId: string | undefined, cacheKey: string): Promise<string> {
     // L'IA ne voit que les projets accessibles à l'utilisateur
     const portfolio = await this.dashboardService.getDashboardGlobal(await this.acces.projetIdsAutorises(user));
     const snapshot: Record<string, unknown> = {
