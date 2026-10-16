@@ -130,7 +130,7 @@ export default function AssistantIA() {
             <Bot size={24} />
           </div>
           <div>
-            <h1>Assistant vocal</h1>
+            <h1>Assistant IA</h1>
             <p>Connecté à BATIPME · {user ? `${user.prenom} ${user.nom}` : 'Utilisateur'}</p>
           </div>
         </div>

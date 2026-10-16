@@ -9,7 +9,7 @@ import { ROLES_ADMINISTRATION, ROLES_LECTURE_PAIEMENTS, estLectureSeule } from '
 const navItems = [
   { to: '/', icon: Home, label: 'Accueil' },
   { to: '/projets', icon: HardHat, label: 'Chantiers', labelClient: 'Mon chantier' },
-  { to: '/assistant', icon: Mic, label: 'Assistant vocal' },
+  { to: '/assistant', icon: Mic, label: 'Assistant IA' },
   { to: '/paiements', icon: Banknote, label: 'Paiements', roles: ROLES_LECTURE_PAIEMENTS },
   { to: '/admin/utilisateurs', icon: Settings, label: 'Administration', roles: ROLES_ADMINISTRATION },
 ];
