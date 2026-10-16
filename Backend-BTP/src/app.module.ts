@@ -18,6 +18,7 @@ import { AuthModule } from './auth/auth.module'; // M10
 import { UtilisateursModule } from './utilisateurs/utilisateurs.module'; // M10
 import { AiModule } from './ai/ai.module';
 import { AccesModule } from './acces/acces.module';
+import { VoixModule } from './voix/voix.module'; // Commande vocale
 import { ScheduleModule } from '@nestjs/schedule'; // M11 – Assistant IA
 
 @Module({
@@ -56,6 +57,7 @@ import { ScheduleModule } from '@nestjs/schedule'; // M11 – Assistant IA
     AuthModule,
     UtilisateursModule,
     AiModule,
+    VoixModule,
   ],
   controllers: [AppController],
   providers: [AppService],

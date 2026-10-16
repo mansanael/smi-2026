@@ -85,12 +85,13 @@ export async function api(path, options = {}) {
 }
 
 // Écriture avec secours hors ligne : l'id est créé ici, le serveur le garde (pas de doublon)
-async function ecrire(path, data, label) {
+// reessaierPlusTard : aussi mise en file si le serveur répond 503 (service tiers indisponible)
+async function ecrire(path, data, label, { reessaierPlusTard = false } = {}) {
   const body = { ...data, id: data.id ?? crypto.randomUUID() };
   try {
     return await api(path, { method: 'POST', body });
   } catch (err) {
-    if (err?.offline) {
+    if (err?.offline || (reessaierPlusTard && err?.status === 503)) {
       await enqueue({ method: 'POST', path, body, label });
       return { ...body, enAttente: true };
     }
@@ -205,6 +206,16 @@ export const createMouvement = (pid, data) => api(`/projets/${pid}/stock`, { met
 export const getSituations = (pid) => api(`/projets/${pid}/situations`);
 export const createSituation = (pid, data) => api(`/projets/${pid}/situations`, { method: 'POST', body: data });
 export const getRecapitulatif = (pid) => api(`/projets/${pid}/situations/recapitulatif`);
+
+// ─── VOIX ──────────────────────────────────────────────────────────────────
+// Dictée simple (en ligne) : renvoie { texte }
+export const transcrireAudio = (audio, mimeType) =>
+  api('/voix/transcription', { method: 'POST', body: { audio, mimeType } });
+export const getNotesVocales = (pid) => api(`/projets/${pid}/notes-vocales`);
+// Hors ligne (ou transcription saturée) : la note attend dans la file et part plus tard
+export const createNoteVocale = (pid, data) =>
+  ecrire(`/projets/${pid}/notes-vocales`, data, 'Note vocale', { reessaierPlusTard: true });
+export const deleteNoteVocale = (pid, id) => api(`/projets/${pid}/notes-vocales/${id}`, { method: 'DELETE' });
 
 // ─── PAIEMENTS DU CLIENT ───────────────────────────────────────────────────
 export const getPaiements = (pid) => api(`/projets/${pid}/paiements`);

@@ -3,6 +3,7 @@ import { Bot, Send, Sparkles, Trash2, AlertCircle, FolderKanban, Database } from
 import { getProjets, chatAssistant } from '../../api/api';
 import { useAuth } from '../../context/AuthContext';
 import MessageContent from '../../components/assistant/MessageContent';
+import BoutonMicro from '../../components/voix/BoutonMicro';
 
 const SUGGESTIONS_GLOBAL = [
   { label: 'Vue portefeuille', prompt: 'Donne-moi un résumé de l\'état de mon portefeuille de projets avec les chiffres clés.' },
@@ -216,6 +217,13 @@ export default function AssistantIA() {
             rows={1}
             disabled={loading}
             id="ai-chat-input"
+          />
+          {/* Dictée de la question : le texte reconnu s'ajoute à la zone de saisie */}
+          <BoutonMicro
+            className="send-btn mic-btn"
+            taille={20}
+            disabled={loading}
+            onTexte={(texte) => setInput((avant) => (avant.trim() ? `${avant.trim()} ${texte}` : texte))}
           />
           <button
             className="send-btn"
@@ -573,6 +581,8 @@ export default function AssistantIA() {
         }
 
         .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .mic-btn { width: auto; min-width: 42px; padding: 0 10px; gap: 6px; background: var(--bg-tertiary); color: var(--text-primary); }
 
         .input-hint {
           text-align: center;

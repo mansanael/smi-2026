@@ -25,9 +25,12 @@ import {
     Download,
     UploadCloud,
     Filter,
+    Mic,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { estLectureSeule } from '../../roles';
+import NotesVocales from '../../components/voix/NotesVocales';
+import BoutonMicro from '../../components/voix/BoutonMicro';
 
 const emptyJournal = {
     date: '',
@@ -114,7 +117,8 @@ export default function SuiviChantier() {
     const [incidents, setIncidents] = useState([]);
     const [photos, setPhotos] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [tab, setTab] = useState('journal');
+    // Le personnel arrive sur les notes vocales (saisie à la voix) ; le client sur le journal
+    const [tab, setTab] = useState(lectureSeule ? 'journal' : 'notes');
     const [showModal, setShowModal] = useState(false);
 
     // Form states
@@ -320,6 +324,16 @@ export default function SuiviChantier() {
                 <>
                     {/* Navigation Onglets */}
                     <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+                        {!lectureSeule && (
+                            <button
+                                className={`btn btn-sm ${tab === 'notes' ? 'btn-primary' : 'btn-secondary'}`}
+                                onClick={() => setTab('notes')}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                            >
+                                <Mic size={15} />
+                                Notes vocales
+                            </button>
+                        )}
                         <button
                             className={`btn btn-sm ${tab === 'journal' ? 'btn-primary' : 'btn-secondary'}`}
                             onClick={() => setTab('journal')}
@@ -365,7 +379,7 @@ export default function SuiviChantier() {
                             )}
                         </div>
 
-                        {!lectureSeule && <button
+                        {!lectureSeule && tab !== 'notes' && <button
                             className="btn btn-primary"
                             onClick={() => {
                                 if (tab === 'photos') {
@@ -385,6 +399,9 @@ export default function SuiviChantier() {
                             )}
                         </button>}
                     </div>
+
+                    {/* ═══ NOTES VOCALES ═══ */}
+                    {tab === 'notes' && !lectureSeule && <NotesVocales projetId={projetId} />}
 
                     {/* ═══ ONGLET 1: JOURNAL DE CHANTIER ═══ */}
                     {tab === 'journal' && (
@@ -733,7 +750,15 @@ export default function SuiviChantier() {
                                 </div>
                             </div>
                             <div className="form-group">
-                                <label>Travaux réalisés</label>
+                                <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    Travaux réalisés
+                                    <BoutonMicro
+                                        onTexte={(texte) => setFormJournal((f) => ({
+                                            ...f,
+                                            travauxRealises: f.travauxRealises.trim() ? `${f.travauxRealises.trim()} ${texte}` : texte,
+                                        }))}
+                                    />
+                                </label>
                                 <textarea
                                     className="form-input"
                                     rows="3"

@@ -666,6 +666,11 @@ a:hover {
   }
 }
 
+/* Icône qui tourne (transcription en cours…) */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
 /* ═══ CHARTS CONTAINER ═══ */
 .charts-grid {
   display: grid;
