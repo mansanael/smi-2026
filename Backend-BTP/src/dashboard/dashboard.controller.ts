@@ -23,9 +23,9 @@ export class DashboardController {
   @Get('projets/:projetId')
   async getDashboardProjet(@Param('projetId') projetId: string, @UtilisateurCourant() user: UtilisateurAcces) {
     const dashboard = await this.dashboardService.getDashboardProjet(projetId);
-    // Le client ne voit pas les coûts internes de l'entreprise
+    // Le client ne voit ni les coûts internes de l'entreprise ni les incidents
     if (dashboard && user.role === RoleUtilisateur.MAITRE_OUVRAGE_EXTERNE) {
-      const { budget: _budget, alertes: _alertes, ...vueClient } = dashboard;
+      const { budget: _budget, alertes: _alertes, hse: _hse, ...vueClient } = dashboard;
       return { ...vueClient, avancement: { ...dashboard.avancement, financier: undefined } };
     }
     return dashboard;

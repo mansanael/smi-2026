@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Document } from './entities/document.entity';
+import { Document, estVisibleClient } from './entities/document.entity';
 
 @Injectable()
 export class DocumentsService {
@@ -10,9 +10,22 @@ export class DocumentsService {
   create(projetId: string, dto: Partial<Document>) {
     return this.documentRepo.save(this.documentRepo.create({ ...dto, projet: { id: projetId } as any }));
   }
-  findAll(projetId: string) {
-    return this.documentRepo.find({ where: { projet: { id: projetId } }, order: { creeLe: 'DESC' } });
+
+  // visibleClient est renvoyé déjà calculé (choix explicite ou valeur par défaut du type)
+  async findAll(projetId: string, pourClient = false) {
+    const documents = await this.documentRepo.find({ where: { projet: { id: projetId } }, order: { creeLe: 'DESC' } });
+    return documents
+      .map((d) => ({ ...d, visibleClient: estVisibleClient(d) }))
+      .filter((d) => !pourClient || d.visibleClient);
   }
+
+  async setVisibiliteClient(projetId: string, id: string, visible: boolean) {
+    const document = await this.documentRepo.findOne({ where: { id, projet: { id: projetId } } });
+    if (!document) throw new NotFoundException('Document introuvable.');
+    document.visibleClient = visible;
+    return this.documentRepo.save(document);
+  }
+
   // projetIds : projets accessibles à l'utilisateur, null = tous les projets
   async findExpiring(projetIds: string[] | null = null) {
     if (projetIds !== null && projetIds.length === 0) return [];

@@ -157,7 +157,8 @@ export default function SuiviChantier({ projetIdFixe }) {
         setLoading(true);
         Promise.all([
             getJournaux(pid),
-            getIncidents(pid),
+            // Incidents internes à l'équipe : le serveur les refuse au client
+            lectureSeule ? Promise.resolve([]) : getIncidents(pid),
             getPhotosChantier(pid),
         ])
             .then(([j, i, p]) => {
@@ -351,12 +352,14 @@ export default function SuiviChantier({ projetIdFixe }) {
                         >
                             Journal de chantier ({journaux.length})
                         </button>
-                        <button
-                            className={`btn btn-sm ${tab === 'incidents' ? 'btn-primary' : 'btn-secondary'}`}
-                            onClick={() => setTab('incidents')}
-                        >
-                            Incidents ({incidents.length})
-                        </button>
+                        {!lectureSeule && (
+                            <button
+                                className={`btn btn-sm ${tab === 'incidents' ? 'btn-primary' : 'btn-secondary'}`}
+                                onClick={() => setTab('incidents')}
+                            >
+                                Incidents ({incidents.length})
+                            </button>
+                        )}
                         <button
                             className={`btn btn-sm ${tab === 'photos' ? 'btn-primary' : 'btn-secondary'}`}
                             onClick={() => setTab('photos')}

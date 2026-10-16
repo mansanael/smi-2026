@@ -193,6 +193,8 @@ export const deletePhotoChantier = (pid, photoId) =>
 export const getDocuments = (pid) => api(`/projets/${pid}/documents`);
 export const createDocument = (pid, data) => api(`/projets/${pid}/documents`, { method: 'POST', body: data });
 export const getExpirations = () => api('/documents/expirations');
+export const setVisibiliteDocument = (pid, id, visibleClient) =>
+  api(`/projets/${pid}/documents/${id}/visibilite`, { method: 'PATCH', body: { visibleClient } });
 
 // Approvisionnement
 export const getFournisseurs = () => api('/fournisseurs');

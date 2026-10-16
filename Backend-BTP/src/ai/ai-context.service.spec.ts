@@ -90,6 +90,12 @@ describe('AiContextService.executeTool — droits d’accès', () => {
     expect(notesVocalesService.problemesRecents).not.toHaveBeenCalled();
   });
 
+  it('le client ne lit pas les incidents de son chantier', async () => {
+    const { service } = creerService(true);
+    const res = JSON.parse(await service.executeTool('get_project_incidents', { projetId: 'p1' }, user(RoleUtilisateur.MAITRE_OUVRAGE_EXTERNE)));
+    expect(res.error).toBeDefined();
+  });
+
   it('le client ne lit pas les notes vocales internes', async () => {
     const { service, notesVocalesService } = creerService(true);
     const res = JSON.parse(await service.executeTool('get_project_voice_notes', { projetId: 'p1' }, user(RoleUtilisateur.MAITRE_OUVRAGE_EXTERNE)));

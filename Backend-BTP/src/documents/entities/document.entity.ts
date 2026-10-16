@@ -28,6 +28,18 @@ export enum TypeDocument {
   AUTRE = 'autre',
 }
 
+// Documents montrés au client tant que personne n'a décidé autrement (pièces du marché, plans, PV…).
+// Les offres, cautions, attestations et documents « autre » restent internes par défaut.
+export const TYPES_PARTAGES_CLIENT: TypeDocument[] = [
+  TypeDocument.MARCHE_SIGNE, TypeDocument.CCAP, TypeDocument.CCTP, TypeDocument.PLAN,
+  TypeDocument.PLANNING, TypeDocument.PV_INSTALLATION, TypeDocument.PV_REUNION,
+  TypeDocument.ORDRE_SERVICE, TypeDocument.AVENANT, TypeDocument.PV_RECEPTION_PROVISOIRE,
+  TypeDocument.PV_RECEPTION_DEFINITIVE, TypeDocument.JOURNAL_CHANTIER, TypeDocument.PHOTO,
+];
+
+export const estVisibleClient = (d: Pick<Document, 'type' | 'visibleClient'>): boolean =>
+  d.visibleClient ?? TYPES_PARTAGES_CLIENT.includes(d.type);
+
 export enum PhaseDocument {
   APPEL_OFFRES = 'appel_offres',
   CONTRACTUALISATION = 'contractualisation',
@@ -72,6 +84,10 @@ export class Document {
 
   @Column({ nullable: true })
   deposePar: string;
+
+  // null = selon le type (voir TYPES_PARTAGES_CLIENT) ; true/false = choix explicite de l'équipe
+  @Column({ type: 'boolean', nullable: true })
+  visibleClient: boolean | null;
 
   @CreateDateColumn()
   creeLe: Date;

@@ -357,8 +357,10 @@ export class AiContextService {
 
       if (projet && dashboardProjet) {
         const voitBudget = ROLES_BUDGET.includes(user.role);
-        // Sans droit budget, on retire les coûts internes des KPIs
-        const { budget: _budget, ...kpisSansBudget } = dashboardProjet;
+        const interne = ROLES_INTERNES.includes(user.role);
+        // Sans droit budget, on retire les coûts internes des KPIs ; le client ne voit ni incidents ni alertes
+        const { budget: _budget, hse, alertes, ...kpisCommuns } = dashboardProjet;
+        const kpisSansBudget = interne ? { ...kpisCommuns, hse, alertes } : kpisCommuns;
         snapshot.projetSelectionne = {
           id: projet.id,
           reference: projet.reference,
@@ -408,12 +410,14 @@ export class AiContextService {
           travauxRealises: j.travauxRealises ? String(j.travauxRealises).slice(0, 200) : null,
         }));
 
-        (snapshot.projetSelectionne as Record<string, unknown>).incidentsRecents = incidents.slice(0, 3).map(i => ({
-          date: i.date,
-          type: i.type,
-          gravite: i.gravite,
-          description: String(i.description || '').slice(0, 150),
-        }));
+        if (interne) {
+          (snapshot.projetSelectionne as Record<string, unknown>).incidentsRecents = incidents.slice(0, 3).map(i => ({
+            date: i.date,
+            type: i.type,
+            gravite: i.gravite,
+            description: String(i.description || '').slice(0, 150),
+          }));
+        }
 
         if (ROLES_RH.includes(user.role)) {
           (snapshot.projetSelectionne as Record<string, unknown>).ressourcesHumaines = {
@@ -538,6 +542,9 @@ export class AiContextService {
         }
 
         case 'get_project_incidents': {
+          if (!ROLES_INTERNES.includes(user.role)) {
+            return JSON.stringify({ error: 'Les incidents sont réservés à l’équipe du chantier.' });
+          }
           const incidents = await this.suiviService.getIncidents(String(args.projetId));
           return JSON.stringify(incidents);
         }

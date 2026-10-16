@@ -196,10 +196,13 @@ export default function ProjetDetail() {
               <span style={{ color: 'var(--text-muted)' }}>Situations facturées</span>
               <strong>{dash?.facturation?.nombreSituations || 0}</strong>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ color: 'var(--text-muted)' }}>Incidents</span>
-              <strong>{dash?.hse?.nombreIncidents || 0}</strong>
-            </div>
+            {/* Le serveur n'envoie pas les incidents au client */}
+            {dash?.hse && (
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Incidents</span>
+                <strong>{dash.hse.nombreIncidents || 0}</strong>
+              </div>
+            )}
           </div>
         </div>
       </div>

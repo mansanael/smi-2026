@@ -7,11 +7,13 @@ import {
   Param,
   Query,
   UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
 import { SuiviChantierService } from './suivi-chantier.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ProjetAccesGuard } from '../acces/projet-acces.guard';
 import { UtilisateurCourant } from '../auth/decorators/utilisateur-courant.decorator';
+import { RoleUtilisateur } from '../utilisateurs/entities/utilisateur.entity';
 
 @Controller('projets/:projetId')
 @UseGuards(JwtAuthGuard, ProjetAccesGuard)
@@ -37,8 +39,12 @@ export class SuiviChantierController {
   createIncident(@Param('projetId') id: string, @Body() dto: any) {
     return this.service.createIncident(id, dto);
   }
+  // Incidents (accidents, pannes, malfaçons) : internes à l'entreprise, pas pour le client
   @Get('incidents')
-  getIncidents(@Param('projetId') id: string) {
+  getIncidents(@Param('projetId') id: string, @UtilisateurCourant() user: { role: RoleUtilisateur }) {
+    if (user.role === RoleUtilisateur.MAITRE_OUVRAGE_EXTERNE) {
+      throw new ForbiddenException('Les incidents sont réservés à l’équipe du chantier.');
+    }
     return this.service.getIncidents(id);
   }
 

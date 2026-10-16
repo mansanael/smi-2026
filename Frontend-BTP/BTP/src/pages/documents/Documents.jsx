@@ -1,11 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProjets, getDocuments, createDocument, getExpirations } from '../../api/api';
-import { Plus, X, FileText, AlertCircle } from 'lucide-react';
+import { getProjets, getDocuments, createDocument, getExpirations, setVisibiliteDocument } from '../../api/api';
+import { Plus, X, FileText, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { estLectureSeule } from '../../roles';
 
-const emptyForm = { nom: '', type: 'plan', phase: 'execution', cheminFichier: '', dateExpiration: '', deposePar: '' };
+// visibleClient : null = selon le type (comme le serveur, voir TYPES_PARTAGES_CLIENT)
+const emptyForm = { nom: '', type: 'plan', phase: 'execution', cheminFichier: '', dateExpiration: '', deposePar: '', visibleClient: null };
+
+// Partagés par défaut avec le client : pièces du marché, plans, planning, PV, ordres de service, avenants
+const TYPES_PARTAGES_CLIENT = [
+    'marche_signe', 'ccap', 'cctp', 'plan', 'planning', 'pv_installation', 'pv_reunion', 'ordre_service',
+    'avenant', 'pv_reception_provisoire', 'pv_reception_definitive', 'journal_chantier', 'photo',
+];
 
 const typeLabels = {
     dao: 'DAO', offre_technique: 'Offre technique', offre_financiere: 'Offre financière', marche_signe: 'Marché signé',
@@ -55,10 +62,21 @@ export default function Documents({ projetIdFixe }) {
 
     const handleAdd = async (e) => {
         e.preventDefault();
-        await createDocument(projetId, { ...form, dateExpiration: form.dateExpiration || undefined });
+        const { visibleClient, ...reste } = form;
+        await createDocument(projetId, {
+            ...reste,
+            dateExpiration: form.dateExpiration || undefined,
+            ...(visibleClient !== null ? { visibleClient } : {}),
+        });
         setShowModal(false);
         setForm(emptyForm);
         loadProjetData(projetId);
+    };
+
+    const basculerPartage = async (d) => {
+        const visibleClient = !d.visibleClient;
+        await setVisibiliteDocument(projetId, d.id, visibleClient);
+        setDocuments((l) => l.map((x) => (x.id === d.id ? { ...x, visibleClient } : x)));
     };
 
     if (!projetIdFixe && projets.length === 0 && !loading) {
@@ -107,7 +125,10 @@ export default function Documents({ projetIdFixe }) {
                 <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
                     <table className="data-table">
                         <thead>
-                            <tr><th>Nom</th><th>Type</th><th>Phase</th><th>Version</th><th>Expiration</th><th>Déposé par</th></tr>
+                            <tr>
+                                <th>Nom</th><th>Type</th><th>Phase</th><th>Version</th><th>Expiration</th><th>Déposé par</th>
+                                {!lectureSeule && <th title="Visible par le client dans son espace">Client</th>}
+                            </tr>
                         </thead>
                         <tbody>
                             {documents.map(d => (
@@ -118,10 +139,23 @@ export default function Documents({ projetIdFixe }) {
                                     <td>v{d.version}</td>
                                     <td>{d.dateExpiration ? new Date(d.dateExpiration).toLocaleDateString('fr-FR') : '—'}</td>
                                     <td>{d.deposePar || '—'}</td>
+                                    {!lectureSeule && (
+                                        <td>
+                                            <button
+                                                className={`btn btn-sm ${d.visibleClient ? 'btn-primary' : 'btn-secondary'}`}
+                                                onClick={() => basculerPartage(d)}
+                                                title={d.visibleClient ? 'Partagé avec le client — cliquer pour le retirer' : 'Interne — cliquer pour le partager avec le client'}
+                                            >
+                                                {d.visibleClient ? <><Eye size={14} /> Partagé</> : <><EyeOff size={14} /> Interne</>}
+                                            </button>
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                             {documents.length === 0 && (
-                                <tr><td colSpan="6" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucun document enregistré</td></tr>
+                                <tr><td colSpan="7" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
+                                    {lectureSeule ? 'Aucun document partagé pour le moment' : 'Aucun document enregistré'}
+                                </td></tr>
                             )}
                         </tbody>
                     </table>
@@ -168,6 +202,14 @@ export default function Documents({ projetIdFixe }) {
                                     <input className="form-input" value={form.deposePar} onChange={e => setForm({ ...form, deposePar: e.target.value })} />
                                 </div>
                             </div>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer', marginBottom: 8 }}>
+                                <input
+                                    type="checkbox"
+                                    checked={form.visibleClient ?? TYPES_PARTAGES_CLIENT.includes(form.type)}
+                                    onChange={e => setForm({ ...form, visibleClient: e.target.checked })}
+                                />
+                                Visible par le client dans son espace
+                            </label>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Annuler</button>
                                 <button type="submit" className="btn btn-primary"><Plus size={16} /> Ajouter</button>
