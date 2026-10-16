@@ -27,6 +27,12 @@ export function setUser(user) {
 
 const TIMEOUT_AVEC_CACHE_MS = 5000;
 
+// Juste après une modification, la copie en cache est périmée : on attend la
+// réponse du serveur au lieu de la réafficher (sinon un serveur lent, comme au
+// réveil sur Vercel, fait croire que l'enregistrement n'a pas marché)
+const ATTENTE_APRES_ECRITURE_MS = 60000;
+let derniereEcriture = 0;
+
 export async function api(path, options = {}) {
   const { method = 'GET', body, noAuth = false } = options;
   const headers = { 'Content-Type': 'application/json' };
@@ -44,7 +50,8 @@ export async function api(path, options = {}) {
   try {
     const controller = new AbortController();
     // Délai d'attente seulement si on a une copie à afficher à la place
-    const timer = enCache ? setTimeout(() => controller.abort(), TIMEOUT_AVEC_CACHE_MS) : null;
+    const copieFiable = Date.now() - derniereEcriture > ATTENTE_APRES_ECRITURE_MS;
+    const timer = enCache && copieFiable ? setTimeout(() => controller.abort(), TIMEOUT_AVEC_CACHE_MS) : null;
     try {
       res = await fetch(`${API_BASE}${path}`, {
         method,
@@ -65,6 +72,8 @@ export async function api(path, options = {}) {
     window.location.href = '/login';
     return null;
   }
+
+  if (res.ok && method !== 'GET') derniereEcriture = Date.now();
 
   if (res.status === 204) return null;
 
