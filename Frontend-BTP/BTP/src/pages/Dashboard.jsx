@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getDashboardGlobal } from '../api/api';
 import { FolderKanban, TrendingUp, Wallet, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import AlertesRecentes from '../components/accueil/AlertesRecentes';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#64748b', '#ec4899'];
 
@@ -49,6 +50,8 @@ export default function Dashboard() {
           <p className="subtitle">Vue d'ensemble de vos projets BTP</p>
         </div>
       </div>
+
+      <AlertesRecentes />
 
       <div className="kpi-grid">
         <div className="kpi-card blue">

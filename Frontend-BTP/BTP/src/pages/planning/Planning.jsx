@@ -69,11 +69,12 @@ const statutBadges = {
   suspendue: 'badge-amber',
 };
 
-export default function Planning() {
+// projetIdFixe : page affichée comme onglet de la fiche chantier (pas de choix du projet)
+export default function Planning({ projetIdFixe }) {
   const { user } = useAuth();
   const lectureSeule = estLectureSeule(user);
   const [projets, setProjets] = useState([]);
-  const [projetId, setProjetId] = useState('');
+  const [projetId, setProjetId] = useState(projetIdFixe || '');
   const [taches, setTaches] = useState([]);
   const [jalons, setJalons] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -379,10 +380,12 @@ export default function Planning() {
     <div>
       {/* ─── EN-TÊTE ──────────────────────────────────────────────────────── */}
       <div className="page-header">
-        <div>
-          <h1>Planning & Délais</h1>
-          <p className="subtitle">Pilotage des tâches, suivi de l'avancement physique et jalons contractuels</p>
-        </div>
+        {projetIdFixe ? <div /> : (
+          <div>
+            <h1>Planning & Délais</h1>
+            <p className="subtitle">Pilotage des tâches, suivi de l'avancement physique et jalons contractuels</p>
+          </div>
+        )}
         {projetId && !lectureSeule && (
           <div style={{ display: 'flex', gap: 10 }}>
             <button className="btn btn-secondary" onClick={() => setShowJalonModal(true)}>
@@ -396,7 +399,7 @@ export default function Planning() {
       </div>
 
       {/* ─── SÉLECTEUR DE PROJET ────────────────────────────────────────── */}
-      <div className="glass-card" style={{ marginBottom: 24, padding: 18 }}>
+      {!projetIdFixe && <div className="glass-card" style={{ marginBottom: 24, padding: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 280 }}>
             <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, display: 'block' }}>
@@ -422,7 +425,7 @@ export default function Planning() {
             </div>
           )}
         </div>
-      </div>
+      </div>}
 
       {!projetId && (
         <div className="empty-state">

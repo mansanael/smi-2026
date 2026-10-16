@@ -6,7 +6,7 @@ import { AuthProvider } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Layout from './components/Layout'
 import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
+import Accueil from './pages/Accueil'
 import ProjetsList from './pages/projets/ProjetsList'
 import ProjetDetail from './pages/projets/ProjetDetail'
 import Planning from './pages/planning/Planning'
@@ -42,9 +42,12 @@ createRoot(document.getElementById('root')).render(
               </ProtectedRoute>
             }
           >
-            <Route path="/" element={<Dashboard />} />
+            {/* Accueil selon le rôle : tableau de bord (direction) ou chantiers (équipe, client) */}
+            <Route path="/" element={<Accueil />} />
             <Route path="/projets" element={<ProjetsList />} />
+            {/* Fiche chantier : tous les modules en onglets (?onglet=suivi, planning, budget…) */}
             <Route path="/projets/:id" element={<ProjetDetail />} />
+            {/* Anciennes pages : hors du menu, gardées pour les liens déjà enregistrés */}
             <Route path="/planning" element={<Planning />} />
             <Route
               path="/budget"

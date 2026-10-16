@@ -1,13 +1,41 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { getProjet, getDashboardProjet, updateProjet, deleteProjet } from '../../api/api';
-import { ArrowLeft, Trash2, MapPin, Calendar, Building2, Wallet } from 'lucide-react';
+import {
+  ArrowLeft, Trash2, MapPin, Calendar, Building2, Wallet, LayoutDashboard, Mic, CalendarDays,
+  Users, FileText, Truck, Receipt, Banknote, ClipboardCheck,
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { ROLES_GESTION_PROJET, ROLES_INTERNES } from '../../roles';
+import {
+  ROLES_GESTION_PROJET, ROLES_INTERNES, ROLES_BUDGET, ROLES_FACTURATION, ROLES_LECTURE_PAIEMENTS,
+  ROLES_TERRAIN, estLectureSeule,
+} from '../../roles';
 import EquipeProjet from '../../components/EquipeProjet';
+import SuiviChantier from '../suivi-chantier/SuiviChantier';
+import Planning from '../planning/Planning';
+import Budget from '../budget/Budget';
+import Ressources from '../ressources/Ressources';
+import Documents from '../documents/Documents';
+import Approvisionnement from '../approvisionnement/Approvisionnement';
+import Facturation from '../facturation/Facturation';
+import Paiements from '../paiements/Paiements';
 
 const statutLabels = { en_etude: 'En étude', soumissionne: 'Soumissionné', attribue: 'Attribué', en_preparation: 'En préparation', en_cours: 'En cours', travaux_termines: 'Travaux terminés', en_garantie: 'En garantie', cloture: 'Clôturé' };
 const statutOptions = ['en_etude','soumissionne','attribue','en_preparation','en_cours','travaux_termines','en_garantie','cloture'];
+
+// Tout ce qui concerne un chantier est ici, en onglets ; chacun ne voit que ceux de son rôle
+// (roles absent = tout le monde, client compris, en lecture seule)
+const ONGLETS = [
+  { cle: 'resume', label: 'Résumé', icon: LayoutDashboard },
+  { cle: 'suivi', label: 'Suivi & voix', labelClient: 'Rapports & photos', icon: Mic, iconClient: ClipboardCheck },
+  { cle: 'planning', label: 'Planning', icon: CalendarDays },
+  { cle: 'budget', label: 'Budget', icon: Wallet, roles: ROLES_BUDGET },
+  { cle: 'equipe', label: 'Équipe & ressources', icon: Users, roles: ROLES_INTERNES },
+  { cle: 'documents', label: 'Documents', icon: FileText },
+  { cle: 'achats', label: 'Achats & stock', icon: Truck, roles: ROLES_INTERNES },
+  { cle: 'facturation', label: 'Facturation', icon: Receipt, roles: ROLES_FACTURATION },
+  { cle: 'paiements', label: 'Paiements client', labelClient: 'Mes paiements', icon: Banknote, roles: ROLES_LECTURE_PAIEMENTS },
+];
 
 export default function ProjetDetail() {
   const { id } = useParams();
@@ -15,9 +43,17 @@ export default function ProjetDetail() {
   const { user } = useAuth();
   const peutModifier = ROLES_GESTION_PROJET.includes(user?.role);
   const peutSupprimer = user?.role === 'directeur_general';
+  const client = estLectureSeule(user);
   const [projet, setProjet] = useState(null);
   const [dash, setDash] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const onglets = ONGLETS.filter((o) => !o.roles || o.roles.includes(user?.role));
+  const [params, setParams] = useSearchParams();
+  // Sur le terrain, on arrive directement sur la saisie à la voix
+  const ongletParDefaut = ROLES_TERRAIN.includes(user?.role) ? 'suivi' : 'resume';
+  const onglet = onglets.some((o) => o.cle === params.get('onglet')) ? params.get('onglet') : ongletParDefaut;
+  const changerOnglet = (cle) => setParams(cle === ongletParDefaut ? {} : { onglet: cle }, { replace: true });
 
   useEffect(() => {
     Promise.all([getProjet(id), getDashboardProjet(id)])
@@ -62,6 +98,38 @@ export default function ProjetDetail() {
         </div>
       </div>
 
+      <div className="onglets-chantier" role="tablist">
+        {onglets.map(({ cle, label, labelClient, icon, iconClient }) => {
+          const Icon = client && iconClient ? iconClient : icon;
+          return (
+          <button
+            key={cle}
+            role="tab"
+            aria-selected={onglet === cle}
+            className={`btn btn-sm ${onglet === cle ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => changerOnglet(cle)}
+          >
+            <Icon size={15} /> {client && labelClient ? labelClient : label}
+          </button>
+          );
+        })}
+      </div>
+
+      {onglet === 'suivi' && <SuiviChantier key={id} projetIdFixe={id} />}
+      {onglet === 'planning' && <Planning key={id} projetIdFixe={id} />}
+      {onglet === 'budget' && <Budget key={id} projetIdFixe={id} />}
+      {onglet === 'equipe' && (
+        <>
+          <EquipeProjet projetId={id} userRole={user?.role} />
+          <div style={{ marginTop: 20 }}><Ressources key={id} projetIdFixe={id} /></div>
+        </>
+      )}
+      {onglet === 'documents' && <Documents key={id} projetIdFixe={id} />}
+      {onglet === 'achats' && <Approvisionnement key={id} projetIdFixe={id} />}
+      {onglet === 'facturation' && <Facturation key={id} projetIdFixe={id} />}
+      {onglet === 'paiements' && <Paiements key={id} projetIdFixe={id} />}
+
+      {onglet === 'resume' && <>
       <div className="kpi-grid">
         <div className="kpi-card blue">
           <div className="kpi-icon"><Building2 size={22} /></div>
@@ -143,7 +211,7 @@ export default function ProjetDetail() {
         </div>
       )}
 
-      {ROLES_INTERNES.includes(user?.role) && <EquipeProjet projetId={id} userRole={user?.role} />}
+      </>}
     </div>
   );
 }

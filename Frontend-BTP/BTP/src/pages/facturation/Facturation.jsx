@@ -17,9 +17,10 @@ const actionsStatut = {
     rejetee: [{ valeur: 'brouillon', label: 'Remettre en brouillon' }],
 };
 
-export default function Facturation() {
+// projetIdFixe : page affichée comme onglet de la fiche chantier (pas de choix du projet)
+export default function Facturation({ projetIdFixe }) {
     const [projets, setProjets] = useState([]);
-    const [projetId, setProjetId] = useState('');
+    const [projetId, setProjetId] = useState(projetIdFixe || '');
     const [situations, setSituations] = useState([]);
     const [recap, setRecap] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -31,10 +32,11 @@ export default function Facturation() {
     useEffect(() => {
         getProjets().then(list => {
             setProjets(list);
+            if (projetIdFixe) return;
             if (list.length > 0) setProjetId(list[0].id);
             else setLoading(false);
         });
-    }, []);
+    }, [projetIdFixe]);
 
     const loadProjetData = (pid) => {
         setLoading(true);
@@ -102,7 +104,7 @@ export default function Facturation() {
 
     const formatFCFA = (n) => `${Number(n || 0).toLocaleString('fr-FR')} FCFA`;
 
-    if (projets.length === 0 && !loading) {
+    if (!projetIdFixe && projets.length === 0 && !loading) {
         return (
             <div>
                 <div className="page-header"><div><h1>Facturation</h1></div></div>
@@ -116,15 +118,17 @@ export default function Facturation() {
 
     return (
         <div>
-            <div className="page-header">
-                <div>
-                    <h1>Facturation</h1>
-                    <p className="subtitle">Situations de travaux (décomptes mensuels)</p>
+            {!projetIdFixe && (
+                <div className="page-header">
+                    <div>
+                        <h1>Facturation</h1>
+                        <p className="subtitle">Situations de travaux (décomptes mensuels)</p>
+                    </div>
+                    <select className="form-select" style={{ maxWidth: 320 }} value={projetId} onChange={e => setProjetId(e.target.value)}>
+                        {projets.map(p => <option key={p.id} value={p.id}>{p.reference} — {p.intitule}</option>)}
+                    </select>
                 </div>
-                <select className="form-select" style={{ maxWidth: 320 }} value={projetId} onChange={e => setProjetId(e.target.value)}>
-                    {projets.map(p => <option key={p.id} value={p.id}>{p.reference} — {p.intitule}</option>)}
-                </select>
-            </div>
+            )}
 
             {loading ? <div className="spinner" /> : (
                 <>

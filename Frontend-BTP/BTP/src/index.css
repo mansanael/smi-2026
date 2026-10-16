@@ -671,6 +671,21 @@ a:hover {
   animation: spin 1s linear infinite;
 }
 
+/* ═══ ONGLETS DE LA FICHE CHANTIER ═══ */
+/* Sur téléphone, la barre défile horizontalement au lieu de passer à la ligne */
+.onglets-chantier {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 20px;
+  scrollbar-width: thin;
+}
+.onglets-chantier .btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 /* ═══ CHARTS CONTAINER ═══ */
 .charts-grid {
   display: grid;

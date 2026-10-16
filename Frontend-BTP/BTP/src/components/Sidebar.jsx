@@ -1,34 +1,27 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import {
-  LayoutDashboard, FolderKanban, CalendarDays, Wallet,
-  Users, ClipboardCheck, FileText, Truck, Receipt, ShieldCheck, X, Bot, Banknote
-} from 'lucide-react';
+import { Home, HardHat, Mic, Banknote, Settings, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { ROLES_BUDGET, ROLES_INTERNES, ROLES_LECTURE_PAIEMENTS } from '../roles';
+import { ROLES_ADMINISTRATION, ROLES_LECTURE_PAIEMENTS, estLectureSeule } from '../roles';
 
-// roles: si absent, visible pour tout utilisateur connecté
+// 5 entrées au plus : le planning, le budget, le suivi, les documents, les achats
+// et la facturation sont des onglets de la fiche chantier.
+// roles : si absent, visible pour tout utilisateur connecté
 const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/projets', icon: FolderKanban, label: 'Projets' },
-  { to: '/planning', icon: CalendarDays, label: 'Planning' },
-  { to: '/budget', icon: Wallet, label: 'Budget', roles: ROLES_BUDGET },
-  { to: '/ressources', icon: Users, label: 'Ressources', roles: ROLES_INTERNES },
-  { to: '/suivi', icon: ClipboardCheck, label: 'Suivi Chantier' },
-  { to: '/documents', icon: FileText, label: 'Documents' },
-  { to: '/approvisionnement', icon: Truck, label: 'Approvisionnement', roles: ['directeur_general', 'directeur_technique', 'responsable_admin_fin', 'magasinier'] },
-  { to: '/facturation', icon: Receipt, label: 'Facturation', roles: ['directeur_general', 'directeur_technique', 'responsable_admin_fin'] },
-  { to: '/paiements', icon: Banknote, label: 'Paiements client', roles: ROLES_LECTURE_PAIEMENTS },
-  { to: '/admin/utilisateurs', icon: ShieldCheck, label: 'Utilisateurs', roles: ['directeur_general', 'directeur_technique'] },
-  { to: '/assistant', icon: Bot, label: 'Assistant IA' },
+  { to: '/', icon: Home, label: 'Accueil' },
+  { to: '/projets', icon: HardHat, label: 'Chantiers', labelClient: 'Mon chantier' },
+  { to: '/assistant', icon: Mic, label: 'Assistant vocal' },
+  { to: '/paiements', icon: Banknote, label: 'Paiements', roles: ROLES_LECTURE_PAIEMENTS },
+  { to: '/admin/utilisateurs', icon: Settings, label: 'Administration', roles: ROLES_ADMINISTRATION },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
   const location = useLocation();
   const { user } = useAuth();
+  const client = estLectureSeule(user);
 
-  const visibleItems = navItems.filter(
-    item => !item.roles || item.roles.includes(user?.role)
-  );
+  const visibleItems = navItems
+    .filter(item => !item.roles || item.roles.includes(user?.role))
+    .map(item => ({ ...item, label: client && item.labelClient ? item.labelClient : item.label }));
 
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>

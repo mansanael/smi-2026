@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getProjets, createProjet } from '../../api/api';
 import { Plus, X, MapPin } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { ROLES_GESTION_PROJET } from '../../roles';
+import { ROLES_GESTION_PROJET, estLectureSeule } from '../../roles';
 
 const statutLabels = {
   en_etude: 'En étude', soumissionne: 'Soumissionné', attribue: 'Attribué',
@@ -53,8 +53,8 @@ export default function ProjetsList() {
     <div>
       <div className="page-header">
         <div>
-          <h1>Projets</h1>
-          <p className="subtitle">{projets.length} projet(s) au total</p>
+          <h1>{estLectureSeule(user) ? 'Mon chantier' : 'Chantiers'}</h1>
+          <p className="subtitle">{projets.length} chantier(s) — cliquez sur une ligne pour ouvrir sa fiche</p>
         </div>
         {ROLES_GESTION_PROJET.includes(user?.role) && (
           <button className="btn btn-primary" onClick={() => setShowModal(true)}>

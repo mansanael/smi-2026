@@ -114,11 +114,12 @@ const categorieBadge = {
     autre: 'badge-gray',
 };
 
-export default function SuiviChantier() {
+// projetIdFixe : page affichée comme onglet de la fiche chantier (pas de choix du projet)
+export default function SuiviChantier({ projetIdFixe }) {
     const { user } = useAuth();
     const lectureSeule = estLectureSeule(user);
     const [projets, setProjets] = useState([]);
-    const [projetId, setProjetId] = useState('');
+    const [projetId, setProjetId] = useState(projetIdFixe || '');
     const [journaux, setJournaux] = useState([]);
     const [incidents, setIncidents] = useState([]);
     const [photos, setPhotos] = useState([]);
@@ -146,10 +147,11 @@ export default function SuiviChantier() {
     useEffect(() => {
         getProjets().then((list) => {
             setProjets(list);
+            if (projetIdFixe) return;
             if (list.length > 0) setProjetId(list[0].id);
             else setLoading(false);
         });
-    }, []);
+    }, [projetIdFixe]);
 
     const loadProjetData = (pid) => {
         setLoading(true);
@@ -283,7 +285,7 @@ export default function SuiviChantier() {
         filterCategory === 'tous' ? true : p.categorie === filterCategory
     );
 
-    if (projets.length === 0 && !loading) {
+    if (!projetIdFixe && projets.length === 0 && !loading) {
         return (
             <div>
                 <div className="page-header">
@@ -304,26 +306,28 @@ export default function SuiviChantier() {
     return (
         <div>
             {/* Header */}
-            <div className="page-header">
-                <div>
-                    <h1>Suivi Chantier</h1>
-                    <p className="subtitle">
-                        Journal de chantier, incidents et prises de photos par projet
-                    </p>
+            {!projetIdFixe && (
+                <div className="page-header">
+                    <div>
+                        <h1>Suivi Chantier</h1>
+                        <p className="subtitle">
+                            Journal de chantier, incidents et prises de photos par projet
+                        </p>
+                    </div>
+                    <select
+                        className="form-select"
+                        style={{ maxWidth: 320 }}
+                        value={projetId}
+                        onChange={(e) => setProjetId(e.target.value)}
+                    >
+                        {projets.map((p) => (
+                            <option key={p.id} value={p.id}>
+                                {p.reference} — {p.intitule}
+                            </option>
+                        ))}
+                    </select>
                 </div>
-                <select
-                    className="form-select"
-                    style={{ maxWidth: 320 }}
-                    value={projetId}
-                    onChange={(e) => setProjetId(e.target.value)}
-                >
-                    {projets.map((p) => (
-                        <option key={p.id} value={p.id}>
-                            {p.reference} — {p.intitule}
-                        </option>
-                    ))}
-                </select>
-            </div>
+            )}
 
             {loading ? (
                 <div className="spinner" />

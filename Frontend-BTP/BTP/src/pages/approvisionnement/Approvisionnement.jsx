@@ -15,10 +15,11 @@ const specialiteLabels = {
 const statutBCBadge = { demande: 'badge-gray', valide: 'badge-blue', en_livraison: 'badge-amber', receptionne: 'badge-green', annule: 'badge-red' };
 const statutBCLabels = { demande: 'Demandé', valide: 'Validé', en_livraison: 'En livraison', receptionne: 'Réceptionné', annule: 'Annulé' };
 
-export default function Approvisionnement() {
-    const [tab, setTab] = useState('fournisseurs');
+// projetIdFixe : page affichée comme onglet « Achats » de la fiche chantier (pas de choix du projet)
+export default function Approvisionnement({ projetIdFixe }) {
+    const [tab, setTab] = useState(projetIdFixe ? 'commandes' : 'fournisseurs');
     const [projets, setProjets] = useState([]);
-    const [projetId, setProjetId] = useState('');
+    const [projetId, setProjetId] = useState(projetIdFixe || '');
     const [fournisseurs, setFournisseurs] = useState([]);
     const [bonsCommande, setBonsCommande] = useState([]);
     const [stock, setStock] = useState([]);
@@ -33,10 +34,11 @@ export default function Approvisionnement() {
         getFournisseurs().then(setFournisseurs);
         getProjets().then(list => {
             setProjets(list);
+            if (projetIdFixe) return;
             if (list.length > 0) setProjetId(list[0].id);
             else setLoading(false);
         });
-    }, []);
+    }, [projetIdFixe]);
 
     const loadProjetData = (pid) => {
         setLoading(true);
@@ -79,17 +81,19 @@ export default function Approvisionnement() {
 
     return (
         <div>
-            <div className="page-header">
-                <div>
-                    <h1>Approvisionnement</h1>
-                    <p className="subtitle">Fournisseurs, bons de commande et stock de chantier</p>
+            {!projetIdFixe && (
+                <div className="page-header">
+                    <div>
+                        <h1>Approvisionnement</h1>
+                        <p className="subtitle">Fournisseurs, bons de commande et stock de chantier</p>
+                    </div>
+                    {tab !== 'fournisseurs' && projets.length > 0 && (
+                        <select className="form-select" style={{ maxWidth: 320 }} value={projetId} onChange={e => setProjetId(e.target.value)}>
+                            {projets.map(p => <option key={p.id} value={p.id}>{p.reference} — {p.intitule}</option>)}
+                        </select>
+                    )}
                 </div>
-                {tab !== 'fournisseurs' && projets.length > 0 && (
-                    <select className="form-select" style={{ maxWidth: 320 }} value={projetId} onChange={e => setProjetId(e.target.value)}>
-                        {projets.map(p => <option key={p.id} value={p.id}>{p.reference} — {p.intitule}</option>)}
-                    </select>
-                )}
-            </div>
+            )}
 
             <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
                 <button className={`btn btn-sm ${tab === 'fournisseurs' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setTab('fournisseurs')}>

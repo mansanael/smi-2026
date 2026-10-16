@@ -37,9 +37,10 @@ const CATEGORIES_DEPENSE = [
 const labelDe = (liste, valeur) => liste.find(x => x.value === valeur)?.label || valeur;
 const formatDate = (d) => new Date(d).toLocaleDateString('fr-FR');
 
-export default function Budget() {
+// projetIdFixe : page affichée comme onglet de la fiche chantier (pas de choix du projet)
+export default function Budget({ projetIdFixe }) {
     const [projets, setProjets] = useState([]);
-    const [projetId, setProjetId] = useState('');
+    const [projetId, setProjetId] = useState(projetIdFixe || '');
     const [kpi, setKpi] = useState(null);
     const [devis, setDevis] = useState([]);
     const [depenses, setDepenses] = useState([]);
@@ -55,10 +56,11 @@ export default function Budget() {
     useEffect(() => {
         getProjets().then(list => {
             setProjets(list);
+            if (projetIdFixe) return;
             if (list.length > 0) setProjetId(list[0].id);
             else setLoading(false);
         });
-    }, []);
+    }, [projetIdFixe]);
 
     const loadProjetData = (pid) => {
         setLoading(true);
@@ -91,7 +93,7 @@ export default function Budget() {
 
     const formatFCFA = (n) => `${Number(n || 0).toLocaleString('fr-FR')} FCFA`;
 
-    if (projets.length === 0 && !loading) {
+    if (!projetIdFixe && projets.length === 0 && !loading) {
         return (
             <div>
                 <div className="page-header"><div><h1>Budget</h1></div></div>
@@ -107,15 +109,17 @@ export default function Budget() {
 
     return (
         <div>
-            <div className="page-header">
-                <div>
-                    <h1>Budget</h1>
-                    <p className="subtitle">Suivi des devis, dépenses et avenants par projet</p>
+            {!projetIdFixe && (
+                <div className="page-header">
+                    <div>
+                        <h1>Budget</h1>
+                        <p className="subtitle">Suivi des devis, dépenses et avenants par projet</p>
+                    </div>
+                    <select className="form-select" style={{ maxWidth: 320 }} value={projetId} onChange={e => setProjetId(e.target.value)}>
+                        {projets.map(p => <option key={p.id} value={p.id}>{p.reference} — {p.intitule}</option>)}
+                    </select>
                 </div>
-                <select className="form-select" style={{ maxWidth: 320 }} value={projetId} onChange={e => setProjetId(e.target.value)}>
-                    {projets.map(p => <option key={p.id} value={p.id}>{p.reference} — {p.intitule}</option>)}
-                </select>
-            </div>
+            )}
 
             {loading ? <div className="spinner" /> : (
                 <>

@@ -32,12 +32,13 @@ const fcfa = (n) => `${Number(n || 0).toLocaleString('fr-FR')} FCFA`;
 const formatDate = (d) => (d ? new Date(d).toLocaleDateString('fr-FR') : '—');
 const messageErreur = (err) => [].concat(err?.message || "Erreur lors de l'enregistrement.").join(' ');
 
-export default function Paiements() {
+// projetIdFixe : page affichée comme onglet de la fiche chantier (pas de choix du projet)
+export default function Paiements({ projetIdFixe }) {
     const { user } = useAuth();
     const peutSaisir = ROLES_SAISIE_PAIEMENTS.includes(user?.role);
     const estClient = estLectureSeule(user);
     const [projets, setProjets] = useState([]);
-    const [projetId, setProjetId] = useState('');
+    const [projetId, setProjetId] = useState(projetIdFixe || '');
     const [suivi, setSuivi] = useState(null);
     const [loading, setLoading] = useState(true);
     const [modal, setModal] = useState(null); // 'versement' | 'echeance' | null
@@ -49,10 +50,11 @@ export default function Paiements() {
     useEffect(() => {
         getProjets().then(list => {
             setProjets(list);
+            if (projetIdFixe) return;
             if (list.length > 0) setProjetId(list[0].id);
             else setLoading(false);
         });
-    }, []);
+    }, [projetIdFixe]);
 
     const charger = (pid) => {
         setLoading(true);
@@ -112,7 +114,7 @@ export default function Paiements() {
         charger(projetId);
     };
 
-    if (projets.length === 0 && !loading) {
+    if (!projetIdFixe && projets.length === 0 && !loading) {
         return (
             <div>
                 <div className="page-header"><div><h1>Paiements du client</h1></div></div>
@@ -128,17 +130,19 @@ export default function Paiements() {
 
     return (
         <div>
-            <div className="page-header">
-                <div>
-                    <h1>Paiements du client</h1>
-                    <p className="subtitle">
-                        {estClient ? 'Vos échéances et l’historique de vos versements' : 'Échéancier, versements reçus et suivi des impayés'}
-                    </p>
+            {!projetIdFixe && (
+                <div className="page-header">
+                    <div>
+                        <h1>Paiements du client</h1>
+                        <p className="subtitle">
+                            {estClient ? 'Vos échéances et l’historique de vos versements' : 'Échéancier, versements reçus et suivi des impayés'}
+                        </p>
+                    </div>
+                    <select className="form-select" style={{ maxWidth: 320 }} value={projetId} onChange={e => setProjetId(e.target.value)}>
+                        {projets.map(p => <option key={p.id} value={p.id}>{p.reference} — {p.intitule}</option>)}
+                    </select>
                 </div>
-                <select className="form-select" style={{ maxWidth: 320 }} value={projetId} onChange={e => setProjetId(e.target.value)}>
-                    {projets.map(p => <option key={p.id} value={p.id}>{p.reference} — {p.intitule}</option>)}
-                </select>
-            </div>
+            )}
 
             {loading || !suivi ? <div className="spinner" /> : (
                 <>

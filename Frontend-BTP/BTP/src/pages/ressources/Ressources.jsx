@@ -18,8 +18,9 @@ const specialiteLabels = {
 const statutPresenceLabels = { present: 'Présent', absent: 'Absent', demi_journee: 'Demi-journée', conge: 'Congé', maladie: 'Maladie' };
 const statutPresenceBadge = { present: 'badge-green', absent: 'badge-gray', demi_journee: 'badge-amber', conge: 'badge-blue', maladie: 'badge-red' };
 
-export default function Ressources() {
-    const [tab, setTab] = useState('personnel');
+// projetIdFixe : page affichée comme onglet de la fiche chantier, ouverte sur les affectations du chantier
+export default function Ressources({ projetIdFixe }) {
+    const [tab, setTab] = useState(projetIdFixe ? 'affectations' : 'personnel');
     const [personnel, setPersonnel] = useState([]);
     const [engins, setEngins] = useState([]);
     const [sousTraitants, setSousTraitants] = useState([]);
@@ -31,7 +32,7 @@ export default function Ressources() {
 
     // Affectations par projet
     const [projets, setProjets] = useState([]);
-    const [projetId, setProjetId] = useState('');
+    const [projetId, setProjetId] = useState(projetIdFixe || '');
     const [pointages, setPointages] = useState([]);
     const [loadingPointages, setLoadingPointages] = useState(false);
     const [formPointage, setFormPointage] = useState(emptyPointage);
@@ -42,7 +43,7 @@ export default function Ressources() {
             .then(([p, e, s, proj]) => {
                 setPersonnel(p); setEngins(e); setSousTraitants(s);
                 setProjets(proj);
-                if (proj.length > 0) setProjetId(proj[0].id);
+                if (!projetIdFixe && proj.length > 0) setProjetId((avant) => avant || proj[0].id);
             })
             .finally(() => setLoading(false));
     };
@@ -91,17 +92,19 @@ export default function Ressources() {
 
     return (
         <div>
-            <div className="page-header">
-                <div>
-                    <h1>Ressources</h1>
-                    <p className="subtitle">Personnel, engins, sous-traitants et affectations par projet</p>
+            {!projetIdFixe && (
+                <div className="page-header">
+                    <div>
+                        <h1>Ressources</h1>
+                        <p className="subtitle">Personnel, engins, sous-traitants et affectations par projet</p>
+                    </div>
+                    {tab === 'affectations' && projets.length > 0 && (
+                        <select className="form-select" style={{ maxWidth: 320 }} value={projetId} onChange={e => setProjetId(e.target.value)}>
+                            {projets.map(p => <option key={p.id} value={p.id}>{p.reference} — {p.intitule}</option>)}
+                        </select>
+                    )}
                 </div>
-                {tab === 'affectations' && projets.length > 0 && (
-                    <select className="form-select" style={{ maxWidth: 320 }} value={projetId} onChange={e => setProjetId(e.target.value)}>
-                        {projets.map(p => <option key={p.id} value={p.id}>{p.reference} — {p.intitule}</option>)}
-                    </select>
-                )}
-            </div>
+            )}
 
             <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
                 <button className={`btn btn-sm ${tab === 'personnel' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setTab('personnel')}>

@@ -23,11 +23,12 @@ const phaseBadge = {
     execution: 'badge-blue', reception: 'badge-teal', cloture: 'badge-green',
 };
 
-export default function Documents() {
+// projetIdFixe : page affichée comme onglet de la fiche chantier (pas de choix du projet)
+export default function Documents({ projetIdFixe }) {
     const { user } = useAuth();
     const lectureSeule = estLectureSeule(user);
     const [projets, setProjets] = useState([]);
-    const [projetId, setProjetId] = useState('');
+    const [projetId, setProjetId] = useState(projetIdFixe || '');
     const [documents, setDocuments] = useState([]);
     const [expirations, setExpirations] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -38,11 +39,12 @@ export default function Documents() {
     useEffect(() => {
         getProjets().then(list => {
             setProjets(list);
+            if (projetIdFixe) return;
             if (list.length > 0) setProjetId(list[0].id);
             else setLoading(false);
         });
         getExpirations().then(setExpirations).catch(() => { });
-    }, []);
+    }, [projetIdFixe]);
 
     const loadProjetData = (pid) => {
         setLoading(true);
@@ -59,7 +61,7 @@ export default function Documents() {
         loadProjetData(projetId);
     };
 
-    if (projets.length === 0 && !loading) {
+    if (!projetIdFixe && projets.length === 0 && !loading) {
         return (
             <div>
                 <div className="page-header"><div><h1>Documents</h1></div></div>
@@ -73,15 +75,17 @@ export default function Documents() {
 
     return (
         <div>
-            <div className="page-header">
-                <div>
-                    <h1>Documents</h1>
-                    <p className="subtitle">Plans, PV, contrats et pièces administratives par projet</p>
+            {!projetIdFixe && (
+                <div className="page-header">
+                    <div>
+                        <h1>Documents</h1>
+                        <p className="subtitle">Plans, PV, contrats et pièces administratives par projet</p>
+                    </div>
+                    <select className="form-select" style={{ maxWidth: 320 }} value={projetId} onChange={e => setProjetId(e.target.value)}>
+                        {projets.map(p => <option key={p.id} value={p.id}>{p.reference} — {p.intitule}</option>)}
+                    </select>
                 </div>
-                <select className="form-select" style={{ maxWidth: 320 }} value={projetId} onChange={e => setProjetId(e.target.value)}>
-                    {projets.map(p => <option key={p.id} value={p.id}>{p.reference} — {p.intitule}</option>)}
-                </select>
-            </div>
+            )}
 
             {expirations.length > 0 && (
                 <div className="glass-card" style={{ marginBottom: 20, borderLeft: '3px solid var(--accent-amber)', display: 'flex', alignItems: 'center', gap: 10 }}>

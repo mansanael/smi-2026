@@ -12,6 +12,10 @@ export const ROLES_INTERNES = [
   'directeur_general', 'directeur_technique', 'chef_projet', 'conducteur_travaux',
   'responsable_admin_fin', 'magasinier',
 ];
+export const ROLES_FACTURATION = ['directeur_general', 'directeur_technique', 'responsable_admin_fin'];
+export const ROLES_ADMINISTRATION = ['directeur_general', 'directeur_technique'];
+// Chantier rattaché au profil : l'accueil ouvre directement ses chantiers
+export const ROLES_TERRAIN = ['conducteur_travaux', 'magasinier'];
 
 // Le client (maître d'ouvrage) consulte son chantier sans rien modifier
 export const estLectureSeule = (user) => user?.role === 'maitre_ouvrage_externe';
