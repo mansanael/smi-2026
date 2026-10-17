@@ -5,6 +5,7 @@ import { AiController } from './ai.controller';
 import { AiService } from './ai.service';
 import { AiContextService } from './ai-context.service';
 import { AlertesController } from './alertes.controller';
+import { CronController } from './cron.controller';
 import { AlertesService } from './alertes.service';
 import { ConversationsService } from './conversations.service';
 import { Alerte } from './alerte.entity';
@@ -39,7 +40,7 @@ import { VoixModule } from '../voix/voix.module';
     PaiementsModule,
     VoixModule,
   ],
-  controllers: [AiController, AlertesController],
+  controllers: [AiController, AlertesController, CronController],
   providers: [
     AiService,
     AiContextService,

@@ -58,6 +58,13 @@ export class JournalChantier {
   @Column({ default: false })
   genereParIa: boolean;
 
+  // Message simple pour le client, écrit par l'IA à partir de ce rapport validé (modifiable par l'équipe)
+  @Column({ type: 'text', nullable: true })
+  resumeClient: string | null;
+
+  @Column({ default: false })
+  resumeClientModifie: boolean; // corrigé à la main : l'IA ne le réécrit plus
+
   @CreateDateColumn()
   creeLe: Date;
 }

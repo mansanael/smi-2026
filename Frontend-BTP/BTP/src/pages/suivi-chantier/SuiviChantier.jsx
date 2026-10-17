@@ -419,6 +419,7 @@ export default function SuiviChantier({ projetIdFixe }) {
                         <NotesVocales
                             projetId={projetId}
                             photos={photos}
+                            datesRapports={journaux.map((j) => String(j.date).slice(0, 10))}
                             onRapportEnregistre={() => {
                                 loadProjetData(projetId);
                                 setTab('journal');
@@ -717,8 +718,14 @@ export default function SuiviChantier({ projetIdFixe }) {
 
             {journalOuvert && (
                 <JournalDetail
+                    projetId={projetId}
                     journal={journalOuvert}
+                    lectureSeule={lectureSeule}
                     photosDuJour={photos.filter((p) => memeJour(p.datePrise, journalOuvert.date))}
+                    onModifie={(j) => {
+                        setJournalOuvert((avant) => ({ ...avant, ...j }));
+                        setJournaux((l) => l.map((x) => (x.id === j.id ? { ...x, ...j } : x)));
+                    }}
                     onFermer={() => setJournalOuvert(null)}
                     onVoirPhoto={(p) => {
                         setJournalOuvert(null);

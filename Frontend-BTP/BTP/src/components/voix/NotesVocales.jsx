@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Mic, Square, Trash2, Clock, Loader2, WifiOff, Sparkles, AlertTriangle } from 'lucide-react';
-import { getNotesVocales, createNoteVocale, deleteNoteVocale, preparerCompteRendu } from '../../api/api';
+import { getNotesVocales, createNoteVocale, deleteNoteVocale, preparerCompteRendu, getParametres } from '../../api/api';
 import CompteRenduModal from './CompteRenduModal';
 import { listQueue } from '../../api/queue';
 import { useEnregistreur, blobEnBase64, formatDuree, micAccessible, DUREE_MAX_SECONDES } from '../../hooks/useEnregistreur';
@@ -15,7 +15,7 @@ const aujourdhui = () => new Date().toISOString().slice(0, 10);
 
 // Observations dictées sur le chantier. Sans réseau, la note attend dans la file
 // et est transcrite au retour de la connexion. En fin de journée, l'IA en tire le rapport journalier.
-export default function NotesVocales({ projetId, photos = [], onRapportEnregistre }) {
+export default function NotesVocales({ projetId, photos = [], datesRapports = [], onRapportEnregistre }) {
   const { user } = useAuth();
   const [notes, setNotes] = useState([]);
   const [enAttente, setEnAttente] = useState([]);
@@ -28,6 +28,12 @@ export default function NotesVocales({ projetId, photos = [], onRapportEnregistr
   const chemin = `/projets/${projetId}/notes-vocales`;
 
   const notesDuJour = notes.filter((n) => String(n.enregistreeLe).slice(0, 10) === dateRapport).length;
+  const dejaValide = datesRapports.includes(dateRapport);
+  // Heure à laquelle le client voit le rapport du jour (réglée par l'entreprise)
+  const [heurePublication, setHeurePublication] = useState('18:00');
+  useEffect(() => {
+    getParametres().then((p) => p?.heurePublicationClient && setHeurePublication(p.heurePublicationClient)).catch(() => {});
+  }, []);
 
   const rediger = async () => {
     setPreparation(true);
@@ -127,6 +133,15 @@ export default function NotesVocales({ projetId, photos = [], onRapportEnregistr
           <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
             {notesDuJour} note{notesDuJour > 1 ? 's' : ''} ce jour-là — l'IA les transforme en rapport que vous validez.
           </div>
+          {dejaValide ? (
+            <div style={{ fontSize: 13, color: 'var(--accent-green)', marginTop: 4 }}>
+              ✓ Rapport validé pour ce jour ({dateRapport === aujourdhui() ? `visible par le client à partir de ${heurePublication}` : 'déjà visible par le client'}).
+            </div>
+          ) : dateRapport === aujourdhui() && notesDuJour > 0 && (
+            <div style={{ fontSize: 13, color: 'var(--accent-amber)', marginTop: 4 }}>
+              ⏰ Pas encore validé : le client reçoit le rapport du jour à {heurePublication}, une fois validé.
+            </div>
+          )}
         </div>
         <input
           type="date"

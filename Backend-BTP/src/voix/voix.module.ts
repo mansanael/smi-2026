@@ -15,6 +15,6 @@ import { NotesVocalesController, TranscriptionController } from './voix.controll
   imports: [ConfigModule, TypeOrmModule.forFeature([NoteVocale, Alerte, Projet])],
   controllers: [TranscriptionController, NotesVocalesController],
   providers: [TranscriptionService, AnalyseChantierService, NotesVocalesService],
-  exports: [TranscriptionService, NotesVocalesService],
+  exports: [TranscriptionService, NotesVocalesService, AnalyseChantierService],
 })
 export class VoixModule {}

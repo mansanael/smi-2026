@@ -1,7 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Banknote, CalendarClock, ClipboardCheck, Image as ImageIcon, Mic, ChevronRight } from 'lucide-react';
-import { getDashboardProjet, getJournaux, getPhotosChantier, getPaiements } from '../../api/api';
+import {
+  Building2, Banknote, CalendarClock, ClipboardCheck, Image as ImageIcon, Mic, ChevronRight, CheckCircle2, AlertTriangle,
+} from 'lucide-react';
+import {
+  getDashboardProjet, getJournaux, getPhotosChantier, getPaiements, getTaches, getJalons, getParametres,
+} from '../../api/api';
+
+const aujourdhui = () => new Date().toISOString().slice(0, 10);
+
+// Étapes terminées (jalons atteints, tâches finies) et retards (tâches non finies après la date prévue)
+function etapes(taches, jalons) {
+  const terminees = [
+    ...jalons.filter((j) => j.atteint).map((j) => ({ nom: j.nom, date: j.dateReel || j.datePrevu })),
+    ...taches.filter((t) => t.statut === 'terminee').map((t) => ({ nom: t.nom, date: t.dateFinReelle || t.dateFinPrevue })),
+  ].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  const retards = taches.filter((t) => t.statut !== 'terminee'
+    && (t.statut === 'en_retard' || (t.dateFinPrevue && String(t.dateFinPrevue).slice(0, 10) < aujourdhui())));
+  return { terminees, retards };
+}
 
 const fcfa = (n) => `${Number(n || 0).toLocaleString('fr-FR')} FCFA`;
 const jour = (d) => new Date(d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -21,8 +38,17 @@ export default function AccueilClient({ user, projets }) {
       getJournaux(projetId).catch(() => []),
       getPhotosChantier(projetId).catch(() => []),
       getPaiements(projetId).catch(() => null),
-    ]).then(([dash, journaux, photos, paiements]) => {
-      if (actif) setDonnees({ dash, journaux: journaux || [], photos: photos || [], paiements });
+      getTaches(projetId).catch(() => []),
+      getJalons(projetId).catch(() => []),
+      getParametres().catch(() => null),
+    ]).then(([dash, journaux, photos, paiements, taches, jalons, parametres]) => {
+      if (actif) {
+        setDonnees({
+          dash, journaux: journaux || [], photos: photos || [], paiements,
+          ...etapes(taches || [], jalons || []),
+          heure: parametres?.heurePublicationClient || '18:00',
+        });
+      }
     });
     return () => { actif = false; };
   }, [projetId]);
@@ -89,6 +115,10 @@ export default function AccueilClient({ user, projets }) {
                 <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 10 }}>
                   {jour(dernierRapport.date)}{dernierRapport.redige_par ? ` · par ${dernierRapport.redige_par}` : ''}
                 </p>
+                {/* Le message simple écrit pour le client ; à défaut, le rapport de l'équipe */}
+                {dernierRapport.resumeClient ? (
+                  <p style={{ whiteSpace: 'pre-line', fontSize: 15, lineHeight: 1.7, marginBottom: 12 }}>{dernierRapport.resumeClient}</p>
+                ) : <>
                 {dernierRapport.travauxRealises && (
                   <div style={{ marginBottom: 10 }}>
                     <div style={{ fontWeight: 600, fontSize: 14 }}>Travaux réalisés</div>
@@ -101,14 +131,61 @@ export default function AccueilClient({ user, projets }) {
                     <p style={{ whiteSpace: 'pre-line', fontSize: 14, lineHeight: 1.6 }}>{dernierRapport.resteAFaire}</p>
                   </div>
                 )}
+                </>}
                 <button className="btn btn-secondary btn-sm" onClick={() => ouvrir('suivi')}>
-                  Tous les rapports <ChevronRight size={14} />
+                  Rapport complet et rapports précédents <ChevronRight size={14} />
                 </button>
               </>
             ) : (
               <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Aucun rapport publié pour l'instant.</p>
             )}
+            {String(dernierRapport?.date || '').slice(0, 10) !== aujourdhui() && (
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 10 }}>
+                Le rapport du jour est publié à partir de {donnees.heure}, une fois validé par l'équipe.
+              </p>
+            )}
           </div>
+
+          {(donnees.terminees.length > 0 || donnees.retards.length > 0) && (
+            <div className="charts-grid" style={{ marginBottom: 20 }}>
+              <div className="glass-card">
+                <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <CheckCircle2 size={17} color="var(--accent-green)" /> Étapes terminées
+                </h3>
+                {donnees.terminees.length === 0 ? (
+                  <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>Pas encore d'étape terminée.</p>
+                ) : (
+                  <ul style={{ listStyle: 'none', display: 'grid', gap: 6, fontSize: 14 }}>
+                    {donnees.terminees.slice(0, 6).map((e, i) => (
+                      <li key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                        <span>✓ {e.nom}</span>
+                        {e.date && <span style={{ color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{new Date(e.date).toLocaleDateString('fr-FR')}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div className="glass-card">
+                <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <AlertTriangle size={17} color={donnees.retards.length ? 'var(--accent-amber)' : 'var(--accent-green)'} /> Retards
+                </h3>
+                {donnees.retards.length === 0 ? (
+                  <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Aucun retard sur le planning.</p>
+                ) : (
+                  <ul style={{ listStyle: 'none', display: 'grid', gap: 6, fontSize: 14 }}>
+                    {donnees.retards.slice(0, 6).map((t) => (
+                      <li key={t.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                        <span>{t.nom}</span>
+                        <span style={{ color: 'var(--accent-amber)', whiteSpace: 'nowrap' }}>
+                          prévu le {new Date(t.dateFinPrevue).toLocaleDateString('fr-FR')}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
 
           {donnees.photos.length > 0 && (
             <div className="glass-card" style={{ marginBottom: 20 }}>

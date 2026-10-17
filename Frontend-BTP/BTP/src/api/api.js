@@ -181,6 +181,15 @@ export const affecterSousTraitant = (pid, data) => api(`/projets/${pid}/sous-tra
 // Suivi chantier
 export const getJournaux = (pid) => api(`/projets/${pid}/journaux`);
 export const createJournal = (pid, data) => ecrire(`/projets/${pid}/journaux`, data, 'Journal de chantier');
+// Message du client tiré du rapport validé : correction à la main ou nouvelle rédaction par l'IA
+export const setResumeClient = (pid, jid, resumeClient) =>
+  api(`/projets/${pid}/journaux/${jid}/resume-client`, { method: 'PATCH', body: { resumeClient } });
+export const regenererResumeClient = (pid, jid) =>
+  api(`/projets/${pid}/journaux/${jid}/resume-client/regenerer`, { method: 'POST' });
+
+// Réglages de l'entreprise (heure de publication des rapports au client)
+export const getParametres = () => api('/parametres');
+export const updateParametres = (data) => api('/parametres', { method: 'PATCH', body: data });
 export const getIncidents = (pid) => api(`/projets/${pid}/incidents`);
 export const createIncident = (pid, data) => ecrire(`/projets/${pid}/incidents`, data, 'Incident');
 export const getPhotosChantier = (pid, categorie) =>

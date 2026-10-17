@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getUtilisateurs, createUtilisateur, deleteUtilisateur, reactiverUtilisateur } from '../../api/api';
 import { Plus, X, ShieldAlert, Trash2, UserCheck } from 'lucide-react';
+import ReglagesEntreprise from '../../components/ReglagesEntreprise';
 
 const emptyForm = { nom: '', prenom: '', email: '', motDePasse: '', role: 'chef_projet', telephone: '', poste: '' };
 
@@ -91,13 +92,15 @@ export default function Utilisateurs() {
         <div>
             <div className="page-header">
                 <div>
-                    <h1>Utilisateurs</h1>
-                    <p className="subtitle">Gestion des comptes et des rôles d'accès à BATIPME-SN</p>
+                    <h1>Administration</h1>
+                    <p className="subtitle">Réglages de l'entreprise, comptes et rôles d'accès à BATIPME-SN</p>
                 </div>
                 <button className="btn btn-primary" onClick={() => setShowModal(true)}>
                     <Plus size={18} /> Nouvel utilisateur
                 </button>
             </div>
+
+            <ReglagesEntreprise />
 
             {loading ? <div className="spinner" /> : (
                 <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>

@@ -66,6 +66,28 @@ Réponds uniquement en JSON avec exactement ces clés :
 {"travauxRealises": "", "resteAFaire": "", "problemes": "", "materiaux_receptionnes": "", "visitesDuJour": "",
  "observations": "", "nombreOuvriers": null, "meteo": null, "incidents": [{"type": "", "gravite": "", "description": ""}]}`;
 
+const PROMPT_RESUME_CLIENT = `Tu écris au client (maître d'ouvrage) d'un chantier BTP au Sénégal, souvent un particulier
+qui fait construire et ne connaît pas le vocabulaire du bâtiment. À partir du rapport journalier VALIDÉ par l'équipe,
+rédige un court message sur la journée.
+Règles :
+- N'utilise QUE les informations du rapport. N'invente rien, ne promets aucune date ni aucun délai.
+- Français simple et chaleureux, vouvoiement, sans nom ni civilité (pas de « M. » ni « Mme »). Commence par « Aujourd'hui sur votre chantier ».
+- Explique en quelques mots les termes techniques (ex. « la dalle, c'est-à-dire le plancher du 1er étage »).
+- 4 à 8 lignes : ce qui a été fait, puis la prochaine étape s'il y en a une.
+- Si des difficultés ou retards sont signalés, mentionne-les en une phrase calme et factuelle, sans dramatiser.
+- Ne parle JAMAIS de blessures, d'accidents ni de personnes, ni des quantités de matériaux, ni du nombre d'ouvriers.
+- Pas de Markdown, pas d'émoji, pas de liste à puces.
+Réponds uniquement en JSON : {"resume": "le message"}.`;
+
+export interface RapportPourClient {
+  date: string;
+  travauxRealises?: string | null;
+  resteAFaire?: string | null;
+  problemes?: string | null;
+  visitesDuJour?: string | null;
+  observations?: string | null;
+}
+
 const texte = (v: unknown, max = 4000): string =>
   typeof v === 'string' ? v.trim().slice(0, max) : Array.isArray(v) ? texte(v.filter((x) => typeof x === 'string').map((x) => `- ${x}`).join('\n'), max) : '';
 
@@ -163,6 +185,26 @@ export class AnalyseChantierService {
     } catch (err) {
       this.logger.error(`Compte rendu impossible : ${(err as Error).message}`);
       throw new ServiceUnavailableException("L'IA n'a pas pu préparer le compte rendu. Réessayez dans un instant.");
+    }
+  }
+
+  /** Message simple pour le client tiré du rapport validé ; null si l'IA ne répond pas (le client verra le rapport complet) */
+  async resumerPourClient(rapport: RapportPourClient): Promise<string | null> {
+    const contenu = [
+      `Date : ${rapport.date}`,
+      `Travaux réalisés :\n${rapport.travauxRealises || '—'}`,
+      `Reste à faire :\n${rapport.resteAFaire || '—'}`,
+      `Difficultés :\n${rapport.problemes || '—'}`,
+      `Visites :\n${rapport.visitesDuJour || '—'}`,
+      `Observations :\n${rapport.observations || '—'}`,
+    ].join('\n\n');
+    if (!this.apiKey || !(rapport.travauxRealises || rapport.resteAFaire)) return null;
+    try {
+      const brut = (await this.demanderJson(PROMPT_RESUME_CLIENT, contenu, 600, 15000)) as { resume?: unknown };
+      return texte(brut?.resume, 1500) || null;
+    } catch (err) {
+      this.logger.warn(`Résumé client impossible : ${(err as Error).message}`);
+      return null;
     }
   }
 

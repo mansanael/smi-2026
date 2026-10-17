@@ -380,7 +380,8 @@ export class AiContextService {
         const [taches, jalons, journaux, incidents, personnel, engins, sousTraitants] = await Promise.all([
           this.planningService.findTachesProjet(projetId),
           this.planningService.findJalonsProjet(projetId).catch(() => []),
-          this.suiviService.getJournaux(projetId),
+          // Client : seulement les rapports déjà publiés (heure choisie par l'entreprise)
+          this.suiviService.getJournaux(projetId, !interne),
           this.suiviService.getIncidents(projetId),
           this.ressourcesService.getPersonnelProjet(projetId).catch(() => []),
           this.ressourcesService.getEnginsProjet(projetId).catch(() => []),
@@ -537,7 +538,7 @@ export class AiContextService {
         // ─── SUIVI CHANTIER ──────────────────────────────────────────────────
         case 'get_project_journals': {
           const limit = Number(args.limit) || 5;
-          const journaux = await this.suiviService.getJournaux(String(args.projetId));
+          const journaux = await this.suiviService.getJournaux(String(args.projetId), !ROLES_INTERNES.includes(user.role));
           return JSON.stringify(journaux.slice(0, limit));
         }
 
