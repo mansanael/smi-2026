@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Utilisateur } from './entities/utilisateur.entity';
@@ -86,6 +86,21 @@ export class UtilisateursService {
   async reactiver(id: string): Promise<void> {
     await this.findOneById(id);
     await this.utilisateurRepository.update(id, { actif: true });
+  }
+
+  /**
+   * Suppression définitive d'un compte déjà désactivé (deux étapes : on ne supprime pas par erreur
+   * un compte en service). Les rapports, notes et paiements gardent le nom de leur auteur (texte).
+   */
+  async supprimerDefinitivement(id: string, demandeurId: string): Promise<void> {
+    if (id === demandeurId) throw new BadRequestException('Vous ne pouvez pas supprimer votre propre compte.');
+    const utilisateur = await this.findOneById(id);
+    if (utilisateur.actif) throw new BadRequestException("Désactivez d'abord ce compte avant de le supprimer définitivement.");
+    await this.utilisateurRepository.manager.transaction(async (m) => {
+      await m.query('DELETE FROM projet_membres WHERE utilisateur_id = $1', [id]);
+      await m.query('DELETE FROM ai_conversations WHERE "userId" = $1', [id]);
+      await m.delete(Utilisateur, { id });
+    });
   }
 }
 

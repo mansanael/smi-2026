@@ -330,3 +330,5 @@ export const getUtilisateurs = () => api('/admin/utilisateurs');
 export const createUtilisateur = (data) => api('/admin/utilisateurs', { method: 'POST', body: data });
 export const deleteUtilisateur = (id) => api(`/admin/utilisateurs/${id}`, { method: 'DELETE' });
 export const reactiverUtilisateur = (id) => api(`/admin/utilisateurs/${id}/reactiver`, { method: 'PATCH' });
+// Seulement pour un compte déjà désactivé
+export const supprimerUtilisateurDefinitivement = (id) => api(`/admin/utilisateurs/${id}/definitif`, { method: 'DELETE' });

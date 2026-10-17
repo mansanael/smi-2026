@@ -23,16 +23,17 @@ Le chargement prend 2 à 3 minutes (le serveur se réveille, l'IA rédige les me
 deux notes vocales). Il peut être relancé : les chantiers de démo précédents sont remplacés, les comptes sont gardés.
 Les notes vocales utilisent la voix française de Windows ; sur un autre système, elles sont ignorées.
 
-### Désactiver les anciens comptes d'essai (facultatif)
+### Supprimer les anciens comptes d'essai (facultatif)
 
 ```
-node scripts/demo/desactiver-anciens-comptes.mjs
+node scripts/demo/supprimer-anciens-comptes.mjs
 ```
 
 Garde le compte Directeur général connecté, les comptes de démo (@btpdemo.sn) et, si on les indique,
-d'autres personnes (par défaut : aucune) ; affiche les autres comptes et demande avant de les désactiver.
-Un compte désactivé ne peut plus se connecter mais reste dans l'historique ; il se réactive dans
-Administration → « Afficher les comptes désactivés ».
+d'autres personnes (par défaut : aucune) ; affiche les autres comptes et demande avant de les supprimer
+définitivement (irréversible). Les rapports et paiements gardent le nom de leur auteur.
+Dans l'application, un compte désactivé peut aussi être supprimé : Administration → « Afficher les comptes
+désactivés » → Supprimer.
 
 ## 2. Comptes
 

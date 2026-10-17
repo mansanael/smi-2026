@@ -9,7 +9,9 @@ import {
   HttpCode,
   HttpStatus,
   Patch,
+  ParseUUIDPipe,
 } from '@nestjs/common';
+import { UtilisateurCourant } from '../auth/decorators/utilisateur-courant.decorator';
 import { UtilisateursService } from './utilisateurs.service';
 import { CreateUtilisateurDto } from './dto/create-utilisateur.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -60,6 +62,17 @@ export class UtilisateursController {
   @Roles(RoleUtilisateur.DIRECTEUR_GENERAL)
   desactiver(@Param('id') id: string) {
     return this.utilisateursService.desactiver(id);
+  }
+
+  /**
+   * DELETE /api/admin/utilisateurs/:id/definitif
+   * Supprime définitivement un compte déjà désactivé — réservé DG uniquement
+   */
+  @Delete(':id/definitif')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles(RoleUtilisateur.DIRECTEUR_GENERAL)
+  supprimerDefinitivement(@Param('id', ParseUUIDPipe) id: string, @UtilisateurCourant() user: { id: string }) {
+    return this.utilisateursService.supprimerDefinitivement(id, user.id);
   }
 
   /**

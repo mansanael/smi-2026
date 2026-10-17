@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getUtilisateurs, createUtilisateur, deleteUtilisateur, reactiverUtilisateur } from '../../api/api';
+import { getUtilisateurs, createUtilisateur, deleteUtilisateur, reactiverUtilisateur, supprimerUtilisateurDefinitivement } from '../../api/api';
 import { Plus, X, ShieldAlert, Trash2, UserCheck } from 'lucide-react';
 import ReglagesEntreprise from '../../components/ReglagesEntreprise';
 import BaremeDevis from '../../components/estimation/BaremeDevis';
@@ -67,6 +67,16 @@ export default function Utilisateurs() {
             load();
         } catch (err) {
             alert(err.message || 'Erreur lors de la désactivation du compte');
+        }
+    };
+
+    const handleSupprimerDefinitivement = async (id, nom) => {
+        if (!confirm(`Supprimer définitivement le compte de ${nom} ? Cette action est irréversible (les rapports et paiements gardent son nom).`)) return;
+        try {
+            await supprimerUtilisateurDefinitivement(id);
+            load();
+        } catch (err) {
+            alert([].concat(err?.message || 'Erreur lors de la suppression du compte').join(' '));
         }
     };
 
@@ -143,9 +153,14 @@ export default function Utilisateurs() {
                                                         <Trash2 size={14} />
                                                     </button>
                                                 ) : (
-                                                    <button className="btn btn-sm btn-secondary" onClick={() => handleReactiver(u.id, `${u.prenom} ${u.nom}`)} title="Réactiver">
-                                                        <UserCheck size={14} /> Réactiver
-                                                    </button>
+                                                    <span style={{ display: 'inline-flex', gap: 6 }}>
+                                                        <button className="btn btn-sm btn-secondary" onClick={() => handleReactiver(u.id, `${u.prenom} ${u.nom}`)} title="Réactiver">
+                                                            <UserCheck size={14} /> Réactiver
+                                                        </button>
+                                                        <button className="btn btn-sm btn-danger" onClick={() => handleSupprimerDefinitivement(u.id, `${u.prenom} ${u.nom}`)} title="Supprimer définitivement">
+                                                            <Trash2 size={14} /> Supprimer
+                                                        </button>
+                                                    </span>
                                                 )
                                             )}
                                         </td>
