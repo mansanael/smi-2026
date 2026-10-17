@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
  * Désactive les anciens comptes d'essai, pour ne garder que :
- *   - les Directeurs généraux (dont le compte connecté),
+ *   - le compte Directeur général connecté,
  *   - les comptes de démonstration (@btpdemo.sn),
- *   - les personnes dont le prénom ou le nom est donné (par défaut : Malick, Coumba, Lateo).
+ *   - éventuellement, les personnes dont le prénom ou le nom est donné (par défaut : aucune).
  *
  *   node scripts/demo/desactiver-anciens-comptes.mjs
  *
@@ -23,9 +23,9 @@ async function main() {
   console.log('Désactivation des anciens comptes d’essai BATIPME-SN\n');
   const moi = await connexionDirecteur();
 
-  const noms = (process.env.GARDER || await demander('Prénoms ou noms à garder, séparés par des virgules', 'Malick, Coumba, Lateo'))
-    .split(',').map((n) => n.trim().toLowerCase()).filter(Boolean);
-  const aGarder = (u) => u.id === moi.id || u.role === 'directeur_general' || u.email.endsWith('@btpdemo.sn')
+  const reponse = process.env.GARDER || await demander('Autres personnes à garder (prénoms séparés par des virgules)', 'aucune');
+  const noms = /^aucun/i.test(reponse.trim()) ? [] : reponse.split(',').map((n) => n.trim().toLowerCase()).filter(Boolean);
+  const aGarder = (u) => u.id === moi.id || u.email.endsWith('@btpdemo.sn')
     || noms.some((n) => u.prenom?.toLowerCase().includes(n) || u.nom?.toLowerCase().includes(n));
 
   const actifs = (await appel('GET', '/admin/utilisateurs')).filter((u) => u.actif);

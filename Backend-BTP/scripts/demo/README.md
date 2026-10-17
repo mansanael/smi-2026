@@ -29,8 +29,8 @@ Les notes vocales utilisent la voix française de Windows ; sur un autre systèm
 node scripts/demo/desactiver-anciens-comptes.mjs
 ```
 
-Garde les Directeurs généraux, les comptes de démo (@btpdemo.sn) et les personnes indiquées
-(par défaut : Malick, Coumba, Lateo) ; affiche les autres comptes et demande avant de les désactiver.
+Garde le compte Directeur général connecté, les comptes de démo (@btpdemo.sn) et, si on les indique,
+d'autres personnes (par défaut : aucune) ; affiche les autres comptes et demande avant de les désactiver.
 Un compte désactivé ne peut plus se connecter mais reste dans l'historique ; il se réactive dans
 Administration → « Afficher les comptes désactivés ».
 
