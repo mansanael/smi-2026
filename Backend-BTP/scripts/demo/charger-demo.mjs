@@ -11,12 +11,12 @@
  *
  * Sans questions (tests) : API_URL, DEMO_EMAIL, DEMO_MOT_DE_PASSE et --oui (supprime les autres chantiers).
  */
-import { createInterface } from 'node:readline/promises';
-import { stdin, stdout, platform } from 'node:process';
+import { platform } from 'node:process';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { appel, connexionDirecteur, demander, oui, rl } from './commun.mjs';
 
 const MOT_DE_PASSE_DEMO = 'Demo2026!';
 const AUTO = process.argv.includes('--oui');
@@ -25,44 +25,6 @@ const AUTO = process.argv.includes('--oui');
 const jour = (decalage) => new Date(Date.now() + decalage * 86400000).toISOString().slice(0, 10);
 const instant = (decalage, heure) => `${jour(decalage)}T${heure}:00.000Z`;
 
-// ─── Questions dans le terminal ──────────────────────────────────────────────
-const rl = createInterface({ input: stdin, output: stdout });
-async function demander(question, defaut = '') {
-  const r = (await rl.question(`${question}${defaut ? ` [${defaut}]` : ''} : `)).trim();
-  return r || defaut;
-}
-async function demanderSecret(question) {
-  // Le mot de passe n'est pas affiché pendant la frappe
-  const ecrire = rl._writeToOutput;
-  rl._writeToOutput = (s) => { if (s.includes(question)) ecrire.call(rl, s); };
-  const r = await rl.question(`${question} : `);
-  rl._writeToOutput = ecrire;
-  stdout.write('\n');
-  return r.trim();
-}
-
-// ─── Appels au serveur ───────────────────────────────────────────────────────
-let API = '';
-let jeton = '';
-async function appel(method, path, body, token = jeton, essais = 3) {
-  for (let i = 1; ; i++) {
-    try {
-      const res = await fetch(API + path, {
-        method,
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: body ? JSON.stringify(body) : undefined,
-        signal: AbortSignal.timeout(120000), // Render gratuit : jusqu'à une minute pour se réveiller
-      });
-      const texte = await res.text();
-      let data; try { data = texte ? JSON.parse(texte) : null; } catch { data = texte; }
-      if (!res.ok) throw Object.assign(new Error(`${method} ${path} → ${res.status} ${JSON.stringify(data?.message ?? data)}`), { status: res.status });
-      return data;
-    } catch (err) {
-      if (err.status || i >= essais) throw err;
-      console.log(`   … le serveur ne répond pas encore, nouvel essai (${i}/${essais - 1})`);
-    }
-  }
-}
 const etape = (texte) => console.log(`\n▸ ${texte}`);
 
 // ─── Le contenu de la démo ───────────────────────────────────────────────────
@@ -216,15 +178,7 @@ function enregistrerNotes() {
 // ─── Déroulé ─────────────────────────────────────────────────────────────────
 async function main() {
   console.log('Chargement des données de démonstration BATIPME-SN (noms inventés)\n');
-  API = (process.env.API_URL || await demander('Adresse du serveur', 'https://smi-2026.onrender.com/api')).replace(/\/$/, '');
-  const emailDg = process.env.DEMO_EMAIL || await demander('E-mail du Directeur général');
-  const mdpDg = process.env.DEMO_MOT_DE_PASSE || await demanderSecret('Mot de passe');
-
-  etape('Connexion (le serveur peut mettre une minute à se réveiller)');
-  const connexion = await appel('POST', '/auth/login', { email: emailDg, motDePasse: mdpDg }, '');
-  if (connexion?.utilisateur?.role !== 'directeur_general') throw new Error('Ce compte n’est pas celui d’un Directeur général.');
-  jeton = connexion.access_token;
-  console.log('   connecté');
+  await connexionDirecteur();
 
   // 1. Chantiers existants : ceux de la démo précédente sont remplacés, les autres seulement avec accord
   etape('Chantiers existants');
@@ -235,7 +189,7 @@ async function main() {
   if (autres.length === 0) console.log('   (aucun chantier de test)');
   let supprimerAutres = false;
   if (autres.length) {
-    supprimerAutres = AUTO || /^o(ui)?$/i.test(await demander(`Supprimer ces ${autres.length} chantier(s) de test et leurs données ? (oui/non)`, 'non'));
+    supprimerAutres = AUTO || oui(await demander(`Supprimer ces ${autres.length} chantier(s) de test et leurs données ? (oui/non)`, 'non'));
   }
   for (const p of [...anciensDemo, ...(supprimerAutres ? autres : [])]) {
     await appel('DELETE', `/projets/${p.id}`);
@@ -334,7 +288,7 @@ async function main() {
   // 7. Rapports validés des jours passés (l'IA rédige le message du client)
   etape('Rapports validés (l’IA écrit le message du client)');
   const jetonConductrice = await appel('POST', '/auth/login', { email: email('ct'), motDePasse: MOT_DE_PASSE_DEMO }, '')
-    .then((r) => r.access_token).catch(() => jeton);
+    .then((r) => r.access_token).catch(() => undefined); // sinon : au nom du Directeur général
   for (const r of RAPPORTS_VILLA) {
     const j = await appel('POST', `/projets/${projet.villa}/journaux`, r, jetonConductrice);
     console.log(`   ${r.date} : ${j.resumeClient ? 'message client rédigé' : 'sans message (IA indisponible)'}`);

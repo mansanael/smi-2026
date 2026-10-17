@@ -33,6 +33,9 @@ export default function Utilisateurs() {
     const [showModal, setShowModal] = useState(false);
     const [form, setForm] = useState(emptyForm);
     const [error, setError] = useState('');
+    const [voirDesactives, setVoirDesactives] = useState(false);
+    const nombreDesactives = utilisateurs.filter(u => !u.actif).length;
+    const utilisateursAffiches = voirDesactives ? utilisateurs : utilisateurs.filter(u => u.actif);
 
     const estAutorise = user?.role === 'directeur_general' || user?.role === 'directeur_technique';
     const peutSupprimer = user?.role === 'directeur_general';
@@ -104,6 +107,19 @@ export default function Utilisateurs() {
             <ReglagesEntreprise />
             <BaremeDevis />
 
+            {/* Les comptes désactivés (anciens essais, départs) sont cachés par défaut */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
+                <h3 style={{ fontSize: 15 }}>
+                    Comptes ({utilisateurs.filter(u => u.actif).length} actifs{nombreDesactives ? `, ${nombreDesactives} désactivé${nombreDesactives > 1 ? 's' : ''}` : ''})
+                </h3>
+                {nombreDesactives > 0 && (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer' }}>
+                        <input type="checkbox" checked={voirDesactives} onChange={e => setVoirDesactives(e.target.checked)} />
+                        Afficher les comptes désactivés
+                    </label>
+                )}
+            </div>
+
             {loading ? <div className="spinner" /> : (
                 <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
                     <table className="data-table">
@@ -111,8 +127,8 @@ export default function Utilisateurs() {
                             <tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Poste</th><th>Téléphone</th><th>Statut</th>{peutSupprimer && <th></th>}</tr>
                         </thead>
                         <tbody>
-                            {utilisateurs.map(u => (
-                                <tr key={u.id}>
+                            {utilisateursAffiches.map(u => (
+                                <tr key={u.id} style={u.actif ? undefined : { opacity: 0.6 }}>
                                     <td style={{ fontWeight: 600 }}>{u.prenom} {u.nom}</td>
                                     <td>{u.email}</td>
                                     <td><span className={`badge ${roleBadge[u.role] || 'badge-gray'}`}>{roleLabels[u.role] || u.role}</span></td>
@@ -136,7 +152,7 @@ export default function Utilisateurs() {
                                     )}
                                 </tr>
                             ))}
-                            {utilisateurs.length === 0 && (
+                            {utilisateursAffiches.length === 0 && (
                                 <tr><td colSpan={peutSupprimer ? 7 : 6} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucun utilisateur</td></tr>
                             )}
                         </tbody>
