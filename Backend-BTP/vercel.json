@@ -12,12 +12,6 @@
       "dest": "dist/vercel.js"
     }
   ],
-  "crons": [
-    {
-      "path": "/api/cron/alertes",
-      "schedule": "0 7 * * *"
-    }
-  ],
   "env": {
     "NODE_ENV": "production"
   }

@@ -3,9 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { AlertesService } from './alertes.service';
 
 /**
- * Tâches programmées appelées par Vercel Cron (voir vercel.json).
- * Sur Vercel, le serveur s'arrête entre deux requêtes : @Cron ne s'y exécute pas.
- * Vercel envoie « Authorization: Bearer <CRON_SECRET> » ; sans ce secret, l'appel est refusé.
+ * Tâches programmées déclenchées de l'extérieur (ex. cron-job.org, chaque matin à 7 h).
+ * Sur l'offre gratuite de Render, le serveur s'endort sans visite : @Cron ne s'exécute pas,
+ * cet appel le réveille et lance l'analyse. L'appelant envoie « Authorization: Bearer <CRON_SECRET> ».
  */
 @Controller('cron')
 export class CronController {
@@ -20,10 +20,10 @@ export class CronController {
     if (authorization !== `Bearer ${secret}`) throw new ForbiddenException();
   }
 
-  // Chaque matin : alertes de budget, retards, impayés, documents, incidents
+  // Chaque matin : alertes de budget, retards, impayés, documents, incidents (une fois par jour)
   @Get('alertes')
   async alertes(@Headers('authorization') authorization?: string) {
     this.verifier(authorization);
-    return this.alertesService.analyserMaintenant();
+    return this.alertesService.analyserUneFoisParJour();
   }
 }

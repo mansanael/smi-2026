@@ -101,8 +101,8 @@ describe('Message du client rédigé par l’IA', () => {
   });
 });
 
-describe('Tâche programmée Vercel (alertes de 7 h)', () => {
-  const alertes = { analyserMaintenant: jest.fn().mockResolvedValue({ alertesCreees: 3 }) };
+describe('Réveil externe du serveur (alertes de 7 h)', () => {
+  const alertes = { analyserUneFoisParJour: jest.fn().mockResolvedValue({ lancee: true }) };
   const controleur = (secret?: string) => new CronController({ get: () => secret } as any, alertes as any);
 
   it('refuse un appel sans le secret', async () => {
@@ -111,6 +111,6 @@ describe('Tâche programmée Vercel (alertes de 7 h)', () => {
   });
 
   it('lance l’analyse avec le bon secret', async () => {
-    expect(await controleur('s3cret').alertes('Bearer s3cret')).toEqual({ alertesCreees: 3 });
+    expect(await controleur('s3cret').alertes('Bearer s3cret')).toEqual({ lancee: true });
   });
 });

@@ -10,6 +10,11 @@ export class ParametreEntreprise {
   @Column({ default: '18:00' })
   heurePublicationClient: string;
 
+  // Jour (AAAA-MM-JJ) de la dernière analyse des alertes du matin : une seule par jour,
+  // qu'elle vienne de la tâche programmée du serveur ou d'un service de réveil externe
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  derniereAnalyseAlertes: string | null;
+
   @UpdateDateColumn()
   modifieLe: Date;
 }

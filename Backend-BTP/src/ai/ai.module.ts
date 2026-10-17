@@ -22,6 +22,7 @@ import { RessourcesModule } from '../ressources/ressources.module';
 import { UtilisateursModule } from '../utilisateurs/utilisateurs.module';
 import { PaiementsModule } from '../paiements/paiements.module';
 import { VoixModule } from '../voix/voix.module';
+import { ParametresModule } from '../parametres/parametres.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { VoixModule } from '../voix/voix.module';
     UtilisateursModule,
     PaiementsModule,
     VoixModule,
+    ParametresModule,
   ],
   controllers: [AiController, AlertesController, CronController],
   providers: [

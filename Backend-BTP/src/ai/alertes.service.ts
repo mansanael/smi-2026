@@ -11,6 +11,7 @@ import { SuiviChantierService } from '../suivi-chantier/suivi-chantier.service';
 import { GraviteIncident } from '../suivi-chantier/entities/incident.entity';
 import { BudgetService } from '../budget/budget.service';
 import { PaiementsService } from '../paiements/paiements.service';
+import { ParametresService } from '../parametres/parametres.service';
 
 @Injectable()
 export class AlertesService {
@@ -26,10 +27,26 @@ export class AlertesService {
     private readonly suiviService: SuiviChantierService,
     private readonly budgetService: BudgetService,
     private readonly paiementsService: PaiementsService,
+    private readonly parametres: ParametresService,
   ) {}
 
   // ─── Cron : analyse chaque matin à 7h ─────────────────────────────────────
+  // Sur Render gratuit, le serveur dort à 7 h : un service de réveil appelle aussi /api/cron/alertes.
+  // Les deux peuvent coexister : l'analyse n'a lieu qu'une fois par jour.
   @Cron('0 7 * * *')
+  async analyseDuMatin(): Promise<void> {
+    await this.analyserUneFoisParJour();
+  }
+
+  async analyserUneFoisParJour(): Promise<{ lancee: boolean }> {
+    if (!(await this.parametres.reserverAnalyseDuJour())) {
+      this.logger.log('Analyse des alertes déjà faite aujourd’hui.');
+      return { lancee: false };
+    }
+    await this.analyserEtGenererAlertes();
+    return { lancee: true };
+  }
+
   async analyserEtGenererAlertes(): Promise<void> {
     this.logger.log('🔔 Analyse proactive des alertes BATIPME...');
     try {

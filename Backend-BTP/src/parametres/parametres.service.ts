@@ -24,6 +24,19 @@ export class ParametresService {
     return (await this.repo.findOne({ where: { id: 1 } })) ?? this.repo.save(this.repo.create({ id: 1 }));
   }
 
+  /** Réserve l'analyse des alertes du jour : true pour le premier appel de la journée, false ensuite */
+  async reserverAnalyseDuJour(jour = new Date().toISOString().slice(0, 10)): Promise<boolean> {
+    await this.get(); // la ligne doit exister
+    const resultat = await this.repo
+      .createQueryBuilder()
+      .update(ParametreEntreprise)
+      .set({ derniereAnalyseAlertes: jour })
+      .where('id = 1')
+      .andWhere('("derniereAnalyseAlertes" IS NULL OR "derniereAnalyseAlertes" <> :jour)', { jour })
+      .execute();
+    return (resultat.affected ?? 0) > 0;
+  }
+
   async update(changes: Partial<Pick<ParametreEntreprise, 'heurePublicationClient'>>): Promise<ParametreEntreprise> {
     const parametres = await this.get();
     return this.repo.save({ ...parametres, ...changes });
