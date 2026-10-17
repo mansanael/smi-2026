@@ -37,7 +37,9 @@ export class ParametresService {
     return (resultat.affected ?? 0) > 0;
   }
 
-  async update(changes: Partial<Pick<ParametreEntreprise, 'heurePublicationClient'>>): Promise<ParametreEntreprise> {
+  async update(
+    changes: Partial<Pick<ParametreEntreprise, 'heurePublicationClient' | 'tauxImprevus' | 'tauxPartEntreprise' | 'tauxTva'>>,
+  ): Promise<ParametreEntreprise> {
     const parametres = await this.get();
     return this.repo.save({ ...parametres, ...changes });
   }

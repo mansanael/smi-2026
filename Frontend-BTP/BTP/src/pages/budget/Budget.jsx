@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProjets, getBudgetKpi, getDevis, addLigneDevis, getDepenses, addDepense } from '../../api/api';
-import { Plus, X, Wallet, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
+import { Plus, X, Wallet, TrendingUp, TrendingDown, AlertTriangle, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES_SAISIE_BUDGET } from '../../roles';
+import EstimationModal from '../../components/estimation/EstimationModal';
 
 const emptyLigneDevis = { rubrique: 'materiaux', designation: '', unite: '', quantite: '', prixUnitaire: '' };
 const emptyDepense = { type: 'engagement', libelle: '', montant: '', categorie: 'materiaux', date: new Date().toISOString().slice(0, 10) };
@@ -47,6 +48,7 @@ export default function Budget({ projetIdFixe }) {
     const [loading, setLoading] = useState(true);
     const [tab, setTab] = useState('devis');
     const [showModal, setShowModal] = useState(false);
+    const [showEstimation, setShowEstimation] = useState(false);
     const [formDevis, setFormDevis] = useState(emptyLigneDevis);
     const [formDepense, setFormDepense] = useState(emptyDepense);
     const navigate = useNavigate();
@@ -155,12 +157,30 @@ export default function Budget({ projetIdFixe }) {
 
                     <div className="page-header" style={{ marginBottom: 12 }}>
                         <div />
-                        {peutSaisir && (
-                            <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-                                <Plus size={18} /> {tab === 'devis' ? 'Ligne de devis' : 'Dépense'}
-                            </button>
-                        )}
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            {/* Devis estimatif : tous les rôles budget estiment ; DG, DT, RAF créent les lignes */}
+                            {tab === 'devis' && (
+                                <button className="btn btn-secondary" onClick={() => setShowEstimation(true)}>
+                                    <Sparkles size={18} /> Estimer avec l'IA
+                                </button>
+                            )}
+                            {peutSaisir && (
+                                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                                    <Plus size={18} /> {tab === 'devis' ? 'Ligne de devis' : 'Dépense'}
+                                </button>
+                            )}
+                        </div>
                     </div>
+
+                    {showEstimation && (
+                        <EstimationModal
+                            projetId={projetId}
+                            peutCreer={peutSaisir}
+                            nombreLignesExistantes={devis.length}
+                            onFermer={() => setShowEstimation(false)}
+                            onDevisCree={() => { setShowEstimation(false); loadProjetData(projetId); }}
+                        />
+                    )}
 
                     {tab === 'devis' ? (
                         <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>

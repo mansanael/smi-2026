@@ -187,6 +187,14 @@ export const setResumeClient = (pid, jid, resumeClient) =>
 export const regenererResumeClient = (pid, jid) =>
   api(`/projets/${pid}/journaux/${jid}/resume-client/regenerer`, { method: 'POST' });
 
+// Devis estimatif : l'IA lit la description, le calcul utilise les prix au m² de l'entreprise
+export const getBaremeDevis = () => api('/estimation/bareme');
+export const updateBaremeDevis = (data) => api('/estimation/bareme', { method: 'PUT', body: data });
+export const analyserEstimation = (description) => api('/estimation/analyser', { method: 'POST', body: { description } });
+export const calculerEstimation = (surfaceM2, finition) => api('/estimation/calculer', { method: 'POST', body: { surfaceM2, finition } });
+export const creerDevisEstimation = (pid, surfaceM2, finition) =>
+  api(`/projets/${pid}/estimation/devis`, { method: 'POST', body: { surfaceM2, finition } });
+
 // Réglages de l'entreprise (heure de publication des rapports au client)
 export const getParametres = () => api('/parametres');
 export const updateParametres = (data) => api('/parametres', { method: 'PATCH', body: data });

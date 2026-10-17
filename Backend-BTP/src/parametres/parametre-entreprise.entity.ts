@@ -15,6 +15,16 @@ export class ParametreEntreprise {
   @Column({ type: 'varchar', length: 10, nullable: true })
   derniereAnalyseAlertes: string | null;
 
+  // Pourcentages du devis estimatif (réglés par la direction)
+  @Column({ type: 'double precision', default: 5 })
+  tauxImprevus: number;
+
+  @Column({ type: 'double precision', default: 15 })
+  tauxPartEntreprise: number; // frais généraux et bénéfice
+
+  @Column({ type: 'double precision', default: 18 })
+  tauxTva: number; // fixé par l'État (18 % au Sénégal)
+
   @UpdateDateColumn()
   modifieLe: Date;
 }

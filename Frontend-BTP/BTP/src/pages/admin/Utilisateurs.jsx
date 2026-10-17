@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { getUtilisateurs, createUtilisateur, deleteUtilisateur, reactiverUtilisateur } from '../../api/api';
 import { Plus, X, ShieldAlert, Trash2, UserCheck } from 'lucide-react';
 import ReglagesEntreprise from '../../components/ReglagesEntreprise';
+import BaremeDevis from '../../components/estimation/BaremeDevis';
 
 const emptyForm = { nom: '', prenom: '', email: '', motDePasse: '', role: 'chef_projet', telephone: '', poste: '' };
 
@@ -101,6 +102,7 @@ export default function Utilisateurs() {
             </div>
 
             <ReglagesEntreprise />
+            <BaremeDevis />
 
             {loading ? <div className="spinner" /> : (
                 <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>

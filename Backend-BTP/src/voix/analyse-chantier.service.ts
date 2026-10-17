@@ -79,6 +79,42 @@ Règles :
 - Pas de Markdown, pas d'émoji, pas de liste à puces.
 Réponds uniquement en JSON : {"resume": "le message"}.`;
 
+const PROMPT_PARAMETRES_DEVIS = `Tu aides une entreprise BTP au Sénégal à chiffrer un projet. On te décrit un projet en une phrase
+(souvent dictée). Extrais UNIQUEMENT les paramètres dits, sans rien inventer ni chiffrer.
+- typeOuvrage : nature courte du projet (ex. "villa", "immeuble", "magasin", "école"), ou null.
+- niveaux : nombre total de niveaux construits. R+0 ou plain-pied = 1, R+1 = 2, R+2 = 3, etc. null si non dit.
+- surfaceM2 : surface en m² telle que dite (nombre), null si non dite.
+- surfaceParNiveau : true seulement si la phrase dit que la surface est PAR niveau ou par étage (ex. "150 m² par étage").
+- localisation : ville ou quartier, ou null.
+- finition : "economique", "standard" ou "haut_standing" ; "normal", "moyen", "simple mais propre" = "standard" ;
+  "luxe", "haut de gamme", "très bonne finition" = "haut_standing" ; "économique", "social", "bas prix" = "economique" ; null si non dit.
+Réponds uniquement en JSON : {"typeOuvrage": null, "niveaux": null, "surfaceM2": null, "surfaceParNiveau": false, "localisation": null, "finition": null}`;
+
+export interface ParametresDevis {
+  typeOuvrage: string | null;
+  niveaux: number | null;
+  surfaceM2: number | null; // surface totale construite
+  localisation: string | null;
+  finition: 'economique' | 'standard' | 'haut_standing' | null;
+}
+
+/** Contrôle la réponse de l'IA ; une surface « par niveau » est multipliée par le nombre de niveaux */
+export function normaliserParametresDevis(brut: unknown): ParametresDevis {
+  const r = (brut && typeof brut === 'object' ? brut : {}) as Record<string, unknown>;
+  const nombre = (v: unknown) => (typeof v === 'number' ? v : typeof v === 'string' && v.trim() ? Number(v.replace(',', '.')) : NaN);
+  const niveaux = Math.round(nombre(r.niveaux));
+  const niveauxOk = Number.isFinite(niveaux) && niveaux >= 1 && niveaux <= 60 ? niveaux : null;
+  let surface = nombre(r.surfaceM2);
+  if (Number.isFinite(surface) && r.surfaceParNiveau === true && niveauxOk) surface *= niveauxOk;
+  return {
+    typeOuvrage: texte(r.typeOuvrage, 80) || null,
+    niveaux: niveauxOk,
+    surfaceM2: Number.isFinite(surface) && surface > 0 && surface < 1_000_000 ? Math.round(surface) : null,
+    localisation: texte(r.localisation, 80) || null,
+    finition: valeurDe(['economique', 'standard', 'haut_standing'], r.finition),
+  };
+}
+
 export interface RapportPourClient {
   date: string;
   travauxRealises?: string | null;
@@ -205,6 +241,16 @@ export class AnalyseChantierService {
     } catch (err) {
       this.logger.warn(`Résumé client impossible : ${(err as Error).message}`);
       return null;
+    }
+  }
+
+  /** Paramètres d'un projet décrit en une phrase (« villa R+2 de 300 m² à Mbao ») ; les prix ne viennent pas de l'IA */
+  async extraireParametresDevis(description: string): Promise<ParametresDevis> {
+    try {
+      return normaliserParametresDevis(await this.demanderJson(PROMPT_PARAMETRES_DEVIS, description, 300, 15000));
+    } catch (err) {
+      this.logger.error(`Lecture de la description impossible : ${(err as Error).message}`);
+      throw new ServiceUnavailableException("L'IA n'a pas pu lire la description. Réessayez, ou saisissez la surface à la main.");
     }
   }
 
