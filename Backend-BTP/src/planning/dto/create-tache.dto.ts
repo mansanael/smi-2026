@@ -17,6 +17,13 @@ export class CreateTacheDto {
   @IsOptional() @IsDateString()
   dateFinPrevue?: string;
 
+  // Tâche saisie après coup : dates réelles connues (sinon, date du jour au passage en cours / terminée)
+  @IsOptional() @IsDateString()
+  dateDebutReelle?: string;
+
+  @IsOptional() @IsDateString()
+  dateFinReelle?: string;
+
   @IsOptional() @IsNumber()
   dureeJours?: number;
 
