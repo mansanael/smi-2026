@@ -1,6 +1,25 @@
 import { useState, useEffect } from 'react';
-import { getPersonnel, createPersonnel, getEngins, createEngin, getSousTraitants, createSousTraitant, getProjets, getPointages, createPointage } from '../../api/api';
+import {
+    getPersonnel, createPersonnel, getEngins, createEngin, getSousTraitants, createSousTraitant, getProjets,
+    getPointages, createPointage, getEnginsProjet, affecterEngin,
+} from '../../api/api';
 import { Plus, X, HardHat, Truck, Briefcase, ClipboardList } from 'lucide-react';
+
+const emptyAffectationEngin = () => ({ enginId: '', dateDebut: new Date().toISOString().slice(0, 10), dateFin: '', observations: '' });
+const formatJour = (d) => (d ? new Date(String(d).slice(0, 10)).toLocaleDateString('fr-FR', { timeZone: 'UTC' }) : '—');
+
+// Conflit d'affectation (409) : le serveur explique le conflit, l'utilisateur peut confirmer quand même
+async function avecConfirmationConflit(envoyer) {
+    try {
+        return await envoyer(false);
+    } catch (err) {
+        if (err?.status === 409 && err?.conflit) {
+            if (!window.confirm(`⚠️ ${err.message}\n\nEnregistrer quand même ?`)) return null;
+            return envoyer(true);
+        }
+        throw err;
+    }
+}
 
 const emptyPersonnel = { nom: '', prenom: '', poste: '', categorie: 'ouvrier_qualifie', typeContrat: 'journalier', tauxJournalier: '', salaireMensuel: '', telephone: '' };
 const emptyEngin = { designation: '', immatriculation: '', marque: '', modele: '', type: 'propre', tauxJournalier: '' };
@@ -36,6 +55,9 @@ export default function Ressources({ projetIdFixe }) {
     const [pointages, setPointages] = useState([]);
     const [loadingPointages, setLoadingPointages] = useState(false);
     const [formPointage, setFormPointage] = useState(emptyPointage);
+    const [enginsProjet, setEnginsProjet] = useState([]);
+    const [formAffEngin, setFormAffEngin] = useState(emptyAffectationEngin);
+    const [modalAffectation, setModalAffectation] = useState('pointage'); // 'pointage' | 'engin'
 
     const loadAll = () => {
         setLoading(true);
@@ -52,7 +74,9 @@ export default function Ressources({ projetIdFixe }) {
 
     const loadPointages = (pid) => {
         setLoadingPointages(true);
-        getPointages(pid).then(setPointages).finally(() => setLoadingPointages(false));
+        Promise.all([getPointages(pid), getEnginsProjet(pid).catch(() => [])])
+            .then(([pt, eng]) => { setPointages(pt); setEnginsProjet(eng || []); })
+            .finally(() => setLoadingPointages(false));
     };
 
     useEffect(() => { if (projetId && tab === 'affectations') loadPointages(projetId); }, [projetId, tab]);
@@ -81,11 +105,34 @@ export default function Ressources({ projetIdFixe }) {
 
     const handleAddPointage = async (e) => {
         e.preventDefault();
-        await createPointage(projetId, {
-            ...formPointage,
-            heuresSupplementaires: formPointage.heuresSupplementaires ? Number(formPointage.heuresSupplementaires) : 0,
-        });
-        setShowModal(false); setFormPointage(emptyPointage); loadPointages(projetId);
+        try {
+            const ok = await avecConfirmationConflit((forcer) => createPointage(projetId, {
+                ...formPointage,
+                heuresSupplementaires: formPointage.heuresSupplementaires ? Number(formPointage.heuresSupplementaires) : 0,
+                ...(forcer ? { forcer: true } : {}),
+            }));
+            if (!ok) return;
+            setShowModal(false); setFormPointage(emptyPointage); loadPointages(projetId);
+        } catch (err) {
+            alert([].concat(err?.message || 'Erreur lors du pointage.').join(' '));
+        }
+    };
+
+    const handleAffecterEngin = async (e) => {
+        e.preventDefault();
+        try {
+            const ok = await avecConfirmationConflit((forcer) => affecterEngin(projetId, {
+                enginId: formAffEngin.enginId,
+                dateDebut: formAffEngin.dateDebut,
+                dateFin: formAffEngin.dateFin || undefined,
+                observations: formAffEngin.observations || undefined,
+                ...(forcer ? { forcer: true } : {}),
+            }));
+            if (!ok) return;
+            setShowModal(false); setFormAffEngin(emptyAffectationEngin()); loadPointages(projetId);
+        } catch (err) {
+            alert([].concat(err?.message || "Erreur lors de l'affectation.").join(' '));
+        }
     };
 
     const formatFCFA = (n) => n ? `${Number(n).toLocaleString('fr-FR')} FCFA` : '—';
@@ -130,9 +177,14 @@ export default function Ressources({ projetIdFixe }) {
                     </button>
                 )}
                 {tab === 'affectations' && projetId && (
-                    <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-                        <Plus size={18} /> Pointage
-                    </button>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <button className="btn btn-secondary" onClick={() => { setModalAffectation('engin'); setShowModal(true); }}>
+                            <Truck size={18} /> Affecter un engin
+                        </button>
+                        <button className="btn btn-primary" onClick={() => { setModalAffectation('pointage'); setShowModal(true); }}>
+                            <Plus size={18} /> Pointage
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -140,6 +192,25 @@ export default function Ressources({ projetIdFixe }) {
                 projets.length === 0 ? (
                     <div className="empty-state"><p>Aucun projet trouvé. Crée d'abord un projet.</p></div>
                 ) : loadingPointages ? <div className="spinner" /> : (
+                    <>
+                    <h3 style={{ fontSize: 15, margin: '4px 0 10px' }}>Engins sur ce chantier</h3>
+                    <div className="glass-card" style={{ padding: 0, overflow: 'hidden', marginBottom: 20 }}>
+                        <table className="data-table">
+                            <thead><tr><th>Engin</th><th>Du</th><th>Au</th><th>Observations</th></tr></thead>
+                            <tbody>
+                                {enginsProjet.map(a => (
+                                    <tr key={a.id}>
+                                        <td style={{ fontWeight: 600 }}>{a.engin?.designation}{a.engin?.immatriculation ? ` (${a.engin.immatriculation})` : ''}</td>
+                                        <td>{formatJour(a.dateDebut)}</td>
+                                        <td>{a.dateFin ? formatJour(a.dateFin) : 'sans date de fin'}</td>
+                                        <td>{a.observations || '—'}</td>
+                                    </tr>
+                                ))}
+                                {enginsProjet.length === 0 && <tr><td colSpan="4" style={{ textAlign: 'center', padding: 24, color: 'var(--text-muted)' }}>Aucun engin affecté à ce chantier</td></tr>}
+                            </tbody>
+                        </table>
+                    </div>
+                    <h3 style={{ fontSize: 15, margin: '4px 0 10px' }}>Pointages du personnel</h3>
                     <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
                         <table className="data-table">
                             <thead><tr><th>Employé</th><th>Date</th><th>Statut</th><th>Heures sup.</th><th>Montant jour</th><th>Observations</th></tr></thead>
@@ -158,6 +229,7 @@ export default function Ressources({ projetIdFixe }) {
                             </tbody>
                         </table>
                     </div>
+                    </>
                 )
             ) : loading ? <div className="spinner" /> : (
                 <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
@@ -314,7 +386,38 @@ export default function Ressources({ projetIdFixe }) {
                 </div>
             )}
 
-            {showModal && tab === 'affectations' && (
+            {showModal && tab === 'affectations' && modalAffectation === 'engin' && (
+                <div className="modal-overlay" onClick={() => setShowModal(false)}>
+                    <div className="modal" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header"><h2>Affecter un engin</h2><button className="modal-close" onClick={() => setShowModal(false)}><X size={20} /></button></div>
+                        <form onSubmit={handleAffecterEngin}>
+                            <div className="form-group">
+                                <label>Engin *</label>
+                                <select className="form-select" required value={formAffEngin.enginId} onChange={e => setFormAffEngin({ ...formAffEngin, enginId: e.target.value })}>
+                                    <option value="">— Choisir —</option>
+                                    {engins.map(en => (
+                                        <option key={en.id} value={en.id}>
+                                            {en.designation}{en.immatriculation ? ` (${en.immatriculation})` : ''}{en.statut && en.statut !== 'disponible' ? ` — ${en.statut.replace('_', ' ')}` : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group"><label>Du *</label><input className="form-input" type="date" required value={formAffEngin.dateDebut} onChange={e => setFormAffEngin({ ...formAffEngin, dateDebut: e.target.value })} /></div>
+                                <div className="form-group"><label>Au</label><input className="form-input" type="date" min={formAffEngin.dateDebut} value={formAffEngin.dateFin} onChange={e => setFormAffEngin({ ...formAffEngin, dateFin: e.target.value })} /></div>
+                            </div>
+                            <div className="form-group"><label>Observations</label><input className="form-input" value={formAffEngin.observations} onChange={e => setFormAffEngin({ ...formAffEngin, observations: e.target.value })} /></div>
+                            <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>L'application vérifie que l'engin n'est pas déjà sur un autre chantier à ces dates, ni en maintenance.</p>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Annuler</button>
+                                <button type="submit" className="btn btn-primary"><Truck size={16} /> Affecter</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showModal && tab === 'affectations' && modalAffectation === 'pointage' && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal" onClick={e => e.stopPropagation()}>
                         <div className="modal-header"><h2>Nouveau pointage</h2><button className="modal-close" onClick={() => setShowModal(false)}><X size={20} /></button></div>

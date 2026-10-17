@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -6,6 +7,7 @@ import {
 import {
   getDashboardProjet, getJournaux, getPhotosChantier, getPaiements, getTaches, getJalons, getParametres,
 } from '../../api/api';
+import { etatTache } from '../../utils/planning';
 
 const aujourdhui = () => new Date().toISOString().slice(0, 10);
 
@@ -15,8 +17,8 @@ function etapes(taches, jalons) {
     ...jalons.filter((j) => j.atteint).map((j) => ({ nom: j.nom, date: j.dateReel || j.datePrevu })),
     ...taches.filter((t) => t.statut === 'terminee').map((t) => ({ nom: t.nom, date: t.dateFinReelle || t.dateFinPrevue })),
   ].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
-  const retards = taches.filter((t) => t.statut !== 'terminee'
-    && (t.statut === 'en_retard' || (t.dateFinPrevue && String(t.dateFinPrevue).slice(0, 10) < aujourdhui())));
+  // Même règle que les couleurs du planning : rouge = date de fin dépassée
+  const retards = taches.filter((t) => etatTache(t).niveau === 'en_retard');
   return { terminees, retards };
 }
 
@@ -119,18 +121,18 @@ export default function AccueilClient({ user, projets }) {
                 {dernierRapport.resumeClient ? (
                   <p style={{ whiteSpace: 'pre-line', fontSize: 15, lineHeight: 1.7, marginBottom: 12 }}>{dernierRapport.resumeClient}</p>
                 ) : <>
-                {dernierRapport.travauxRealises && (
-                  <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontWeight: 600, fontSize: 14 }}>Travaux réalisés</div>
-                    <p style={{ whiteSpace: 'pre-line', fontSize: 14, lineHeight: 1.6 }}>{dernierRapport.travauxRealises}</p>
-                  </div>
-                )}
-                {dernierRapport.resteAFaire && (
-                  <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontWeight: 600, fontSize: 14 }}>Prochaines étapes</div>
-                    <p style={{ whiteSpace: 'pre-line', fontSize: 14, lineHeight: 1.6 }}>{dernierRapport.resteAFaire}</p>
-                  </div>
-                )}
+                  {dernierRapport.travauxRealises && (
+                    <div style={{ marginBottom: 10 }}>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>Travaux réalisés</div>
+                      <p style={{ whiteSpace: 'pre-line', fontSize: 14, lineHeight: 1.6 }}>{dernierRapport.travauxRealises}</p>
+                    </div>
+                  )}
+                  {dernierRapport.resteAFaire && (
+                    <div style={{ marginBottom: 10 }}>
+                      <div style={{ fontWeight: 600, fontSize: 14 }}>Prochaines étapes</div>
+                      <p style={{ whiteSpace: 'pre-line', fontSize: 14, lineHeight: 1.6 }}>{dernierRapport.resteAFaire}</p>
+                    </div>
+                  )}
                 </>}
                 <button className="btn btn-secondary btn-sm" onClick={() => ouvrir('suivi')}>
                   Rapport complet et rapports précédents <ChevronRight size={14} />

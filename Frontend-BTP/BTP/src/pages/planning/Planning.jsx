@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { estLectureSeule } from '../../roles';
+import { ETATS_TACHE, compterEtats, etatTache } from '../../utils/planning';
 
 const lotOptions = [
   { value: 'installation_chantier', label: 'Installation de chantier' },
@@ -158,6 +159,7 @@ export default function Planning({ projetIdFixe }) {
     const jalonsOk = jalons.filter(j => j.atteint).length;
     return { total, avg, terminees, enCours, jalonsTotal, jalonsOk };
   }, [taches, jalons]);
+  const compteEtats = useMemo(() => compterEtats(taches), [taches]);
 
   // ─── ACTIONS TÂCHES ────────────────────────────────────────────────────────
 
@@ -506,6 +508,20 @@ export default function Planning({ projetIdFixe }) {
               )}
             </div>
 
+            {/* Légende des couleurs : en un coup d'œil, ce qui va bien et ce qui dérape */}
+            {taches.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginBottom: 12, fontSize: 13 }}>
+                {['en_retard', 'a_surveiller', 'a_temps', 'termine', 'a_venir', 'sans_dates']
+                  .filter((niveau) => niveau !== 'sans_dates' || compteEtats.sans_dates > 0)
+                  .map((niveau) => (
+                  <span key={niveau} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, opacity: compteEtats[niveau] ? 1 : 0.5 }}>
+                    <span style={{ width: 10, height: 10, borderRadius: '50%', background: ETATS_TACHE[niveau].couleur }} />
+                    {ETATS_TACHE[niveau].label} : <strong>{compteEtats[niveau]}</strong>
+                  </span>
+                ))}
+              </div>
+            )}
+
             {taches.length > 0 ? (
               <div style={{ overflowX: 'auto' }}>
                 <table className="data-table">
@@ -524,10 +540,11 @@ export default function Planning({ projetIdFixe }) {
                     {taches.map(t => {
                       const avancement = Number(t.pourcentageAvancement) || 0;
                       const isUpdating = updatingId === t.id;
+                      const etat = etatTache(t);
 
                       return (
                         <tr key={t.id}>
-                          <td style={{ verticalAlign: 'middle' }}>
+                          <td style={{ verticalAlign: 'middle', boxShadow: `inset 4px 0 0 ${etat.couleur}` }}>
                             <span title={statutLabels[t.statut] || t.statut}>
                               {statutIcon(t.statut)}
                             </span>
@@ -539,11 +556,19 @@ export default function Planning({ projetIdFixe }) {
                                 {t.description}
                               </div>
                             )}
-                            <div style={{ marginTop: 4 }}>
+                            <div style={{ marginTop: 4, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                               <span className={`badge ${statutBadges[t.statut] || 'badge-gray'}`} style={{ fontSize: 11, padding: '2px 8px' }}>
                                 {statutLabels[t.statut] || t.statut}
                               </span>
+                              {etat.niveau !== 'termine' && (
+                                <span className={`badge ${etat.badge}`} style={{ fontSize: 11, padding: '2px 8px' }} title={etat.explication}>
+                                  ● {etat.label}
+                                </span>
+                              )}
                             </div>
+                            {(etat.niveau === 'en_retard' || etat.niveau === 'a_surveiller') && (
+                              <div style={{ fontSize: 12, color: etat.couleur, marginTop: 4 }}>{etat.explication}</div>
+                            )}
                           </td>
                           <td style={{ verticalAlign: 'middle' }}>
                             <span className="badge badge-teal" style={{ textTransform: 'capitalize' }}>

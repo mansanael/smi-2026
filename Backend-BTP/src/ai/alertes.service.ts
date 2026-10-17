@@ -12,6 +12,7 @@ import { GraviteIncident } from '../suivi-chantier/entities/incident.entity';
 import { BudgetService } from '../budget/budget.service';
 import { PaiementsService } from '../paiements/paiements.service';
 import { ParametresService } from '../parametres/parametres.service';
+import { RessourcesService } from '../ressources/ressources.service';
 
 @Injectable()
 export class AlertesService {
@@ -28,6 +29,7 @@ export class AlertesService {
     private readonly budgetService: BudgetService,
     private readonly paiementsService: PaiementsService,
     private readonly parametres: ParametresService,
+    private readonly ressourcesService: RessourcesService,
   ) {}
 
   // ─── Cron : analyse chaque matin à 7h ─────────────────────────────────────
@@ -74,6 +76,20 @@ export class AlertesService {
           gravite: GraviteAlerte.DANGER,
           message: `📄 ${docsUrgents.length} document(s) expirent dans moins de 15 jours : ${docsUrgents.map(d => d.nom).join(', ')}.`,
         });
+      }
+
+      // ── Engins affectés à deux chantiers en même temps ──────────────────
+      for (const c of await this.ressourcesService.conflitsEnginsEnCours()) {
+        for (const p of c.projets) {
+          const autre = c.projets.find((x) => x.id !== p.id);
+          alertesACreer.push({
+            type: TypeAlerte.CONFLIT_AFFECTATION,
+            gravite: GraviteAlerte.WARNING,
+            projetId: p.id,
+            projetReference: p.reference,
+            message: `🚜 [${p.reference}] Conflit d'affectation : ${c.engin} est aussi affecté à ${autre?.reference} sur la même période.`,
+          });
+        }
       }
 
       // ── Analyse par projet ───────────────────────────────────────────────

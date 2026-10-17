@@ -17,6 +17,7 @@ export enum TypeAlerte {
   AVANCEMENT_FAIBLE = 'avancement_faible',
   PAIEMENT_EN_RETARD = 'paiement_en_retard',
   PROBLEME_CHANTIER = 'probleme_chantier', // signalé dans une note vocale
+  CONFLIT_AFFECTATION = 'conflit_affectation', // même engin sur deux chantiers en même temps
 }
 
 @Entity('ai_alertes')

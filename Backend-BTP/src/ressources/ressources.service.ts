@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Personnel, SMIG_JOURNALIER_2026 } from './entities/personnel.entity';
 import { Pointage, StatutPresence } from './entities/pointage.entity';
-import { Engin } from './entities/engin.entity';
+import { Engin, StatutEngin } from './entities/engin.entity';
+import { conflitPointage, decrirePeriode, periodesSeChevauchent } from './conflits';
 import { SousTraitant } from './entities/sous-traitant.entity';
 import { AffectationEngin } from './entities/affectation-engin.entity';
 import { AffectationSousTraitant } from './entities/affectation-sous-traitant.entity';
@@ -50,12 +51,33 @@ export class RessourcesService {
   }
 
   // ─── POINTAGE ─────────────────────────────────────────────────────────────
-  async createPointage(dto: Partial<Pointage> & { personnelId: string; projetId: string }): Promise<Pointage> {
+  // forcer : l'utilisateur a vu le conflit et confirme (ex. ouvrier réellement passé sur deux chantiers)
+  async createPointage(dto: Partial<Pointage> & { personnelId: string; projetId: string; forcer?: boolean }): Promise<Pointage> {
     if (dto.id) {
       const existant = await this.pointageRepo.findOne({ where: { id: dto.id } });
       if (existant) return existant;
     }
     const personnel = await this.findPersonnel(dto.personnelId);
+
+    if (!dto.forcer && dto.date) {
+      const memeJour = await this.pointageRepo.find({
+        where: { personnel: { id: dto.personnelId }, date: String(dto.date).slice(0, 10) as any },
+        relations: { projet: true },
+      });
+      const conflit = conflitPointage(
+        { statut: dto.statut, projetId: dto.projetId },
+        memeJour.map((p) => ({ statut: p.statut, projetId: p.projet.id, projetReference: p.projet.reference })),
+      );
+      if (conflit) {
+        throw new ConflictException({
+          statusCode: 409,
+          conflit: true,
+          message: `Conflit d'affectation : ${personnel.prenom} ${personnel.nom}, le ${new Date(String(dto.date).slice(0, 10)).toLocaleDateString('fr-FR', { timeZone: 'UTC' })} — ${conflit}.`,
+        });
+      }
+    }
+    const { forcer: _forcer, ...donnees } = dto;
+    dto = donnees;
     // Calcul automatique du montant journalier (SMIG si pas de taux spécifique)
     const tauxJour = Number(personnel.tauxJournalier) || SMIG_JOURNALIER_2026;
     let montantJournalier = dto.statut === StatutPresence.DEMI_JOURNEE ? tauxJour / 2 : tauxJour;
@@ -91,7 +113,44 @@ export class RessourcesService {
   findAllEngins() { return this.enginRepo.find(); }
 
   // Affectation engins ↔ projet
-  async affecterEngin(dto: { enginId: string; projetId: string; dateDebut: string; dateFin?: string; observations?: string }) {
+  // Un engin ne peut pas être sur deux chantiers à la fois, ni partir s'il est en panne ou en maintenance
+  async verifierDisponibiliteEngin(enginId: string, dateDebut: string, dateFin?: string | null): Promise<string[]> {
+    const engin = await this.enginRepo.findOne({ where: { id: enginId } });
+    if (!engin) throw new NotFoundException('Engin introuvable');
+    const conflits: string[] = [];
+    if (engin.statut === StatutEngin.EN_MAINTENANCE || engin.statut === StatutEngin.HORS_SERVICE) {
+      conflits.push(`${engin.designation} est ${engin.statut === StatutEngin.EN_MAINTENANCE ? 'en maintenance' : 'hors service'}`);
+    }
+    const affectations = await this.affEnginRepo.find({ where: { engin: { id: enginId } }, relations: { projet: true } });
+    for (const a of affectations.filter((x) => periodesSeChevauchent(x, { dateDebut, dateFin }))) {
+      conflits.push(`${engin.designation} est déjà affecté à ${a.projet?.reference ?? 'un autre chantier'} ${decrirePeriode(a.dateDebut, a.dateFin)}`);
+    }
+    return conflits;
+  }
+
+  /** Engins affectés à deux chantiers en même temps, aujourd'hui ou plus tard (pour l'analyse du matin) */
+  async conflitsEnginsEnCours(aujourdhui = new Date().toISOString().slice(0, 10)) {
+    const affectations = (await this.affEnginRepo.find({ relations: { projet: true } }))
+      .filter((a) => !a.dateFin || String(a.dateFin).slice(0, 10) >= aujourdhui);
+    const conflits: { engin: string; projets: { id: string; reference: string }[] }[] = [];
+    for (let i = 0; i < affectations.length; i++) {
+      for (let j = i + 1; j < affectations.length; j++) {
+        const [a, b] = [affectations[i], affectations[j]];
+        if (a.engin?.id === b.engin?.id && a.projet?.id !== b.projet?.id && periodesSeChevauchent(a, b)) {
+          conflits.push({ engin: a.engin.designation, projets: [a.projet, b.projet].map((p) => ({ id: p.id, reference: p.reference })) });
+        }
+      }
+    }
+    return conflits;
+  }
+
+  async affecterEngin(dto: { enginId: string; projetId: string; dateDebut: string; dateFin?: string; observations?: string; forcer?: boolean }) {
+    if (!dto.forcer) {
+      const conflits = await this.verifierDisponibiliteEngin(dto.enginId, dto.dateDebut, dto.dateFin);
+      if (conflits.length) {
+        throw new ConflictException({ statusCode: 409, conflit: true, message: `Conflit d'affectation : ${conflits.join(' ; ')}.` });
+      }
+    }
     const aff = this.affEnginRepo.create({
       engin: { id: dto.enginId } as any,
       projet: { id: dto.projetId } as any,
