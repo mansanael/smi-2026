@@ -5,7 +5,7 @@ import { FolderKanban, TrendingUp, Wallet, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AlertesRecentes from '../components/accueil/AlertesRecentes';
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#64748b', '#ec4899'];
+const COLORS = ['#1d4ed8', '#15803d', '#d97706', '#dc2626', '#6d28d9', '#0f766e', '#64748b', '#db2777'];
 
 const statutLabels = {
   en_etude: 'En étude', soumissionne: 'Soumissionné', attribue: 'Attribué',
@@ -82,13 +82,13 @@ export default function Dashboard() {
           {barData.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={barData}>
-                <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                <XAxis dataKey="name" tick={{ fill: '#3b4658', fontSize: 12 }} />
+                <YAxis tick={{ fill: '#3b4658', fontSize: 12 }} />
                 <Tooltip
-                  contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, color: '#f8fafc' }}
+                  contentStyle={{ background: '#ffffff', border: '1px solid #d5dce6', borderRadius: 8, color: '#0f172a', boxShadow: '0 4px 12px rgba(15,23,42,0.1)' }}
                   formatter={(v) => [`${v.toFixed(0)} M FCFA`]}
                 />
-                <Bar dataKey="montant" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="montant" fill="#1d4ed8" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : <div className="empty-state"><p>Aucun projet actif</p></div>}
@@ -102,7 +102,7 @@ export default function Dashboard() {
                 <Pie data={pieData} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ name, value }) => `${name} (${value})`}>
                   {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
-                <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, color: '#f8fafc' }} />
+                <Tooltip contentStyle={{ background: '#ffffff', border: '1px solid #d5dce6', borderRadius: 8, color: '#0f172a', boxShadow: '0 4px 12px rgba(15,23,42,0.1)' }} />
               </PieChart>
             </ResponsiveContainer>
           ) : <div className="empty-state"><p>Aucune donnée</p></div>}
@@ -111,7 +111,7 @@ export default function Dashboard() {
 
       {data.projetsActifs?.length > 0 && (
         <div className="glass-card">
-          <h3 style={{ marginBottom: 16, fontSize: 15, fontWeight: 600, color: '#94a3b8' }}>Projets actifs</h3>
+          <h3 style={{ marginBottom: 16, fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)' }}>Projets actifs</h3>
           <table className="data-table">
             <thead>
               <tr>

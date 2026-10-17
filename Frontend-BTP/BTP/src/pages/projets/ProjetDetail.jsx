@@ -162,7 +162,7 @@ export default function ProjetDetail() {
 
       <div className="charts-grid">
         <div className="glass-card">
-          <h3 style={{ fontSize: 15, fontWeight: 600, color: '#94a3b8', marginBottom: 16 }}>Informations du projet</h3>
+          <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 16 }}>Informations du projet</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 24px', fontSize: 14 }}>
             <div><span style={{ color: 'var(--text-muted)' }}>Type marché :</span> <strong style={{ textTransform: 'capitalize' }}>{projet.typeMarche}</strong></div>
             <div><span style={{ color: 'var(--text-muted)' }}>Maître d'ouvrage :</span> <strong>{projet.maitreOuvrage}</strong></div>
@@ -173,7 +173,7 @@ export default function ProjetDetail() {
           </div>
         </div>
         <div className="glass-card">
-          <h3 style={{ fontSize: 15, fontWeight: 600, color: '#94a3b8', marginBottom: 16 }}>KPIs du projet</h3>
+          <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 16 }}>KPIs du projet</h3>
           <div style={{ display: 'grid', gap: 12, fontSize: 14 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span style={{ color: 'var(--text-muted)' }}>Tâches terminées</span>
@@ -209,7 +209,7 @@ export default function ProjetDetail() {
 
       {projet.description && (
         <div className="glass-card" style={{ marginTop: 20 }}>
-          <h3 style={{ fontSize: 15, fontWeight: 600, color: '#94a3b8', marginBottom: 8 }}>Description</h3>
+          <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>Description</h3>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7 }}>{projet.description}</p>
         </div>
       )}

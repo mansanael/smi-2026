@@ -47,7 +47,7 @@ export default function EquipeProjet({ projetId, userRole }) {
   return (
     <div className="glass-card" style={{ marginTop: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 600, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
           <Users size={16} /> Équipe du projet
         </h3>
         {peutModifier && !edition && (

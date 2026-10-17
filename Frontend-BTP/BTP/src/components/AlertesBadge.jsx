@@ -141,7 +141,7 @@ export default function AlertesBadge() {
           background: 'var(--bg-secondary)',
           border: '1px solid var(--surface-border)',
           borderRadius: '12px',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+          boxShadow: 'var(--shadow-lg)',
           zIndex: 9999,
           display: 'flex',
           flexDirection: 'column',
@@ -238,7 +238,7 @@ export default function AlertesBadge() {
                         {alerte.projetReference && (
                           <span style={{
                             fontSize: '10px',
-                            background: 'rgba(255,255,255,0.1)',
+                            background: 'var(--bg-tertiary)',
                             padding: '1px 6px',
                             borderRadius: '4px',
                             color: 'var(--text-muted)',

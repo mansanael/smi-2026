@@ -131,9 +131,9 @@ export default function Topbar({ onToggleSidebar }) {
           position: fixed; top: 0; right: 0;
           left: var(--sidebar-width);
           height: var(--topbar-height);
-          background: rgba(15,23,42,0.9);
-          backdrop-filter: blur(16px);
+          background: var(--bg-secondary);
           border-bottom: 1px solid var(--surface-border);
+          box-shadow: var(--shadow-sm);
           display: flex; align-items: center;
           justify-content: space-between;
           padding: 0 24px; z-index: 99;
@@ -186,9 +186,9 @@ export default function Topbar({ onToggleSidebar }) {
         .search-input:focus {
           outline: none;
           border-color: var(--accent-blue);
-          box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+          box-shadow: var(--shadow-glow-blue);
         }
-        
+
         .search-input::placeholder {
           color: var(--text-muted);
         }
@@ -251,12 +251,11 @@ export default function Topbar({ onToggleSidebar }) {
           background: var(--bg-secondary);
           border: 1px solid var(--surface-border);
           border-radius: var(--radius-lg);
-          box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+          box-shadow: var(--shadow-lg);
           min-width: 280px;
           max-width: 360px;
           z-index: 1000;
           animation: slideDown 0.2s ease;
-          backdrop-filter: blur(20px);
         }
         
         @keyframes slideDown {
@@ -522,9 +521,9 @@ export default function Topbar({ onToggleSidebar }) {
             right: 0;
             max-width: 100%;
             padding: 12px;
-            background: rgba(15,23,42,0.95);
-            backdrop-filter: blur(16px);
+            background: var(--bg-secondary);
             border-bottom: 1px solid var(--surface-border);
+            box-shadow: var(--shadow-md);
             z-index: 98;
             animation: slideDown 0.2s ease;
           }

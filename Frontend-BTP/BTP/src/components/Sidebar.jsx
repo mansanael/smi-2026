@@ -73,20 +73,18 @@ export default function Sidebar({ isOpen, onClose }) {
         .sidebar {
           position: fixed; top: 0; left: 0; bottom: 0;
           width: var(--sidebar-width);
-          background: linear-gradient(180deg, var(--bg-secondary) 0%, rgba(30, 41, 59, 0.95) 100%);
-          border-right: 1px solid var(--surface-border);
+          background: var(--menu-bg);
           display: flex; flex-direction: column;
           z-index: 100;
           overflow-y: auto;
-          backdrop-filter: blur(20px);
           transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .sidebar-close-btn {
           display: none;
           background: none;
           border: none;
-          color: var(--text-muted);
+          color: var(--menu-text);
           cursor: pointer;
           padding: 6px;
           border-radius: var(--radius-sm);
@@ -94,8 +92,8 @@ export default function Sidebar({ isOpen, onClose }) {
           transition: all var(--transition-fast);
         }
         .sidebar-close-btn:hover {
-          color: var(--text-primary);
-          background: var(--bg-tertiary);
+          color: #fff;
+          background: rgba(255, 255, 255, 0.1);
         }
 
         @media (max-width: 768px) {
@@ -105,7 +103,7 @@ export default function Sidebar({ isOpen, onClose }) {
           }
           .sidebar.open {
             transform: translateX(0);
-            box-shadow: 8px 0 32px rgba(0, 0, 0, 0.5);
+            box-shadow: 8px 0 32px rgba(15, 23, 42, 0.35);
           }
           .sidebar-close-btn {
             display: flex;
@@ -117,59 +115,39 @@ export default function Sidebar({ isOpen, onClose }) {
         .sidebar-logo {
           display: flex; align-items: center; gap: 14px;
           padding: 24px;
-          border-bottom: 1px solid var(--surface-border);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.12);
           position: relative;
           overflow: hidden;
         }
-        
-        .sidebar-logo::before {
-          content: '';
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
-        }
-        
+
         .logo-icon {
           width: 44px; height: 44px;
-          background: var(--gradient-blue);
+          background: var(--brand-yellow);
           border-radius: var(--radius-md);
           display: flex; align-items: center; justify-content: center;
           position: relative;
           overflow: hidden;
-          box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
           transition: all var(--transition-normal);
           flex-shrink: 0;
         }
-        
+
         .logo-icon:hover {
           transform: scale(1.05);
-          box-shadow: 0 6px 24px rgba(59, 130, 246, 0.4);
         }
-        
-        .logo-icon::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
-        }
-        
+
         .logo-inner {
-          font-size: 22px; font-weight: 800; color: white;
+          font-size: 22px; font-weight: 800; color: var(--menu-bg);
           position: relative; z-index: 1;
         }
-        
-        .sidebar-logo h2 { 
-          font-size: 17px; font-weight: 700; 
+
+        .sidebar-logo h2 {
+          font-size: 17px; font-weight: 700;
           letter-spacing: -0.5px;
-          background: linear-gradient(135deg, #fff, #94a3b8);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+          color: #fff;
         }
-        
-        .sidebar-logo span { 
-          font-size: 11px; color: var(--text-muted); 
+
+        .sidebar-logo span {
+          font-size: 11px; color: var(--menu-text);
           font-weight: 500;
           text-transform: uppercase;
           letter-spacing: 0.5px;
@@ -186,8 +164,8 @@ export default function Sidebar({ isOpen, onClose }) {
           display: flex; align-items: center; gap: 12px;
           padding: 12px 16px; 
           border-radius: var(--radius-md);
-          color: var(--text-secondary); 
-          font-size: 14px; font-weight: 500;
+          color: var(--menu-text);
+          font-size: 15px; font-weight: 500;
           transition: all var(--transition-normal);
           text-decoration: none;
           position: relative;
@@ -200,16 +178,16 @@ export default function Sidebar({ isOpen, onClose }) {
           to { opacity: 1; transform: translateX(0); }
         }
         
-        .nav-item:hover { 
-          color: var(--text-primary); 
-          background: rgba(255, 255, 255, 0.05);
+        .nav-item:hover {
+          color: #fff;
+          background: rgba(255, 255, 255, 0.08);
           transform: translateX(4px);
         }
-        
+
         .nav-item.active {
-          color: var(--accent-blue-light);
-          background: rgba(59, 130, 246, 0.12);
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+          color: var(--menu-active);
+          background: var(--menu-active-bg);
+          font-weight: 600;
         }
         
         .nav-icon-wrapper {
@@ -223,29 +201,18 @@ export default function Sidebar({ isOpen, onClose }) {
           background: rgba(255, 255, 255, 0.08);
         }
         
-        .nav-item.active .nav-icon-wrapper {
-          background: rgba(59, 130, 246, 0.2);
-        }
-        
+        /* Barre jaune à gauche de l'entrée active : repérable d'un coup d'œil */
         .nav-indicator {
           position: absolute;
-          right: 12px;
-          width: 6px;
-          height: 6px;
-          background: var(--accent-blue);
-          border-radius: 50%;
-          box-shadow: 0 0 8px var(--accent-blue);
-          animation: pulse 2s ease-in-out infinite;
+          left: 0; top: 10px; bottom: 10px;
+          width: 4px;
+          background: var(--menu-active);
+          border-radius: 0 4px 4px 0;
         }
-        
-        @keyframes pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.7; transform: scale(1.2); }
-        }
-        
+
         .sidebar-footer {
           padding: 16px 20px;
-          border-top: 1px solid var(--surface-border);
+          border-top: 1px solid rgba(255, 255, 255, 0.12);
         }
         
         .footer-content {
@@ -254,14 +221,14 @@ export default function Sidebar({ isOpen, onClose }) {
           align-items: center;
         }
         
-        .sidebar-footer span { 
-          font-size: 11px; color: var(--text-muted); 
+        .sidebar-footer span {
+          font-size: 11px; color: var(--menu-text);
           font-weight: 500;
         }
-        
+
         .footer-version {
-          background: rgba(59, 130, 246, 0.1);
-          color: var(--accent-blue-light);
+          background: rgba(255, 255, 255, 0.12);
+          color: #fff;
           padding: 2px 8px;
           border-radius: 10px;
           font-size: 10px;

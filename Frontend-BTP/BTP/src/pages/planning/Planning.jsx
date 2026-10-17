@@ -603,7 +603,7 @@ export default function Planning({ projetIdFixe }) {
                                     fontSize: 13,
                                     fontWeight: 700,
                                     minWidth: 42,
-                                    color: avancement === 100 ? '#34d399' : avancement > 0 ? '#60a5fa' : 'var(--text-muted)',
+                                    color: avancement === 100 ? 'var(--accent-green)' : avancement > 0 ? 'var(--accent-blue)' : 'var(--text-muted)',
                                     cursor: lectureSeule ? 'default' : 'pointer',
                                   }}
                                   onClick={lectureSeule ? undefined : () => openAvancementModal(t)}
@@ -747,7 +747,7 @@ export default function Planning({ projetIdFixe }) {
                             className="btn btn-sm"
                             style={{
                               background: j.atteint ? 'rgba(16, 185, 129, 0.2)' : 'var(--bg-tertiary)',
-                              color: j.atteint ? '#34d399' : 'var(--text-secondary)',
+                              color: j.atteint ? 'var(--accent-green)' : 'var(--text-secondary)',
                               border: `1px solid ${j.atteint ? 'rgba(16, 185, 129, 0.5)' : 'var(--surface-border)'}`,
                             }}
                             title={j.atteint ? 'Cliquer pour repasser en attente' : 'Cliquer pour marquer comme atteint'}
@@ -1074,7 +1074,7 @@ export default function Planning({ projetIdFixe }) {
                   border: '1px solid var(--surface-border)',
                 }}
               >
-                <div style={{ fontSize: 48, fontWeight: 800, color: avancementTarget.pourcentageAvancement === 100 ? '#34d399' : '#60a5fa' }}>
+                <div style={{ fontSize: 48, fontWeight: 800, color: avancementTarget.pourcentageAvancement === 100 ? 'var(--accent-green)' : 'var(--accent-blue)' }}>
                   {avancementTarget.pourcentageAvancement}%
                 </div>
                 <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 4 }}>

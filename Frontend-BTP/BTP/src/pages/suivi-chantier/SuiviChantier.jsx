@@ -1078,7 +1078,7 @@ export default function SuiviChantier({ projetIdFixe }) {
                                             borderRadius: 'var(--radius-md)',
                                             padding: '28px 16px',
                                             textAlign: 'center',
-                                            background: 'rgba(30, 41, 59, 0.3)',
+                                            background: 'var(--bg-primary)',
                                             transition: 'border-color 0.2s',
                                         }}
                                     >

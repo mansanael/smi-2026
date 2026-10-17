@@ -135,7 +135,7 @@ export default function Login() {
           justify-content: center;
           align-items: center;
           padding: 60px;
-          background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,58,95,0.8), rgba(15,23,42,0.9));
+          background: linear-gradient(135deg, #0b2545, #13396b, #0b2545);
           text-align: center;
           position: relative;
           overflow: hidden;
@@ -156,27 +156,23 @@ export default function Login() {
         }
         .login-logo-icon {
           width: 100px; height: 100px;
-          background: linear-gradient(135deg, #3b82f6, #2563eb);
+          background: var(--brand-yellow);
           border-radius: 24px;
           display: flex; align-items: center; justify-content: center;
-          color: white; margin-bottom: 32px;
+          color: var(--menu-bg); margin-bottom: 32px;
           position: relative; z-index: 1;
-          box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
         }
         .login-brand h1 {
           font-size: 48px; font-weight: 800; margin-bottom: 12px;
           position: relative; z-index: 1;
-          background: linear-gradient(135deg, #fff, #94a3b8);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+          color: #fff;
         }
         .login-brand p {
-          font-size: 18px; color: #94a3b8;
+          font-size: 18px; color: var(--menu-text);
           position: relative; z-index: 1;
         }
         .login-brand-sub {
-          font-size: 14px !important; color: #64748b !important;
+          font-size: 14px !important; color: var(--menu-text) !important;
           margin-top: 8px;
         }
         .login-form-side {
@@ -186,12 +182,11 @@ export default function Login() {
         }
         .login-form-card {
           width: 100%; max-width: 420px;
-          background: rgba(30,41,59,0.7);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(148,163,184,0.12);
+          background: var(--bg-secondary);
+          border: 1px solid var(--surface-border);
           border-radius: 24px;
           padding: 40px;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+          box-shadow: var(--shadow-lg);
         }
         .login-form-header {
           text-align: center; margin-bottom: 32px;
@@ -200,12 +195,12 @@ export default function Login() {
           font-size: 28px; font-weight: 700; margin-bottom: 8px;
         }
         .login-form-header p {
-          color: #94a3b8; font-size: 14px;
+          color: var(--text-secondary); font-size: 14px;
         }
         .login-error {
-          background: rgba(239,68,68,0.1);
-          border: 1px solid rgba(239,68,68,0.2);
-          color: #f87171;
+          background: #fef2f2;
+          border: 1px solid #fca5a5;
+          color: var(--accent-red-light);
           padding: 12px 16px; border-radius: 12px;
           font-size: 13px; margin-bottom: 24px;
           display: flex; align-items: center; gap: 10px;
@@ -215,7 +210,7 @@ export default function Login() {
         }
         .login-input-icon {
           position: absolute; left: 14px; top: 50%;
-          transform: translateY(-50%); color: #64748b;
+          transform: translateY(-50%); color: var(--text-muted);
           pointer-events: none;
         }
         .login-input-with-icon {
@@ -224,7 +219,7 @@ export default function Login() {
         .login-toggle-password {
           position: absolute; right: 12px; top: 50%;
           transform: translateY(-50%);
-          background: none; border: none; color: #64748b;
+          background: none; border: none; color: var(--text-muted);
           cursor: pointer; padding: 4px; border-radius: 8px;
         }
         .login-options {
@@ -233,11 +228,11 @@ export default function Login() {
         }
         .login-remember {
           display: flex; align-items: center; gap: 8px;
-          font-size: 13px; color: #94a3b8; cursor: pointer;
+          font-size: 13px; color: var(--text-secondary); cursor: pointer;
         }
         .login-remember input { width: 16px; height: 16px; }
         .login-forgot {
-          font-size: 13px; color: #3b82f6; text-decoration: none;
+          font-size: 13px; color: var(--accent-blue); text-decoration: none;
         }
         .login-submit-btn {
           width: 100%; padding: 14px;
@@ -246,13 +241,13 @@ export default function Login() {
         }
         .login-footer-text {
           text-align: center; margin-top: 24px; padding-top: 24px;
-          border-top: 1px solid rgba(148,163,184,0.12);
+          border-top: 1px solid var(--surface-border);
         }
         .login-footer-text p {
-          font-size: 13px; color: #94a3b8; margin-bottom: 4px;
+          font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;
         }
         .login-footer-text a {
-          font-size: 13px; color: #3b82f6; text-decoration: none; font-weight: 500;
+          font-size: 13px; color: var(--accent-blue); text-decoration: none; font-weight: 500;
         }
 
         /* Mobile Login */

@@ -548,7 +548,7 @@ export default function AssistantIA() {
 
         /* Markdown structuré */
         .md-content { display: flex; flex-direction: column; gap: 12px; }
-        .md-content .md-h1, .md-content h2 { font-size: 17px; font-weight: 700; color: #f8fafc; margin: 4px 0 0; }
+        .md-content .md-h1, .md-content h2 { font-size: 17px; font-weight: 700; color: var(--text-primary); margin: 4px 0 0; }
         .md-content .md-h2, .md-content h3 { font-size: 15px; font-weight: 700; color: var(--accent-blue-light); margin: 8px 0 0; border-bottom: 1px solid var(--surface-border); padding-bottom: 6px; }
         .md-content .md-h3, .md-content h4 { font-size: 14px; font-weight: 600; color: var(--accent-purple); margin: 4px 0 0; }
         .md-content .md-p { margin: 0; line-height: 1.7; color: var(--text-primary); }
@@ -561,7 +561,7 @@ export default function AssistantIA() {
         .md-content code { background: rgba(139, 92, 246, 0.15); padding: 2px 6px; border-radius: 4px; font-size: 13px; font-family: Consolas, Monaco, monospace; }
         .md-content strong { color: var(--accent-blue-light); font-weight: 600; }
         .md-content em { color: var(--text-secondary); font-style: italic; }
-        .md-content .md-pre { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--surface-border); border-radius: var(--radius-sm); padding: 14px 16px; margin: 0; overflow-x: auto; }
+        .md-content .md-pre { background: var(--bg-tertiary); border: 1px solid var(--surface-border); border-radius: var(--radius-sm); padding: 14px 16px; margin: 0; overflow-x: auto; }
         .md-content .md-pre code { background: none; padding: 0; color: var(--accent-green-light); white-space: pre; }
 
         .typing-indicator {
