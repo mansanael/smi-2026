@@ -54,7 +54,7 @@ export default function Login() {
           ))}
         </ul>
       </div>
-      <span className="login-credit">Photo : Glenov Brankovic, Unsplash</span>
+      <span className="login-credit">Photo : Shivendu Shukla, Unsplash</span>
 
       <div className="login-form-side">
         <div className="login-form-card">
@@ -134,19 +134,22 @@ export default function Login() {
       </div>
 
       <style>{`
-        /* Photo de chantier en fond, voilée de bleu marine à gauche pour que le texte reste lisible */
+        /* Chantier au coucher du soleil en fond ; le bleu marine reste seulement derrière le texte */
         .login-page {
           display: flex;
           min-height: 100vh;
           position: relative;
-          background: #0b2545 url('/login-chantier.webp') center / cover no-repeat;
+          background: #0b2545 url('/login-chantier.webp') center bottom / cover no-repeat;
           color: var(--text-primary);
           font-family: 'Inter', sans-serif;
         }
         .login-page::before {
           content: '';
           position: absolute; inset: 0;
-          background: linear-gradient(90deg, rgba(11,37,69,0.95) 0%, rgba(11,37,69,0.8) 30%, rgba(11,37,69,0.25) 55%, rgba(11,37,69,0.45) 100%);
+          background: linear-gradient(90deg, rgba(11,37,69,0.9) 0%, rgba(11,37,69,0.65) 26%, rgba(11,37,69,0.15) 46%, rgba(11,37,69,0) 62%);
+        }
+        .login-brand h1, .login-brand p, .login-atouts li {
+          text-shadow: 0 1px 8px rgba(0,0,0,0.45);
         }
         .login-brand {
           flex: 1;
@@ -276,9 +279,9 @@ export default function Login() {
 
         /* Mobile Login */
         @media (max-width: 768px) {
-          .login-page { flex-direction: column; background-position: 42% center; }
+          .login-page { flex-direction: column; background-position: 45% bottom; }
           .login-page::before {
-            background: linear-gradient(180deg, rgba(11,37,69,0.88) 0%, rgba(11,37,69,0.7) 45%, rgba(11,37,69,0.9) 100%);
+            background: linear-gradient(180deg, rgba(11,37,69,0.75) 0%, rgba(11,37,69,0.35) 40%, rgba(11,37,69,0.6) 100%);
           }
           .login-brand {
             padding: 36px 20px 8px; min-height: auto;
