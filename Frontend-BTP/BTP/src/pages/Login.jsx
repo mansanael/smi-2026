@@ -42,17 +42,21 @@ export default function Login() {
   return (
     <div className="login-page">
       <div className="login-brand">
-        <div className="login-logo-icon">
-          <Building2 size={56} />
+        <div className="login-marque">
+          <div className="login-logo-icon">
+            <Building2 size={24} />
+          </div>
+          <span>BATIPME-SN</span>
         </div>
-        <h1>BATIPME-SN</h1>
-        <p>Logiciel de Gestion de Projets BTP</p>
-        <p className="login-brand-sub">Adapté aux PME du Sénégal 🇸🇳</p>
-        <ul className="login-atouts">
-          {ATOUTS.map(({ icon: Icon, texte }) => (
-            <li key={texte}><span><Icon size={18} /></span>{texte}</li>
-          ))}
-        </ul>
+        <div className="login-message">
+          <h1>Pilotez vos chantiers, du terrain au bureau.</h1>
+          <p>Logiciel de gestion de projets BTP adapté aux PME du Sénégal.</p>
+          <ul className="login-atouts">
+            {ATOUTS.map(({ icon: Icon, texte }) => (
+              <li key={texte}><span><Icon size={18} /></span>{texte}</li>
+            ))}
+          </ul>
+        </div>
       </div>
 
       <div className="login-form-side">
@@ -133,55 +137,56 @@ export default function Login() {
       </div>
 
       <style>{`
-        /* Chantier au coucher du soleil en fond ; le bleu marine reste seulement derrière le texte */
+        /* Écran coupé en deux : photo de chantier à gauche, formulaire sur fond blanc à droite */
         .login-page {
           display: flex;
           min-height: 100vh;
-          position: relative;
-          background: #0b2545 url('/login-chantier.webp') center / cover no-repeat;
+          background: var(--bg-secondary);
           color: var(--text-primary);
           font-family: 'Inter', sans-serif;
         }
-        .login-page::before {
-          content: '';
-          position: absolute; inset: 0;
-          background: linear-gradient(90deg, rgba(11,37,69,0.9) 0%, rgba(11,37,69,0.65) 26%, rgba(11,37,69,0.15) 46%, rgba(11,37,69,0) 62%);
-        }
-        .login-brand h1, .login-brand p, .login-atouts li {
-          text-shadow: 0 1px 8px rgba(0,0,0,0.45);
-        }
         .login-brand {
-          flex: 1;
+          flex: 1.15;
+          position: relative;
           display: flex;
           flex-direction: column;
-          justify-content: center;
-          align-items: flex-start;
-          padding: 60px 64px;
-          position: relative; z-index: 1;
+          justify-content: space-between;
+          padding: 40px 56px 56px;
+          background: #0b2545 url('/login-chantier.webp') center / cover no-repeat;
+          overflow: hidden;
+        }
+        /* Dégradé seulement en bas, derrière le message : le haut de la photo reste lumineux */
+        .login-brand::before {
+          content: '';
+          position: absolute; inset: 0;
+          background: linear-gradient(180deg, rgba(11,37,69,0.35) 0%, rgba(11,37,69,0) 22%, rgba(11,37,69,0) 42%, rgba(11,37,69,0.88) 100%);
+        }
+        .login-marque, .login-message { position: relative; z-index: 1; }
+        .login-marque {
+          display: flex; align-items: center; gap: 12px;
+          color: #fff; font-size: 20px; font-weight: 800; letter-spacing: -0.3px;
+          text-shadow: 0 1px 6px rgba(0,0,0,0.35);
         }
         .login-logo-icon {
-          width: 84px; height: 84px;
+          width: 44px; height: 44px;
           background: var(--brand);
-          border-radius: 22px;
+          border-radius: 12px;
           display: flex; align-items: center; justify-content: center;
-          color: #fff; margin-bottom: 28px;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+          color: #fff;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.25);
         }
+        .login-message { max-width: 560px; }
         .login-brand h1 {
-          font-size: 48px; font-weight: 800; margin-bottom: 10px;
+          font-size: 40px; line-height: 1.15; font-weight: 800; margin-bottom: 14px;
           color: #fff; letter-spacing: -1px;
         }
         .login-brand p {
-          font-size: 19px; color: #e2e8f0;
-        }
-        .login-brand-sub {
-          font-size: 15px !important; color: #cbd5e1 !important;
-          margin-top: 6px;
+          font-size: 17px; color: #e2e8f0;
         }
         .login-atouts {
           list-style: none;
-          margin-top: 40px;
-          display: flex; flex-direction: column; gap: 14px;
+          margin-top: 28px;
+          display: flex; flex-direction: column; gap: 12px;
         }
         .login-atouts li {
           display: flex; align-items: center; gap: 12px;
@@ -198,19 +203,13 @@ export default function Login() {
         .login-form-side {
           flex: 1;
           display: flex; align-items: center; justify-content: center;
-          padding: 60px;
-          position: relative; z-index: 1;
+          padding: 60px 48px;
         }
         .login-form-card {
-          width: 100%; max-width: 420px;
-          background: var(--bg-secondary);
-          border: 1px solid var(--surface-border);
-          border-radius: 24px;
-          padding: 40px;
-          box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+          width: 100%; max-width: 400px;
         }
         .login-form-header {
-          text-align: center; margin-bottom: 32px;
+          margin-bottom: 32px;
         }
         .login-form-header h2 {
           font-size: 28px; font-weight: 700; margin-bottom: 8px;
@@ -272,36 +271,22 @@ export default function Login() {
         }
 
         /* Mobile Login */
+        /* Téléphone : la photo devient un bandeau en haut, le formulaire dessous */
         @media (max-width: 768px) {
-          .login-page { flex-direction: column; background-position: 32% center; }
-          .login-page::before {
-            background: linear-gradient(180deg, rgba(11,37,69,0.75) 0%, rgba(11,37,69,0.35) 40%, rgba(11,37,69,0.6) 100%);
-          }
+          .login-page { flex-direction: column; }
           .login-brand {
-            padding: 36px 20px 8px; min-height: auto;
-            align-items: center; text-align: center;
+            flex: none; min-height: 260px;
+            padding: 20px 20px 24px;
           }
-          .login-logo-icon {
-            width: 64px; height: 64px;
-            margin-bottom: 16px;
-          }
-          .login-logo-icon svg { width: 36px; height: 36px; }
-          .login-brand h1 { font-size: 32px; }
-          .login-brand p { font-size: 15px; }
+          .login-marque { font-size: 18px; }
+          .login-logo-icon { width: 38px; height: 38px; border-radius: 10px; }
+          .login-brand h1 { font-size: 26px; margin-bottom: 6px; }
+          .login-brand p { font-size: 14px; }
           .login-atouts { display: none; }
-          .login-form-side { padding: 24px 16px; }
-          .login-form-card {
-            padding: 28px 20px;
-            border-radius: 20px;
-          }
+          .login-form-side { padding: 28px 20px 36px; align-items: flex-start; }
+          .login-form-header { margin-bottom: 24px; }
           .login-form-header h2 { font-size: 24px; }
           .login-options { flex-direction: column; gap: 12px; align-items: flex-start; }
-        }
-        @media (max-width: 480px) {
-          .login-brand { padding: 32px 16px; }
-          .login-brand h1 { font-size: 28px; }
-          .login-form-side { padding: 20px 12px; }
-          .login-form-card { padding: 24px 16px; border-radius: 16px; }
         }
       `}</style>
     </div>
