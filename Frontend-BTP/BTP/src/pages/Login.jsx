@@ -54,7 +54,6 @@ export default function Login() {
           ))}
         </ul>
       </div>
-      <span className="login-credit">Photo : Shivendu Shukla, Unsplash</span>
 
       <div className="login-form-side">
         <div className="login-form-card">
@@ -139,7 +138,7 @@ export default function Login() {
           display: flex;
           min-height: 100vh;
           position: relative;
-          background: #0b2545 url('/login-chantier.webp') center bottom / cover no-repeat;
+          background: #0b2545 url('/login-chantier.webp') center / cover no-repeat;
           color: var(--text-primary);
           font-family: 'Inter', sans-serif;
         }
@@ -195,11 +194,6 @@ export default function Login() {
           border: 1px solid rgba(255,255,255,0.22);
           display: flex; align-items: center; justify-content: center;
           color: #bfdbfe;
-        }
-        .login-credit {
-          position: absolute; right: 12px; bottom: 8px; z-index: 1;
-          font-size: 11px; color: rgba(255,255,255,0.75);
-          text-shadow: 0 1px 2px rgba(0,0,0,0.6);
         }
         .login-form-side {
           flex: 1;
@@ -279,7 +273,7 @@ export default function Login() {
 
         /* Mobile Login */
         @media (max-width: 768px) {
-          .login-page { flex-direction: column; background-position: 45% bottom; }
+          .login-page { flex-direction: column; background-position: 32% center; }
           .login-page::before {
             background: linear-gradient(180deg, rgba(11,37,69,0.75) 0%, rgba(11,37,69,0.35) 40%, rgba(11,37,69,0.6) 100%);
           }
@@ -295,7 +289,6 @@ export default function Login() {
           .login-brand h1 { font-size: 32px; }
           .login-brand p { font-size: 15px; }
           .login-atouts { display: none; }
-          .login-credit { bottom: 4px; }
           .login-form-side { padding: 24px 16px; }
           .login-form-card {
             padding: 28px 20px;
