@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Mic, CheckCircle2, AlertTriangle, MessageSquareText } from 'lucide-react';
+import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Mic, BellRing, MessageSquareText } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -41,30 +41,27 @@ export default function Login() {
           </div>
           <span>BATIPME-SN</span>
         </div>
-        {/* Aperçus flottants (exemples fictifs, décoratifs) : du terrain au bureau, puis au client */}
+        {/* Bulles flottantes décoratives : ce que l'application apporte, en trois promesses */}
         <div className="login-apercus" aria-hidden="true">
           <div className="apercu apercu-1">
             <span className="apercu-icone bleu"><Mic size={16} /></span>
             <div>
-              <strong>Note vocale · 15:40</strong>
-              <small>« Coffrage de la dalle terminé… »</small>
-              <em><CheckCircle2 size={13} /> Rapport du jour rédigé par l'IA</em>
+              <strong>Dictez, l'IA rédige</strong>
+              <small>Le rapport du jour en quelques minutes, sans clavier.</small>
             </div>
           </div>
           <div className="apercu apercu-2">
-            <span className="apercu-icone rouge"><AlertTriangle size={16} /></span>
+            <span className="apercu-icone rouge"><BellRing size={16} /></span>
             <div>
-              <strong>Problème signalé</strong>
-              <small>Bétonnière en panne · Villa R+2</small>
-              <em className="orange">Chef de projet et DG prévenus</em>
+              <strong>Alerté en temps réel</strong>
+              <small>Un problème sur le chantier ? Le chef de projet et le DG le savent aussitôt.</small>
             </div>
           </div>
           <div className="apercu apercu-3">
             <span className="apercu-icone vert"><MessageSquareText size={16} /></span>
             <div>
-              <strong>Résumé pour le client · 18:00</strong>
-              <small>« La dalle du 1er étage avance… »</small>
-              <em><CheckCircle2 size={13} /> Validé par le chef de projet</em>
+              <strong>Client rassuré</strong>
+              <small>Un résumé clair chaque soir, sans un seul appel.</small>
             </div>
           </div>
         </div>
@@ -219,7 +216,8 @@ export default function Login() {
           display: flex; align-items: center; gap: 4px; margin-top: 6px;
           font-style: normal; font-size: 12px; font-weight: 600; color: var(--accent-green);
         }
-        .apercu-1, .apercu-2, .apercu-3 { display: flex; gap: 12px; width: 285px; }
+        .apercu-1, .apercu-2, .apercu-3 { display: flex; gap: 12px; width: 270px; }
+        .apercu small { line-height: 1.45; }
         .apercu-1 { top: 16%; right: 7%; }
         .apercu-2 { top: 37%; left: 7%; animation-delay: -2s; }
         .apercu-3 { top: 58%; right: 9%; animation-delay: -4s; }
