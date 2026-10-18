@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Mic, CheckCircle2, Banknote } from 'lucide-react';
+import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Mic, CheckCircle2, AlertTriangle, MessageSquareText } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -41,29 +41,30 @@ export default function Login() {
           </div>
           <span>BATIPME-SN</span>
         </div>
-        {/* Aperçus flottants de l'application (exemples fictifs), décoratifs */}
+        {/* Aperçus flottants (exemples fictifs, décoratifs) : du terrain au bureau, puis au client */}
         <div className="login-apercus" aria-hidden="true">
-          <div className="apercu apercu-avancement">
-            <div className="apercu-ligne">
-              <strong>Villa R+2</strong>
-              <span className="apercu-pastille">Dans les temps</span>
-            </div>
-            <div className="apercu-barre"><span style={{ width: '54%' }} /></div>
-            <small>Avancement 54 % · 5 étapes sur 12</small>
-          </div>
-          <div className="apercu apercu-voix">
+          <div className="apercu apercu-1">
             <span className="apercu-icone bleu"><Mic size={16} /></span>
             <div>
-              <strong>Note vocale · 17:40</strong>
+              <strong>Note vocale · 15:40</strong>
               <small>« Coffrage de la dalle terminé… »</small>
-              <em><CheckCircle2 size={13} /> Rapport du jour rédigé</em>
+              <em><CheckCircle2 size={13} /> Rapport du jour rédigé par l'IA</em>
             </div>
           </div>
-          <div className="apercu apercu-paiement">
-            <span className="apercu-icone vert"><Banknote size={16} /></span>
+          <div className="apercu apercu-2">
+            <span className="apercu-icone rouge"><AlertTriangle size={16} /></span>
             <div>
-              <strong>Paiement reçu</strong>
-              <small className="apercu-montant">+ 7 089 600 FCFA</small>
+              <strong>Problème signalé</strong>
+              <small>Bétonnière en panne · Villa R+2</small>
+              <em className="orange">Chef de projet et DG prévenus</em>
+            </div>
+          </div>
+          <div className="apercu apercu-3">
+            <span className="apercu-icone vert"><MessageSquareText size={16} /></span>
+            <div>
+              <strong>Résumé pour le client · 18:00</strong>
+              <small>« La dalle du 1er étage avance… »</small>
+              <em><CheckCircle2 size={13} /> Validé par le chef de projet</em>
             </div>
           </div>
         </div>
@@ -218,30 +219,25 @@ export default function Login() {
           display: flex; align-items: center; gap: 4px; margin-top: 6px;
           font-style: normal; font-size: 12px; font-weight: 600; color: var(--accent-green);
         }
-        .apercu-avancement { top: 17%; right: 8%; width: 250px; }
-        .apercu-voix { top: 40%; left: 7%; display: flex; gap: 12px; width: 270px; animation-delay: -2s; }
-        .apercu-paiement { top: 52%; right: 12%; display: flex; gap: 12px; align-items: center; animation-delay: -4s; }
-        .apercu-ligne { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-        .apercu-pastille {
-          font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
-          background: #dcf3e3; color: var(--accent-green-light);
-        }
-        .apercu-barre { height: 8px; border-radius: 4px; background: var(--bg-tertiary); margin: 10px 0 6px; overflow: hidden; }
-        .apercu-barre span { display: block; height: 100%; border-radius: 4px; background: var(--gradient-blue); }
+        .apercu-1, .apercu-2, .apercu-3 { display: flex; gap: 12px; width: 285px; }
+        .apercu-1 { top: 16%; right: 7%; }
+        .apercu-2 { top: 37%; left: 7%; animation-delay: -2s; }
+        .apercu-3 { top: 58%; right: 9%; animation-delay: -4s; }
+        .apercu em.orange { color: var(--accent-amber-light); }
         .apercu-icone {
           width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px;
           display: flex; align-items: center; justify-content: center; color: #fff;
         }
         .apercu-icone.bleu { background: var(--accent-blue); }
         .apercu-icone.vert { background: var(--accent-green); }
-        .apercu-montant { color: var(--accent-green-light) !important; font-weight: 700; font-size: 13px !important; }
+        .apercu-icone.rouge { background: var(--accent-red); }
         @keyframes flotter {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-8px); }
         }
         @media (prefers-reduced-motion: reduce) { .apercu { animation: none; } }
         /* Écran moyen (tablette) : deux cartes suffisent, sinon elles se chevauchent */
-        @media (max-width: 1100px) { .apercu-paiement { display: none; } }
+        @media (max-width: 1100px) { .apercu-3 { display: none; } }
         .login-form-side {
           flex: 1;
           display: flex; align-items: center; justify-content: center;
