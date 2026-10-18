@@ -18,6 +18,7 @@ export enum TypeAlerte {
   PAIEMENT_EN_RETARD = 'paiement_en_retard',
   PROBLEME_CHANTIER = 'probleme_chantier', // signalé dans une note vocale
   CONFLIT_AFFECTATION = 'conflit_affectation', // même engin sur deux chantiers en même temps
+  DEMANDE_MOT_DE_PASSE = 'demande_mot_de_passe', // « Mot de passe oublié » : la direction le réinitialise
 }
 
 @Entity('ai_alertes')

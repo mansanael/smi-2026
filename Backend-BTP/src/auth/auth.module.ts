@@ -6,10 +6,13 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UtilisateursModule } from '../utilisateurs/utilisateurs.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Alerte } from '../ai/alerte.entity';
 
 @Module({
   imports: [
     UtilisateursModule,
+    TypeOrmModule.forFeature([Alerte]),
     PassportModule,
     ConfigModule,
     JwtModule.registerAsync({

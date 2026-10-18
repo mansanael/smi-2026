@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class LoginDto {
   @IsEmail()
@@ -7,4 +7,14 @@ export class LoginDto {
   @IsNotEmpty()
   @IsString()
   motDePasse: string;
+
+  // « Se souvenir de moi » : session de 30 jours, utilisable hors ligne sur cet appareil
+  @IsOptional()
+  @IsBoolean()
+  seSouvenir?: boolean;
+}
+
+export class MotDePasseOublieDto {
+  @IsEmail({}, { message: 'Adresse email invalide.' })
+  email: string;
 }

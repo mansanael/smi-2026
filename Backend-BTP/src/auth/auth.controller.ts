@@ -2,7 +2,7 @@ import { Controller, Post, Body, Get, Patch, UseGuards, HttpCode, HttpStatus } f
 import { UpdateProfilDto } from '../utilisateurs/dto/update-profil.dto';
 import { ChangerMotDePasseDto } from '../utilisateurs/dto/changer-mot-de-passe.dto';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
+import { LoginDto, MotDePasseOublieDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { UtilisateurCourant } from './decorators/utilisateur-courant.decorator';
 import { UtilisateursService } from '../utilisateurs/utilisateurs.service';
@@ -25,6 +25,17 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
+  }
+
+  /**
+   * POST /api/auth/mot-de-passe-oublie
+   * Corps : { email } — prévient la direction, qui réinitialise le mot de passe dans Administration.
+   * Réponse identique que le compte existe ou non.
+   */
+  @Post('mot-de-passe-oublie')
+  @HttpCode(HttpStatus.OK)
+  motDePasseOublie(@Body() dto: MotDePasseOublieDto) {
+    return this.authService.demanderReinitialisation(dto.email);
   }
 
   /**

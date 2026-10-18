@@ -1,5 +1,6 @@
 import { cacheGet, cacheSet, cacheClear } from './cache';
 import { enqueue, syncQueue } from './queue';
+import { oublierAcces } from './horsLigne';
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 function getToken() {
@@ -68,6 +69,8 @@ export async function api(path, options = {}) {
   }
 
   if (res.status === 401 && !noAuth) {
+    // Session refusée (expirée ou révoquée) : l'accès hors ligne mémorisé n'est plus valable non plus
+    oublierAcces();
     removeToken();
     window.location.href = '/login';
     return null;
@@ -121,8 +124,12 @@ async function envoyerElement(item) {
 export const synchroniser = () => syncQueue(envoyerElement);
 
 // ─── Raccourcis ───
-export const login = (email, motDePasse) =>
-  api('/auth/login', { method: 'POST', body: { email, motDePasse }, noAuth: true });
+export const login = (email, motDePasse, seSouvenir = false) =>
+  api('/auth/login', { method: 'POST', body: { email, motDePasse, seSouvenir }, noAuth: true });
+
+// « Mot de passe oublié » : la direction est prévenue et donne un nouveau mot de passe
+export const motDePasseOublie = (email) =>
+  api('/auth/mot-de-passe-oublie', { method: 'POST', body: { email }, noAuth: true });
 
 export const getMe = () => api('/auth/me');
 
@@ -331,5 +338,7 @@ export const getUtilisateurs = () => api('/admin/utilisateurs');
 export const createUtilisateur = (data) => api('/admin/utilisateurs', { method: 'POST', body: data });
 export const deleteUtilisateur = (id) => api(`/admin/utilisateurs/${id}`, { method: 'DELETE' });
 export const reactiverUtilisateur = (id) => api(`/admin/utilisateurs/${id}/reactiver`, { method: 'PATCH' });
+export const reinitialiserMotDePasse = (id, nouveauMotDePasse) =>
+  api(`/admin/utilisateurs/${id}/mot-de-passe`, { method: 'PATCH', body: { nouveauMotDePasse } });
 // Seulement pour un compte déjà désactivé
 export const supprimerUtilisateurDefinitivement = (id) => api(`/admin/utilisateurs/${id}/definitif`, { method: 'DELETE' });

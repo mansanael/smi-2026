@@ -14,6 +14,7 @@ import {
 import { UtilisateurCourant } from '../auth/decorators/utilisateur-courant.decorator';
 import { UtilisateursService } from './utilisateurs.service';
 import { CreateUtilisateurDto } from './dto/create-utilisateur.dto';
+import { ReinitialiserMotDePasseDto } from './dto/reinitialiser-mot-de-passe.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -73,6 +74,20 @@ export class UtilisateursController {
   @Roles(RoleUtilisateur.DIRECTEUR_GENERAL)
   supprimerDefinitivement(@Param('id', ParseUUIDPipe) id: string, @UtilisateurCourant() user: { id: string }) {
     return this.utilisateursService.supprimerDefinitivement(id, user.id);
+  }
+
+  /**
+   * PATCH /api/admin/utilisateurs/:id/mot-de-passe
+   * Donne un nouveau mot de passe (après « Mot de passe oublié ») — DG et DT
+   */
+  @Patch(':id/mot-de-passe')
+  @Roles(RoleUtilisateur.DIRECTEUR_GENERAL, RoleUtilisateur.DIRECTEUR_TECHNIQUE)
+  reinitialiserMotDePasse(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ReinitialiserMotDePasseDto,
+    @UtilisateurCourant() user: { role: RoleUtilisateur },
+  ) {
+    return this.utilisateursService.reinitialiserMotDePasse(id, dto.nouveauMotDePasse, user.role);
   }
 
   /**

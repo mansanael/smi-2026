@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException, ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, UnauthorizedException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Utilisateur } from './entities/utilisateur.entity';
+import { RoleUtilisateur, Utilisateur } from './entities/utilisateur.entity';
 import { CreateUtilisateurDto } from './dto/create-utilisateur.dto';
 
 @Injectable()
@@ -76,6 +76,27 @@ export class UtilisateursService {
     utilisateur.motDePasse = nouveauMotDePasse;
     await this.utilisateurRepository.save(utilisateur);
     return { message: 'Mot de passe modifié avec succès.' };
+  }
+
+  /**
+   * La direction donne un nouveau mot de passe (après « Mot de passe oublié »).
+   * Seul le DG peut changer celui d'un autre DG : un DT ne peut pas prendre la main sur la direction générale.
+   */
+  async reinitialiserMotDePasse(id: string, nouveauMotDePasse: string, parRole: RoleUtilisateur) {
+    const utilisateur = await this.utilisateurRepository
+      .createQueryBuilder('u')
+      .addSelect('u.motDePasse')
+      .where('u.id = :id', { id })
+      .getOne();
+    if (!utilisateur) {
+      throw new NotFoundException(`Utilisateur "${id}" introuvable.`);
+    }
+    if (utilisateur.role === RoleUtilisateur.DIRECTEUR_GENERAL && parRole !== RoleUtilisateur.DIRECTEUR_GENERAL) {
+      throw new ForbiddenException('Seul le Directeur Général peut changer le mot de passe d’un Directeur Général.');
+    }
+    utilisateur.motDePasse = nouveauMotDePasse;
+    await this.utilisateurRepository.save(utilisateur);
+    return { message: `Nouveau mot de passe enregistré pour ${utilisateur.prenom} ${utilisateur.nom}.` };
   }
 
   async desactiver(id: string): Promise<void> {

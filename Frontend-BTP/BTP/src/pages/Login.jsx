@@ -1,27 +1,37 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Mic, BellRing, MessageSquareText } from 'lucide-react';
+import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Mic, BellRing, MessageSquareText, WifiOff } from 'lucide-react';
+import { accesMemorise, emailMemorise } from '../api/horsLigne';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import AideConnexion from '../components/connexion/AideConnexion';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(emailMemorise);
   const [motDePasse, setMotDePasse] = useState('');
+  const [seSouvenir, setSeSouvenir] = useState(accesMemorise);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [aide, setAide] = useState(null); // 'oublie' | 'compte'
   const { login } = useAuth();
   const navigate = useNavigate();
+  const enLigne = useOnlineStatus();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await login(email, motDePasse);
+      await login(email, motDePasse, seSouvenir);
       navigate('/');
     }
     catch (err) {
-      if (err?.offline) {
+      if (err?.sansAccesHorsLigne) {
+        setError(accesMemorise()
+          ? 'Pas de connexion, et cet email ou ce mot de passe ne correspond pas au dernier compte utilisé sur cet appareil.'
+          : 'Pas de connexion. Pour pouvoir vous connecter sans réseau, connectez-vous une première fois avec du réseau en cochant « Se souvenir de moi ».');
+      } else if (err?.offline) {
         setError('Impossible de joindre le serveur. Vérifiez votre connexion.');
       } else {
         setError('Email ou mot de passe incorrect.');
@@ -79,6 +89,18 @@ export default function Login() {
             <p>Connectez-vous pour accéder à votre espace</p>
           </div>
 
+          {!enLigne && (
+            <div className="login-hors-ligne">
+              <WifiOff size={16} />
+              <span>
+                Pas de réseau.{' '}
+                {accesMemorise()
+                  ? 'Vous pouvez quand même vous connecter : vos dernières données sont sur cet appareil.'
+                  : 'La connexion sans réseau n’est possible que sur un appareil où vous avez coché « Se souvenir de moi ».'}
+              </span>
+            </div>
+          )}
+
           {error && (
             <div className="login-error">
               <span>⚠️</span>
@@ -125,11 +147,11 @@ export default function Login() {
             </div>
 
             <div className="login-options">
-              <label className="login-remember">
-                <input type="checkbox" />
-                <span>Se souvenir de moi</span>
+              <label className="login-remember" title="Reste connecté 30 jours et permet de se connecter sans réseau sur cet appareil">
+                <input type="checkbox" checked={seSouvenir} onChange={(e) => setSeSouvenir(e.target.checked)} />
+                <span>Se souvenir de moi <small className="login-remember-aide">(accès sans réseau)</small></span>
               </label>
-              <a href="#" className="login-forgot">Mot de passe oublié ?</a>
+              <button type="button" className="login-forgot" onClick={() => setAide('oublie')}>Mot de passe oublié ?</button>
             </div>
 
             <button type="submit" disabled={loading} className="btn btn-primary login-submit-btn">
@@ -144,10 +166,12 @@ export default function Login() {
 
           <div className="login-footer-text">
             <p>Vous n'avez pas de compte ?</p>
-            <a href="#">Contactez votre administrateur</a>
+            <button type="button" className="login-lien" onClick={() => setAide('compte')}>Contactez votre administrateur</button>
           </div>
         </div>
       </div>
+
+      {aide && <AideConnexion mode={aide} emailInitial={email} onFermer={() => setAide(null)} />}
 
       <style>{`
         /* Écran coupé en deux : photo de chantier à gauche, formulaire sur fond blanc à droite */
@@ -287,9 +311,20 @@ export default function Login() {
           font-size: 13px; color: var(--text-secondary); cursor: pointer;
         }
         .login-remember input { width: 16px; height: 16px; }
-        .login-forgot {
+        .login-forgot, .login-lien {
           font-size: 13px; color: var(--accent-blue); text-decoration: none;
+          background: none; border: none; padding: 0; cursor: pointer; font-family: inherit;
         }
+        .login-forgot:hover, .login-lien:hover { text-decoration: underline; }
+        .login-lien { font-weight: 500; }
+        .login-remember-aide { color: var(--text-muted); font-size: 12px; }
+        .login-hors-ligne {
+          display: flex; gap: 10px; align-items: flex-start;
+          background: #fffbeb; border: 1px solid #fcd34d; color: var(--accent-amber-light);
+          padding: 12px 14px; border-radius: 12px; font-size: 13px; line-height: 1.5;
+          margin-bottom: 20px;
+        }
+        .login-hors-ligne svg { flex-shrink: 0; margin-top: 2px; }
         .login-submit-btn {
           width: 100%; padding: 14px;
           font-size: 15px; justify-content: center;

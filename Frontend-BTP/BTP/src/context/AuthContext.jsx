@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { getUser, setUser, setToken, removeToken, getMe, login as apiLogin } from '../api/api';
+import { accesMemorise, memoriserAcces, oublierAcces, verifierAccesHorsLigne } from '../api/horsLigne';
 
 const AuthContext = createContext(null);
 
@@ -24,16 +25,37 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = async (email, motDePasse) => {
-    const res = await apiLogin(email, motDePasse);
-    setToken(res.access_token);
-    setUser(res.utilisateur);
-    setUserState(res.utilisateur);
-    return res;
+  const ouvrirSession = (token, utilisateur) => {
+    setToken(token);
+    setUser(utilisateur);
+    setUserState(utilisateur);
   };
 
+  // Renvoie { horsLigne: true } quand la connexion s'est faite sans réseau (appareil mémorisé)
+  const login = async (email, motDePasse, seSouvenir = false) => {
+    try {
+      const res = await apiLogin(email, motDePasse, seSouvenir);
+      ouvrirSession(res.access_token, res.utilisateur);
+      if (seSouvenir) await memoriserAcces(email, motDePasse, res.access_token, res.utilisateur);
+      else oublierAcces();
+      return res;
+    } catch (err) {
+      if (!err?.offline) throw err;
+      const acces = await verifierAccesHorsLigne(email, motDePasse);
+      if (!acces) throw { ...err, sansAccesHorsLigne: true };
+      ouvrirSession(acces.token, acces.utilisateur);
+      return { horsLigne: true, utilisateur: acces.utilisateur };
+    }
+  };
+
+  // Sur un appareil mémorisé, on garde les données déjà chargées pour pouvoir se reconnecter sans réseau
   const logout = () => {
-    removeToken();
+    if (accesMemorise()) {
+      localStorage.removeItem('batipme_token');
+      localStorage.removeItem('batipme_user');
+    } else {
+      removeToken();
+    }
     setUserState(null);
   };
 
