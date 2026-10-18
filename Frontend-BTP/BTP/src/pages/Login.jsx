@@ -1,14 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Mic, BarChart3, MessageSquareText } from 'lucide-react';
-
-// Ce que l'application apporte, en trois phrases (affiché à gauche du formulaire)
-const ATOUTS = [
-  { icon: Mic, texte: 'Le rapport de chantier se dicte à la voix' },
-  { icon: BarChart3, texte: 'Budget, planning et paiements suivis en direct' },
-  { icon: MessageSquareText, texte: 'Le client reçoit chaque jour un résumé clair' },
-];
+import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Mic, CheckCircle2, Banknote } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -48,14 +41,36 @@ export default function Login() {
           </div>
           <span>BATIPME-SN</span>
         </div>
+        {/* Aperçus flottants de l'application (exemples fictifs), décoratifs */}
+        <div className="login-apercus" aria-hidden="true">
+          <div className="apercu apercu-avancement">
+            <div className="apercu-ligne">
+              <strong>Villa R+2</strong>
+              <span className="apercu-pastille">Dans les temps</span>
+            </div>
+            <div className="apercu-barre"><span style={{ width: '54%' }} /></div>
+            <small>Avancement 54 % · 5 étapes sur 12</small>
+          </div>
+          <div className="apercu apercu-voix">
+            <span className="apercu-icone bleu"><Mic size={16} /></span>
+            <div>
+              <strong>Note vocale · 17:40</strong>
+              <small>« Coffrage de la dalle terminé… »</small>
+              <em><CheckCircle2 size={13} /> Rapport du jour rédigé</em>
+            </div>
+          </div>
+          <div className="apercu apercu-paiement">
+            <span className="apercu-icone vert"><Banknote size={16} /></span>
+            <div>
+              <strong>Paiement reçu</strong>
+              <small className="apercu-montant">+ 7 089 600 FCFA</small>
+            </div>
+          </div>
+        </div>
+
         <div className="login-message">
           <h1>Pilotez vos chantiers, du terrain au bureau.</h1>
           <p>Logiciel de gestion de projets BTP adapté aux PME du Sénégal.</p>
-          <ul className="login-atouts">
-            {ATOUTS.map(({ icon: Icon, texte }) => (
-              <li key={texte}><span><Icon size={18} /></span>{texte}</li>
-            ))}
-          </ul>
         </div>
       </div>
 
@@ -183,23 +198,50 @@ export default function Login() {
         .login-brand p {
           font-size: 17px; color: #e2e8f0;
         }
-        .login-atouts {
-          list-style: none;
-          margin-top: 28px;
-          display: flex; flex-direction: column; gap: 12px;
+        /* Cartes « verre dépoli » posées sur la photo, qui flottent doucement */
+        .login-apercus { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+        .apercu {
+          position: absolute;
+          background: rgba(255,255,255,0.86);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255,255,255,0.6);
+          border-radius: 16px;
+          box-shadow: 0 18px 40px rgba(11,37,69,0.28);
+          padding: 14px 16px;
+          color: var(--text-primary);
+          animation: flotter 6s ease-in-out infinite;
         }
-        .login-atouts li {
-          display: flex; align-items: center; gap: 12px;
-          color: #fff; font-size: 15px; font-weight: 500;
+        .apercu strong { display: block; font-size: 14px; font-weight: 700; }
+        .apercu small { display: block; font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+        .apercu em {
+          display: flex; align-items: center; gap: 4px; margin-top: 6px;
+          font-style: normal; font-size: 12px; font-weight: 600; color: var(--accent-green);
         }
-        .login-atouts span {
-          width: 36px; height: 36px; flex-shrink: 0;
-          border-radius: 10px;
-          background: rgba(255,255,255,0.14);
-          border: 1px solid rgba(255,255,255,0.22);
-          display: flex; align-items: center; justify-content: center;
-          color: #bfdbfe;
+        .apercu-avancement { top: 17%; right: 8%; width: 250px; }
+        .apercu-voix { top: 40%; left: 7%; display: flex; gap: 12px; width: 270px; animation-delay: -2s; }
+        .apercu-paiement { top: 52%; right: 12%; display: flex; gap: 12px; align-items: center; animation-delay: -4s; }
+        .apercu-ligne { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .apercu-pastille {
+          font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+          background: #dcf3e3; color: var(--accent-green-light);
         }
+        .apercu-barre { height: 8px; border-radius: 4px; background: var(--bg-tertiary); margin: 10px 0 6px; overflow: hidden; }
+        .apercu-barre span { display: block; height: 100%; border-radius: 4px; background: var(--gradient-blue); }
+        .apercu-icone {
+          width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px;
+          display: flex; align-items: center; justify-content: center; color: #fff;
+        }
+        .apercu-icone.bleu { background: var(--accent-blue); }
+        .apercu-icone.vert { background: var(--accent-green); }
+        .apercu-montant { color: var(--accent-green-light) !important; font-weight: 700; font-size: 13px !important; }
+        @keyframes flotter {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        @media (prefers-reduced-motion: reduce) { .apercu { animation: none; } }
+        /* Écran moyen (tablette) : deux cartes suffisent, sinon elles se chevauchent */
+        @media (max-width: 1100px) { .apercu-paiement { display: none; } }
         .login-form-side {
           flex: 1;
           display: flex; align-items: center; justify-content: center;
@@ -282,7 +324,7 @@ export default function Login() {
           .login-logo-icon { width: 38px; height: 38px; border-radius: 10px; }
           .login-brand h1 { font-size: 26px; margin-bottom: 6px; }
           .login-brand p { font-size: 14px; }
-          .login-atouts { display: none; }
+          .login-apercus { display: none; }
           .login-form-side { padding: 28px 20px 36px; align-items: flex-start; }
           .login-form-header { margin-bottom: 24px; }
           .login-form-header h2 { font-size: 24px; }
