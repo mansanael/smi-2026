@@ -3,7 +3,7 @@
 /* ═══════════════════════════════════════════════════
    DESIGN SYSTEM — BATIPME-SN
    Thème clair « Bleu chantier » : lisible en plein soleil
-   (texte ≥ 7:1 sur le fond), menu bleu marine et jaune casque.
+   (texte ≥ 7:1 sur le fond), menu bleu marine, page active en bleu vif.
    Vert, orange et rouge sont réservés aux états (à temps,
    à surveiller, en retard).
    Les variables « -light » servent au TEXTE coloré : sur fond
@@ -43,9 +43,10 @@
   /* ── Menu latéral ── */
   --menu-bg: #0b2545;
   --menu-text: #c7d4e6;
-  --menu-active: #ffc83d;
-  --menu-active-bg: rgba(255, 200, 61, 0.14);
-  --brand-yellow: #ffc107;
+  --menu-active: #ffffff;
+  --menu-active-bg: #1d4ed8;
+  --menu-indicator: #93c5fd;
+  --brand: #1d4ed8;
 
   /* ── Gradients ── */
   --gradient-blue: linear-gradient(135deg, #1d4ed8, #1e40af);

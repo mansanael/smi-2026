@@ -156,10 +156,10 @@ export default function Login() {
         }
         .login-logo-icon {
           width: 100px; height: 100px;
-          background: var(--brand-yellow);
+          background: var(--brand);
           border-radius: 24px;
           display: flex; align-items: center; justify-content: center;
-          color: var(--menu-bg); margin-bottom: 32px;
+          color: #fff; margin-bottom: 32px;
           position: relative; z-index: 1;
         }
         .login-brand h1 {

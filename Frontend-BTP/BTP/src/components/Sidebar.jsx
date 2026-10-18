@@ -122,7 +122,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
         .logo-icon {
           width: 44px; height: 44px;
-          background: var(--brand-yellow);
+          background: var(--brand);
           border-radius: var(--radius-md);
           display: flex; align-items: center; justify-content: center;
           position: relative;
@@ -136,7 +136,7 @@ export default function Sidebar({ isOpen, onClose }) {
         }
 
         .logo-inner {
-          font-size: 22px; font-weight: 800; color: var(--menu-bg);
+          font-size: 22px; font-weight: 800; color: #fff;
           position: relative; z-index: 1;
         }
 
@@ -201,12 +201,12 @@ export default function Sidebar({ isOpen, onClose }) {
           background: rgba(255, 255, 255, 0.08);
         }
         
-        /* Barre jaune à gauche de l'entrée active : repérable d'un coup d'œil */
+        /* Barre claire à gauche de l'entrée active : repérable d'un coup d'œil */
         .nav-indicator {
           position: absolute;
           left: 0; top: 10px; bottom: 10px;
           width: 4px;
-          background: var(--menu-active);
+          background: var(--menu-indicator);
           border-radius: 0 4px 4px 0;
         }
 
