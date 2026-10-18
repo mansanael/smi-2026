@@ -271,6 +271,26 @@ a:hover {
   letter-spacing: -0.5px;
 }
 
+/* Montant en FCFA : la taille suit la largeur de la carte, jamais sur deux lignes */
+.kpi-card {
+  container-type: inline-size;
+}
+
+.kpi-card .kpi-value.kpi-montant {
+  font-size: clamp(17px, 12cqi, 28px);
+  white-space: nowrap;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.kpi-unite {
+  font-size: 0.5em;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0;
+}
+
 .kpi-card .kpi-label {
   font-size: 13px;
   color: var(--text-secondary);
@@ -388,6 +408,7 @@ a:hover {
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .badge-blue {
@@ -657,6 +678,121 @@ a:hover {
   font-size: 15px;
 }
 
+/* Écran vide qui guide (components/EtatVide.jsx) */
+.etat-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 44px 20px;
+}
+
+.etat-vide-icone {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #e8eefc;
+  color: var(--accent-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.etat-vide strong {
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.etat-vide p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  max-width: 460px;
+  line-height: 1.55;
+}
+
+.etat-vide .btn {
+  margin-top: 10px;
+}
+
+/* Bloc « En ce moment sur le chantier » (onglet Résumé) */
+.en-ce-moment {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.en-ce-moment-bloc {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  border: 1px solid var(--surface-border);
+}
+
+.en-ce-moment-bloc > .btn {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.en-ce-moment-titre {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.en-ce-moment-corps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.en-ce-moment-corps small {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.en-ce-moment-texte {
+  font-size: 14px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.en-ce-moment-vide {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.apercu-icone {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.apercu-icone.bleu { background: var(--accent-blue); }
+.apercu-icone.vert { background: var(--accent-green); }
+.apercu-icone.rouge { background: var(--accent-red); }
+.apercu-icone.orange { background: var(--accent-amber); }
+
+.data-table tbody tr.ligne-vide,
+.data-table tbody tr.ligne-vide:hover {
+  cursor: default;
+  background: transparent;
+}
+
 /* ═══ LOADING ═══ */
 .spinner {
   display: flex;
@@ -764,6 +900,11 @@ a:hover {
 .montant {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
+}
+
+/* Un montant ne se coupe jamais entre le nombre et « FCFA » */
+.data-table td.montant {
+  white-space: nowrap;
 }
 
 .montant-positive {

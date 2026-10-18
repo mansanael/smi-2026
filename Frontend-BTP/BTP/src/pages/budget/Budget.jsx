@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProjets, getBudgetKpi, getDevis, addLigneDevis, getDepenses, addDepense } from '../../api/api';
-import { Plus, X, Wallet, TrendingUp, TrendingDown, AlertTriangle, Sparkles } from 'lucide-react';
+import { Plus, X, Wallet, TrendingUp, TrendingDown, AlertTriangle, Sparkles, FileSpreadsheet, Receipt } from 'lucide-react';
+import { LigneVide } from '../../components/EtatVide';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES_SAISIE_BUDGET } from '../../roles';
 import EstimationModal from '../../components/estimation/EstimationModal';
+import MontantKpi from '../../components/MontantKpi';
 
 const emptyLigneDevis = { rubrique: 'materiaux', designation: '', unite: '', quantite: '', prixUnitaire: '' };
 const emptyDepense = { type: 'engagement', libelle: '', montant: '', categorie: 'materiaux', date: new Date().toISOString().slice(0, 10) };
@@ -129,22 +131,22 @@ export default function Budget({ projetIdFixe }) {
                         <div className="kpi-grid">
                             <div className="kpi-card blue">
                                 <div className="kpi-icon"><Wallet size={22} /></div>
-                                <div className="kpi-value">{formatFCFA(kpi.montantMarche)}</div>
+                                <MontantKpi valeur={kpi.montantMarche} />
                                 <div className="kpi-label">Montant du marché</div>
                             </div>
                             <div className="kpi-card teal">
                                 <div className="kpi-icon"><TrendingUp size={22} /></div>
-                                <div className="kpi-value">{formatFCFA(kpi.montantDevise)}</div>
+                                <MontantKpi valeur={kpi.montantDevise} />
                                 <div className="kpi-label">Total devisé</div>
                             </div>
                             <div className={`kpi-card ${depassement ? 'amber' : 'green'}`}>
                                 <div className="kpi-icon"><TrendingDown size={22} /></div>
-                                <div className="kpi-value">{formatFCFA(kpi.montantDepense)}</div>
+                                <MontantKpi valeur={kpi.montantDepense} />
                                 <div className="kpi-label">Total dépensé</div>
                             </div>
                             <div className={`kpi-card ${depassement ? 'amber' : 'blue'}`}>
                                 <div className="kpi-icon"><AlertTriangle size={22} /></div>
-                                <div className="kpi-value">{formatFCFA(Number(kpi.montantMarche) - Number(kpi.montantDepense))}</div>
+                                <MontantKpi valeur={Number(kpi.montantMarche) - Number(kpi.montantDepense)} />
                                 <div className="kpi-label">{depassement ? 'Dépassement' : 'Solde restant'}</div>
                             </div>
                         </div>
@@ -200,7 +202,9 @@ export default function Budget({ projetIdFixe }) {
                                         </tr>
                                     ))}
                                     {devis.length === 0 && (
-                                        <tr><td colSpan="6" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucune ligne de devis</td></tr>
+                                        <LigneVide colonnes={6} icone={FileSpreadsheet} titre="Pas encore de devis"
+                                            texte="Le devis liste les travaux prévus et leur prix. Décrivez le chantier en une phrase et l'IA prépare une estimation que vous ajustez."
+                                            action="Estimer avec l'IA" onAction={() => setShowEstimation(true)} />
                                     )}
                                 </tbody>
                             </table>
@@ -226,7 +230,9 @@ export default function Budget({ projetIdFixe }) {
                                         </tr>
                                     ))}
                                     {depenses.length === 0 && (
-                                        <tr><td colSpan="5" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucune dépense enregistrée</td></tr>
+                                        <LigneVide colonnes={5} icone={Receipt} titre="Aucune dépense pour l'instant"
+                                            texte="Enregistrez chaque achat ou paiement du chantier : le budget restant se met à jour tout seul."
+                                            action={peutSaisir ? 'Ajouter une dépense' : null} onAction={() => setShowModal(true)} />
                                     )}
                                 </tbody>
                             </table>

@@ -11,6 +11,8 @@ import {
   ROLES_TERRAIN, estLectureSeule,
 } from '../../roles';
 import EquipeProjet from '../../components/EquipeProjet';
+import MontantKpi from '../../components/MontantKpi';
+import EnCeMoment from '../../components/projet/EnCeMoment';
 import SuiviChantier from '../suivi-chantier/SuiviChantier';
 import Planning from '../planning/Planning';
 import Budget from '../budget/Budget';
@@ -133,14 +135,14 @@ export default function ProjetDetail() {
       <div className="kpi-grid">
         <div className="kpi-card blue">
           <div className="kpi-icon"><Building2 size={22} /></div>
-          <div className="kpi-value">{dash?.avancement?.physique || 0}%</div>
+          <div className="kpi-value">{Math.round(dash?.avancement?.physique || 0)} %</div>
           <div className="kpi-label">Avancement physique</div>
           <div className="progress-bar" style={{ marginTop: 8 }}><div className="progress-fill blue" style={{ width: `${dash?.avancement?.physique || 0}%` }} /></div>
         </div>
         <div className="kpi-card green">
           <div className="kpi-icon"><Wallet size={22} /></div>
-          <div className="kpi-value">{Number(projet.montantMarche).toLocaleString('fr-FR')}</div>
-          <div className="kpi-label">Montant marché (FCFA)</div>
+          <MontantKpi valeur={projet.montantMarche} />
+          <div className="kpi-label">Montant du marché</div>
         </div>
         <div className="kpi-card amber">
           <div className="kpi-icon"><Calendar size={22} /></div>
@@ -159,6 +161,8 @@ export default function ProjetDetail() {
           {dash.alertes.map((a, i) => <div key={i} className="alert alert-danger">{a}</div>)}
         </div>
       )}
+
+      <EnCeMoment projetId={id} aSuivre={dash?.aSuivre} client={client} onOnglet={changerOnglet} />
 
       <div className="charts-grid">
         <div className="glass-card">

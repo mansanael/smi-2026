@@ -5,8 +5,10 @@ import {
     addEcheance, deleteEcheance, relancerEcheance,
 } from '../../api/api';
 import { Plus, X, Wallet, Banknote, Clock, AlertTriangle, BellRing, Trash2, CalendarPlus } from 'lucide-react';
+import { LigneVide } from '../../components/EtatVide';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES_SAISIE_PAIEMENTS, estLectureSeule } from '../../roles';
+import MontantKpi from '../../components/MontantKpi';
 
 const aujourdhui = () => new Date().toISOString().slice(0, 10);
 const emptyVersement = () => ({ date: aujourdhui(), montant: '', mode: 'virement', reference: '', observations: '' });
@@ -149,12 +151,12 @@ export default function Paiements({ projetIdFixe }) {
                     <div className="kpi-grid">
                         <div className="kpi-card blue">
                             <div className="kpi-icon"><Wallet size={22} /></div>
-                            <div className="kpi-value montant" style={{ fontSize: 22 }}>{fcfa(suivi.montantMarche)}</div>
+                            <MontantKpi valeur={suivi.montantMarche} />
                             <div className="kpi-label">Montant du marché</div>
                         </div>
                         <div className="kpi-card green">
                             <div className="kpi-icon"><Banknote size={22} /></div>
-                            <div className="kpi-value montant" style={{ fontSize: 22 }}>{fcfa(suivi.totalRecu)}</div>
+                            <MontantKpi valeur={suivi.totalRecu} />
                             <div className="kpi-label">Reçu ({suivi.tauxEncaissement} %)</div>
                             <div className="progress-bar" style={{ marginTop: 8 }}>
                                 <div className="progress-fill green" style={{ width: `${Math.min(100, suivi.tauxEncaissement)}%` }} />
@@ -162,12 +164,12 @@ export default function Paiements({ projetIdFixe }) {
                         </div>
                         <div className="kpi-card amber">
                             <div className="kpi-icon"><Clock size={22} /></div>
-                            <div className="kpi-value montant" style={{ fontSize: 22 }}>{fcfa(suivi.resteAPayer)}</div>
+                            <MontantKpi valeur={suivi.resteAPayer} />
                             <div className="kpi-label">Reste à payer</div>
                         </div>
                         <div className={`kpi-card ${suivi.nombreEcheancesEnRetard > 0 ? 'red' : 'teal'}`}>
                             <div className="kpi-icon"><AlertTriangle size={22} /></div>
-                            <div className="kpi-value montant" style={{ fontSize: 22 }}>{fcfa(suivi.montantEnRetard)}</div>
+                            <MontantKpi valeur={suivi.montantEnRetard} />
                             <div className="kpi-label">En retard ({suivi.nombreEcheancesEnRetard} échéance{suivi.nombreEcheancesEnRetard > 1 ? 's' : ''})</div>
                         </div>
                     </div>
@@ -250,7 +252,9 @@ export default function Paiements({ projetIdFixe }) {
                                         </tr>
                                     ))}
                                     {suivi.echeances.length === 0 && (
-                                        <tr><td colSpan="7" style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>Aucune échéance définie</td></tr>
+                                        <LigneVide colonnes={7} icone={CalendarPlus} titre="Aucune échéance définie"
+                                            texte="Découpez le prix du marché en versements (ex. 30 % à la signature, 20 % aux fondations…) pour savoir qui doit payer quoi et quand."
+                                            action={peutSaisir ? 'Ajouter une échéance' : null} onAction={() => ouvrir('echeance')} />
                                     )}
                                 </tbody>
                             </table>
@@ -294,7 +298,9 @@ export default function Paiements({ projetIdFixe }) {
                                         </tr>
                                     ))}
                                     {suivi.paiements.length === 0 && (
-                                        <tr><td colSpan="6" style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>Aucun versement enregistré</td></tr>
+                                        <LigneVide colonnes={6} icone={Banknote} titre="Aucun versement reçu"
+                                            texte="Chaque paiement du client enregistré ici règle automatiquement les échéances, de la plus ancienne à la plus récente."
+                                            action={peutSaisir ? 'Enregistrer un versement' : null} onAction={() => ouvrir('versement')} />
                                     )}
                                 </tbody>
                             </table>

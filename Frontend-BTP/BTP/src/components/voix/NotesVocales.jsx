@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Mic, Square, Trash2, Clock, Loader2, WifiOff, Sparkles, AlertTriangle } from 'lucide-react';
+import EtatVide from '../EtatVide';
 import { getNotesVocales, createNoteVocale, deleteNoteVocale, preparerCompteRendu, getParametres } from '../../api/api';
 import CompteRenduModal from './CompteRenduModal';
 import { listQueue } from '../../api/queue';
@@ -205,7 +206,8 @@ export default function NotesVocales({ projetId, photos = [], datesRapports = []
       ))}
 
       {notes.length === 0 && enAttente.length === 0 && (
-        <div className="empty-state"><p>Aucune note vocale pour ce chantier.</p></div>
+        <EtatVide icone={Mic} titre="Aucune note vocale pour ce chantier"
+          texte="Touchez le micro et décrivez ce que vous voyez : l'appli écrit à votre place et repère les problèmes." />
       )}
     </div>
   );

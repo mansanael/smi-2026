@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProjets, getFournisseurs, createFournisseur, getBonsCommande, createBonCommande, getStock, createMouvement } from '../../api/api';
 import { Plus, X, Truck, ShoppingCart, Boxes } from 'lucide-react';
+import { LigneVide } from '../../components/EtatVide';
 
 const emptyFournisseur = { nom: '', specialite: 'ciment', region: '', telephone: '', email: '', contactPrincipal: '' };
 const emptyBC = { fournisseurId: '', date: '', montantTotal: '', dateLivraisonPrevue: '', observations: '' };
@@ -130,7 +131,9 @@ export default function Approvisionnement({ projetIdFixe }) {
                                     <td>{f.contactPrincipal || '—'}</td>
                                 </tr>
                             ))}
-                            {fournisseurs.length === 0 && <tr><td colSpan="5" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucun fournisseur enregistré</td></tr>}
+                            {fournisseurs.length === 0 && <LigneVide colonnes={5} icone={Truck} titre="Aucun fournisseur enregistré"
+                                texte="Ajoutez vos fournisseurs habituels (ciment, fer, sable…) pour les choisir ensuite dans vos bons de commande."
+                                action="Ajouter un fournisseur" onAction={() => setShowModal(true)} />}
                         </tbody>
                     </table>
                 </div>
@@ -155,7 +158,9 @@ export default function Approvisionnement({ projetIdFixe }) {
                                     <td>{bc.dateLivraisonPrevue ? new Date(bc.dateLivraisonPrevue).toLocaleDateString('fr-FR') : '—'}</td>
                                 </tr>
                             ))}
-                            {bonsCommande.length === 0 && <tr><td colSpan="5" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucun bon de commande</td></tr>}
+                            {bonsCommande.length === 0 && <LigneVide colonnes={5} icone={ShoppingCart} titre="Aucun bon de commande"
+                                texte="Un bon de commande trace ce que vous achetez, à qui et pour quand. Le magasinier sait ainsi quoi réceptionner."
+                                action="Créer un bon de commande" onAction={() => setShowModal(true)} />}
                         </tbody>
                     </table>
                 </div>
@@ -178,7 +183,9 @@ export default function Approvisionnement({ projetIdFixe }) {
                                     <td className="montant" style={{ color: s.quantite < 0 ? '#ef4444' : undefined }}>{s.quantite}</td>
                                 </tr>
                             ))}
-                            {stock.length === 0 && <tr><td colSpan="3" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucun mouvement de stock enregistré</td></tr>}
+                            {stock.length === 0 && <LigneVide colonnes={3} icone={Boxes} titre="Le stock du chantier est vide"
+                                texte="Notez chaque entrée (livraison) et chaque sortie (utilisation) de matériaux : la quantité restante se calcule toute seule."
+                                action="Ajouter un mouvement" onAction={() => setShowModal(true)} />}
                         </tbody>
                     </table>
                 </div>

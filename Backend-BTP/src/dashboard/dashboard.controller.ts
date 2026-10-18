@@ -20,6 +20,12 @@ export class DashboardController {
     return this.dashboardService.getDashboardGlobal(await this.acces.projetIdsAutorises(user));
   }
 
+  // Avancement, retards et prochaine échéance de chaque chantier visible (liste des chantiers)
+  @Get('apercu-chantiers')
+  async apercuChantiers(@UtilisateurCourant() user: UtilisateurAcces) {
+    return this.dashboardService.apercuChantiers(await this.acces.projetIdsAutorises(user));
+  }
+
   @Get('projets/:projetId')
   async getDashboardProjet(@Param('projetId') projetId: string, @UtilisateurCourant() user: UtilisateurAcces) {
     const dashboard = await this.dashboardService.getDashboardProjet(projetId);

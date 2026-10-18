@@ -5,11 +5,13 @@ import { Tache } from '../planning/entities/tache.entity';
 import { Depense } from '../budget/entities/depense.entity';
 import { Incident } from '../suivi-chantier/entities/incident.entity';
 import { SituationTravaux } from '../facturation/entities/situation-travaux.entity';
+import { Echeance } from '../paiements/entities/echeance.entity';
+import { Paiement } from '../paiements/entities/paiement.entity';
 import { DashboardService } from './dashboard.service';
 import { DashboardController } from './dashboard.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Projet, Tache, Depense, Incident, SituationTravaux])],
+  imports: [TypeOrmModule.forFeature([Projet, Tache, Depense, Incident, SituationTravaux, Echeance, Paiement])],
   controllers: [DashboardController],
   providers: [DashboardService],
   exports: [DashboardService],

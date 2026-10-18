@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProjets, getDocuments, createDocument, getExpirations, setVisibiliteDocument } from '../../api/api';
-import { Plus, X, FileText, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Plus, X, FileText, AlertCircle, Eye, EyeOff, FolderOpen } from 'lucide-react';
+import { LigneVide } from '../../components/EtatVide';
 import { useAuth } from '../../context/AuthContext';
 import { estLectureSeule } from '../../roles';
 
@@ -152,11 +153,14 @@ export default function Documents({ projetIdFixe }) {
                                     )}
                                 </tr>
                             ))}
-                            {documents.length === 0 && (
-                                <tr><td colSpan="7" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-                                    {lectureSeule ? 'Aucun document partagé pour le moment' : 'Aucun document enregistré'}
-                                </td></tr>
-                            )}
+                            {documents.length === 0 && (lectureSeule ? (
+                                <LigneVide colonnes={7} icone={FolderOpen} titre="Aucun document partagé pour le moment"
+                                    texte="L'entreprise partagera ici les documents de votre chantier : plans, contrat, procès-verbaux…" />
+                            ) : (
+                                <LigneVide colonnes={7} icone={FolderOpen} titre="Aucun document enregistré"
+                                    texte="Rangez ici les plans, le contrat, les cautions et les PV. L'appli vous prévient avant qu'un document n'expire."
+                                    action="Ajouter un document" onAction={() => setShowModal(true)} />
+                            ))}
                         </tbody>
                     </table>
                 </div>

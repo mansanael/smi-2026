@@ -1,9 +1,35 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProjets, createProjet } from '../../api/api';
-import { Plus, X, MapPin } from 'lucide-react';
+import { getProjets, createProjet, getApercuChantiers } from '../../api/api';
+import { Plus, X, MapPin, HardHat } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES_GESTION_PROJET, estLectureSeule } from '../../roles';
+import { LigneVide } from '../../components/EtatVide';
+
+const formatJour = (d) => new Date(`${String(d).slice(0, 10)}T00:00:00Z`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+
+// Ce qui mérite l'attention sur un chantier, du plus urgent au simple rappel
+function APointer({ apercu }) {
+  if (!apercu) return <span style={{ color: 'var(--text-muted)' }}>—</span>;
+  if (apercu.paiementEnRetard) {
+    return <span className="badge badge-red">Paiement en retard · {apercu.paiementEnRetard.jours} j</span>;
+  }
+  if (apercu.tachesEnRetard > 0) {
+    return <span className="badge badge-amber">{apercu.tachesEnRetard} tâche{apercu.tachesEnRetard > 1 ? 's' : ''} en retard</span>;
+  }
+  if (apercu.prochaineTache) {
+    return (
+      <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+        Prochaine étape : <strong style={{ color: 'var(--text-primary)' }}>{apercu.prochaineTache.nom}</strong>
+        {apercu.prochaineTache.dateFinPrevue && ` (${formatJour(apercu.prochaineTache.dateFinPrevue)})`}
+      </span>
+    );
+  }
+  if (apercu.prochaineEcheance) {
+    return <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Prochain paiement le {formatJour(apercu.prochaineEcheance.dateLimite)}</span>;
+  }
+  return <span className="badge badge-green">Rien à signaler</span>;
+}
 
 const statutLabels = {
   en_etude: 'En étude', soumissionne: 'Soumissionné', attribue: 'Attribué',
@@ -24,6 +50,7 @@ const emptyForm = {
 
 export default function ProjetsList() {
   const [projets, setProjets] = useState([]);
+  const [apercus, setApercus] = useState({});
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(emptyForm);
@@ -31,7 +58,11 @@ export default function ProjetsList() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const load = () => getProjets().then(setProjets).finally(() => setLoading(false));
+  const load = () => {
+    // L'aperçu (avancement, retards) est un complément : la liste s'affiche même s'il échoue
+    getApercuChantiers().then((a) => setApercus(a || {})).catch(() => {});
+    return getProjets().then(setProjets).finally(() => setLoading(false));
+  };
   useEffect(() => { load(); }, []);
 
   const handleCreate = async (e) => {
@@ -75,26 +106,50 @@ export default function ProjetsList() {
           <thead>
             <tr>
               <th>Référence</th>
-              <th>Intitulé</th>
-              <th>Région</th>
-              <th>Type marché</th>
+              <th>Chantier</th>
               <th>Statut</th>
+              <th style={{ minWidth: 150 }}>Avancement</th>
+              <th>À surveiller</th>
               <th>Montant marché</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map(p => (
-              <tr key={p.id} onClick={() => navigate(`/projets/${p.id}`)}>
-                <td style={{ fontWeight: 600, color: 'var(--accent-blue-light)' }}>{p.reference}</td>
-                <td>{p.intitule}</td>
-                <td><span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><MapPin size={14} />{p.region}</span></td>
-                <td><span className="badge badge-teal" style={{ textTransform: 'capitalize' }}>{p.typeMarche}</span></td>
-                <td><span className={`badge ${statutBadge[p.statut] || 'badge-gray'}`}>{statutLabels[p.statut] || p.statut}</span></td>
-                <td className="montant">{Number(p.montantMarche).toLocaleString('fr-FR')} FCFA</td>
-              </tr>
-            ))}
+            {filtered.map(p => {
+              const apercu = apercus[p.id];
+              return (
+                <tr key={p.id} onClick={() => navigate(`/projets/${p.id}`)}>
+                  <td style={{ fontWeight: 600, color: 'var(--accent-blue-light)', whiteSpace: 'nowrap' }}>{p.reference}</td>
+                  <td>
+                    <div style={{ fontWeight: 500 }}>{p.intitule}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                      <MapPin size={12} style={{ verticalAlign: -1, marginRight: 3 }} />
+                      {[p.commune, p.region].filter(Boolean).join(', ') || '—'}
+                      {' · Marché '}{p.typeMarche === 'prive' ? 'privé' : p.typeMarche === 'ppp' ? 'PPP' : 'public'}
+                    </div>
+                  </td>
+                  <td><span className={`badge ${statutBadge[p.statut] || 'badge-gray'}`}>{statutLabels[p.statut] || p.statut}</span></td>
+                  <td>
+                    {apercu ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div className="progress-bar" style={{ flex: 1, minWidth: 70 }}>
+                          <div className="progress-fill blue" style={{ width: `${apercu.avancement}%` }} />
+                        </div>
+                        <span style={{ fontSize: 13, fontWeight: 600, minWidth: 36 }}>{apercu.avancement} %</span>
+                      </div>
+                    ) : <span style={{ color: 'var(--text-muted)' }}>—</span>}
+                  </td>
+                  <td><APointer apercu={apercu} /></td>
+                  <td className="montant" style={{ whiteSpace: 'nowrap' }}>{Number(p.montantMarche).toLocaleString('fr-FR')} FCFA</td>
+                </tr>
+              );
+            })}
             {filtered.length === 0 && (
-              <tr><td colSpan="6" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucun projet trouvé</td></tr>
+              <LigneVide colonnes={6} icone={HardHat}
+                titre={filter ? 'Aucun chantier avec ce statut' : 'Aucun chantier pour l’instant'}
+                texte={filter ? 'Choisissez « Tous » pour revoir l’ensemble des chantiers.'
+                  : 'Créez votre premier chantier : vous pourrez ensuite planifier les tâches, suivre le budget et dicter les rapports.'}
+                action={!filter && ROLES_GESTION_PROJET.includes(user?.role) ? 'Créer un chantier' : null}
+                onAction={() => setShowModal(true)} />
             )}
           </tbody>
         </table>

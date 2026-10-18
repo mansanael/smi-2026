@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getProjets, getSituations, createSituation, updateSituation, updateStatutSituation, getRecapitulatif } from '../../api/api';
 import { Plus, X, Receipt, Wallet, CheckCircle2, Clock, Pencil } from 'lucide-react';
+import { LigneVide } from '../../components/EtatVide';
+import MontantKpi from '../../components/MontantKpi';
 
 const emptyForm = { numero: '', mois: '', montantHTCumul: '', montantHTNouveau: '', pourcentageAvancement: '' };
 
@@ -141,17 +143,17 @@ export default function Facturation({ projetIdFixe }) {
                             </div>
                             <div className="kpi-card teal">
                                 <div className="kpi-icon"><Wallet size={22} /></div>
-                                <div className="kpi-value">{formatFCFA(recap.totalNetAPayer)}</div>
+                                <MontantKpi valeur={recap.totalNetAPayer} />
                                 <div className="kpi-label">Total net à payer</div>
                             </div>
                             <div className="kpi-card green">
                                 <div className="kpi-icon"><CheckCircle2 size={22} /></div>
-                                <div className="kpi-value">{formatFCFA(recap.totalEncaisse)}</div>
+                                <MontantKpi valeur={recap.totalEncaisse} />
                                 <div className="kpi-label">Total encaissé</div>
                             </div>
                             <div className="kpi-card amber">
                                 <div className="kpi-icon"><Clock size={22} /></div>
-                                <div className="kpi-value">{formatFCFA(recap.restantAEncaisser)}</div>
+                                <MontantKpi valeur={recap.restantAEncaisser} />
                                 <div className="kpi-label">Restant à encaisser</div>
                             </div>
                         </div>
@@ -200,7 +202,9 @@ export default function Facturation({ projetIdFixe }) {
                                     </tr>
                                 ))}
                                 {situations.length === 0 && (
-                                    <tr><td colSpan="9" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucune situation de travaux émise</td></tr>
+                                    <LigneVide colonnes={9} icone={Receipt} titre="Pas encore de situation de travaux"
+                                        texte="Chaque mois, une situation de travaux facture au client ce qui a été réalisé. Créez la première pour démarrer la facturation."
+                                        action="Créer la première situation" onAction={ouvrirCreation} />
                                 )}
                             </tbody>
                         </table>

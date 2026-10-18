@@ -3,7 +3,8 @@ import {
     getPersonnel, createPersonnel, getEngins, createEngin, getSousTraitants, createSousTraitant, getProjets,
     getPointages, createPointage, getEnginsProjet, affecterEngin,
 } from '../../api/api';
-import { Plus, X, HardHat, Truck, Briefcase, ClipboardList } from 'lucide-react';
+import { Plus, X, HardHat, Truck, Briefcase, ClipboardList, Users } from 'lucide-react';
+import { LigneVide } from '../../components/EtatVide';
 
 const emptyAffectationEngin = () => ({ enginId: '', dateDebut: new Date().toISOString().slice(0, 10), dateFin: '', observations: '' });
 const formatJour = (d) => (d ? new Date(String(d).slice(0, 10)).toLocaleDateString('fr-FR', { timeZone: 'UTC' }) : '—');
@@ -247,7 +248,9 @@ export default function Ressources({ projetIdFixe }) {
                                         <td>{p.telephone || '—'}</td>
                                     </tr>
                                 ))}
-                                {personnel.length === 0 && <tr><td colSpan="6" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucun employé enregistré</td></tr>}
+                                {personnel.length === 0 && <LigneVide colonnes={6} icone={Users} titre="Aucun employé enregistré"
+                                    texte="Ajoutez vos ouvriers et leur salaire journalier pour pointer leurs présences et calculer la main-d'œuvre du chantier."
+                                    action="Ajouter un employé" onAction={() => setShowModal(true)} />}
                             </tbody>
                         </table>
                     )}
@@ -265,7 +268,9 @@ export default function Ressources({ projetIdFixe }) {
                                         <td className="montant">{formatFCFA(e.tauxJournalier)}</td>
                                     </tr>
                                 ))}
-                                {engins.length === 0 && <tr><td colSpan="5" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucun engin enregistré</td></tr>}
+                                {engins.length === 0 && <LigneVide colonnes={5} icone={Truck} titre="Aucun engin enregistré"
+                                    texte="Bétonnières, pelles, camions… Enregistrez-les pour les affecter aux chantiers sans risque de double réservation."
+                                    action="Ajouter un engin" onAction={() => setShowModal(true)} />}
                             </tbody>
                         </table>
                     )}
@@ -283,7 +288,9 @@ export default function Ressources({ projetIdFixe }) {
                                         <td>{s.evaluation ? `${s.evaluation}/10` : '—'}</td>
                                     </tr>
                                 ))}
-                                {sousTraitants.length === 0 && <tr><td colSpan="5" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Aucun sous-traitant enregistré</td></tr>}
+                                {sousTraitants.length === 0 && <LigneVide colonnes={5} icone={HardHat} titre="Aucun sous-traitant enregistré"
+                                    texte="Électriciens, plombiers, étancheurs… Gardez leurs coordonnées et leur spécialité au même endroit."
+                                    action="Ajouter un sous-traitant" onAction={() => setShowModal(true)} />}
                             </tbody>
                         </table>
                     )}

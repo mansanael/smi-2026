@@ -252,6 +252,7 @@ export const updateStatutSituation = (pid, id, statut) => api(`/projets/${pid}/s
 // Dashboard
 export const getDashboardGlobal = () => api('/dashboard');
 export const getDashboardProjet = (pid) => api(`/dashboard/projets/${pid}`);
+export const getApercuChantiers = () => api('/dashboard/apercu-chantiers');
 
 // Assistant IA
 export const chatAssistant = (messages, projetId) =>

@@ -11,23 +11,8 @@ import {
     deletePhotoChantier,
     getUser,
 } from '../../api/api';
-import {
-    Plus,
-    X,
-    CloudSun,
-    AlertTriangle,
-    Camera,
-    Image as ImageIcon,
-    Trash2,
-    Eye,
-    MapPin,
-    Calendar,
-    Download,
-    UploadCloud,
-    Filter,
-    Mic,
-    Sparkles,
-} from 'lucide-react';
+import { Plus, X, CloudSun, AlertTriangle, Camera, Image as ImageIcon, Trash2, Eye, MapPin, Calendar, Download, UploadCloud, Filter, Mic, Sparkles, ClipboardList, ShieldCheck } from 'lucide-react';
+import { LigneVide } from '../../components/EtatVide';
 import { useAuth } from '../../context/AuthContext';
 import { estLectureSeule } from '../../roles';
 import NotesVocales from '../../components/voix/NotesVocales';
@@ -461,11 +446,8 @@ export default function SuiviChantier({ projetIdFixe }) {
                                         </tr>
                                     ))}
                                     {journaux.length === 0 && (
-                                        <tr>
-                                            <td colSpan="5" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-                                                Aucun rapport journalier
-                                            </td>
-                                        </tr>
+                                        <LigneVide colonnes={5} icone={ClipboardList} titre="Aucun rapport journalier"
+                                            texte="Dictez ce que vous voyez dans « Notes vocales », puis touchez « Rédiger le rapport » : l'IA prépare le rapport du jour, vous le validez." />
                                     )}
                                 </tbody>
                             </table>
@@ -507,11 +489,8 @@ export default function SuiviChantier({ projetIdFixe }) {
                                         </tr>
                                     ))}
                                     {incidents.length === 0 && (
-                                        <tr>
-                                            <td colSpan="5" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-                                                Aucun incident enregistré
-                                            </td>
-                                        </tr>
+                                        <LigneVide colonnes={5} icone={ShieldCheck} titre="Aucun incident enregistré"
+                                            texte="Tant mieux ! Les accidents et incidents de sécurité déclarés sur ce chantier s'afficheront ici." />
                                     )}
                                 </tbody>
                             </table>
