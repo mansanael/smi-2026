@@ -725,68 +725,7 @@ a:hover {
 }
 
 /* ═══ LOGIN PAGE ═══ */
-.login-page {
-  display: flex;
-  min-height: 100vh;
-}
-
-.login-brand {
-  flex: 1;
-  background: linear-gradient(135deg, #0b2545 0%, #13396b 50%, #0b2545 100%);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 60px;
-  position: relative;
-  overflow: hidden;
-}
-
-.login-brand::before {
-  content: '';
-  position: absolute;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.15), transparent 70%);
-  top: 20%;
-  left: 10%;
-}
-
-.login-brand::after {
-  content: '';
-  position: absolute;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.1), transparent 70%);
-  bottom: 20%;
-  right: 15%;
-}
-
-.login-brand h1 {
-  font-size: 42px;
-  font-weight: 800;
-  letter-spacing: -1px;
-  color: #fff;
-  z-index: 1;
-  margin-bottom: 12px;
-}
-
-.login-brand p {
-  font-size: 16px;
-  color: var(--menu-text);
-  z-index: 1;
-  text-align: center;
-}
-
-.login-form-side {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 60px;
-  background: var(--bg-secondary);
-}
-
+/* La mise en page (photo de fond, colonne de gauche) est dans pages/Login.jsx */
 .login-form {
   width: 100%;
   max-width: 400px;

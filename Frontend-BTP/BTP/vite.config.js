@@ -32,7 +32,7 @@ export default defineConfig({
       },
       workbox: {
         // Met en cache l'application elle-même (JS, CSS, HTML, images)
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff2}'],
         // Ton bundle JS fait ~820 Ko : on relève la limite par sécurité
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         // Navigation SPA : toute route renvoie index.html quand on est hors ligne

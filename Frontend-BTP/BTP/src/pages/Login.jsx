@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight, Mic, BarChart3, MessageSquareText } from 'lucide-react';
+
+// Ce que l'application apporte, en trois phrases (affiché à gauche du formulaire)
+const ATOUTS = [
+  { icon: Mic, texte: 'Le rapport de chantier se dicte à la voix' },
+  { icon: BarChart3, texte: 'Budget, planning et paiements suivis en direct' },
+  { icon: MessageSquareText, texte: 'Le client reçoit chaque jour un résumé clair' },
+];
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -36,12 +43,18 @@ export default function Login() {
     <div className="login-page">
       <div className="login-brand">
         <div className="login-logo-icon">
-          <Building2 size={64} />
+          <Building2 size={56} />
         </div>
         <h1>BATIPME-SN</h1>
         <p>Logiciel de Gestion de Projets BTP</p>
         <p className="login-brand-sub">Adapté aux PME du Sénégal 🇸🇳</p>
+        <ul className="login-atouts">
+          {ATOUTS.map(({ icon: Icon, texte }) => (
+            <li key={texte}><span><Icon size={18} /></span>{texte}</li>
+          ))}
+        </ul>
       </div>
+      <span className="login-credit">Photo : David Geneugelijk, Unsplash</span>
 
       <div className="login-form-side">
         <div className="login-form-card">
@@ -121,64 +134,75 @@ export default function Login() {
       </div>
 
       <style>{`
+        /* Photo de chantier en fond, voilée de bleu marine à gauche pour que le texte reste lisible */
         .login-page {
           display: flex;
           min-height: 100vh;
-          background: var(--bg-primary);
+          position: relative;
+          background: #0b2545 url('/login-chantier.webp') center / cover no-repeat;
           color: var(--text-primary);
           font-family: 'Inter', sans-serif;
+        }
+        .login-page::before {
+          content: '';
+          position: absolute; inset: 0;
+          background: linear-gradient(90deg, rgba(11,37,69,0.95) 0%, rgba(11,37,69,0.8) 30%, rgba(11,37,69,0.25) 55%, rgba(11,37,69,0.45) 100%);
         }
         .login-brand {
           flex: 1;
           display: flex;
           flex-direction: column;
           justify-content: center;
-          align-items: center;
-          padding: 60px;
-          background: linear-gradient(135deg, #0b2545, #13396b, #0b2545);
-          text-align: center;
-          position: relative;
-          overflow: hidden;
-        }
-        .login-brand::before {
-          content: '';
-          position: absolute;
-          width: 400px; height: 400px;
-          background: radial-gradient(circle, rgba(59,130,246,0.15), transparent 70%);
-          top: 20%; left: 10%;
-        }
-        .login-brand::after {
-          content: '';
-          position: absolute;
-          width: 300px; height: 300px;
-          background: radial-gradient(circle, rgba(16,185,129,0.1), transparent 70%);
-          bottom: 20%; right: 15%;
+          align-items: flex-start;
+          padding: 60px 64px;
+          position: relative; z-index: 1;
         }
         .login-logo-icon {
-          width: 100px; height: 100px;
+          width: 84px; height: 84px;
           background: var(--brand);
-          border-radius: 24px;
+          border-radius: 22px;
           display: flex; align-items: center; justify-content: center;
-          color: #fff; margin-bottom: 32px;
-          position: relative; z-index: 1;
+          color: #fff; margin-bottom: 28px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.25);
         }
         .login-brand h1 {
-          font-size: 48px; font-weight: 800; margin-bottom: 12px;
-          position: relative; z-index: 1;
-          color: #fff;
+          font-size: 48px; font-weight: 800; margin-bottom: 10px;
+          color: #fff; letter-spacing: -1px;
         }
         .login-brand p {
-          font-size: 18px; color: var(--menu-text);
-          position: relative; z-index: 1;
+          font-size: 19px; color: #e2e8f0;
         }
         .login-brand-sub {
-          font-size: 14px !important; color: var(--menu-text) !important;
-          margin-top: 8px;
+          font-size: 15px !important; color: #cbd5e1 !important;
+          margin-top: 6px;
+        }
+        .login-atouts {
+          list-style: none;
+          margin-top: 40px;
+          display: flex; flex-direction: column; gap: 14px;
+        }
+        .login-atouts li {
+          display: flex; align-items: center; gap: 12px;
+          color: #fff; font-size: 15px; font-weight: 500;
+        }
+        .login-atouts span {
+          width: 36px; height: 36px; flex-shrink: 0;
+          border-radius: 10px;
+          background: rgba(255,255,255,0.14);
+          border: 1px solid rgba(255,255,255,0.22);
+          display: flex; align-items: center; justify-content: center;
+          color: #bfdbfe;
+        }
+        .login-credit {
+          position: absolute; right: 12px; bottom: 8px; z-index: 1;
+          font-size: 11px; color: rgba(255,255,255,0.75);
+          text-shadow: 0 1px 2px rgba(0,0,0,0.6);
         }
         .login-form-side {
           flex: 1;
           display: flex; align-items: center; justify-content: center;
           padding: 60px;
+          position: relative; z-index: 1;
         }
         .login-form-card {
           width: 100%; max-width: 420px;
@@ -186,7 +210,7 @@ export default function Login() {
           border: 1px solid var(--surface-border);
           border-radius: 24px;
           padding: 40px;
-          box-shadow: var(--shadow-lg);
+          box-shadow: 0 24px 60px rgba(0,0,0,0.35);
         }
         .login-form-header {
           text-align: center; margin-bottom: 32px;
@@ -252,17 +276,23 @@ export default function Login() {
 
         /* Mobile Login */
         @media (max-width: 768px) {
-          .login-page { flex-direction: column; }
+          .login-page { flex-direction: column; background-position: 42% center; }
+          .login-page::before {
+            background: linear-gradient(180deg, rgba(11,37,69,0.88) 0%, rgba(11,37,69,0.7) 45%, rgba(11,37,69,0.9) 100%);
+          }
           .login-brand {
-            padding: 40px 20px; min-height: auto;
+            padding: 36px 20px 8px; min-height: auto;
+            align-items: center; text-align: center;
           }
           .login-logo-icon {
-            width: 72px; height: 72px;
-            margin-bottom: 20px;
+            width: 64px; height: 64px;
+            margin-bottom: 16px;
           }
-          .login-logo-icon svg { width: 40px; height: 40px; }
+          .login-logo-icon svg { width: 36px; height: 36px; }
           .login-brand h1 { font-size: 32px; }
           .login-brand p { font-size: 15px; }
+          .login-atouts { display: none; }
+          .login-credit { bottom: 4px; }
           .login-form-side { padding: 24px 16px; }
           .login-form-card {
             padding: 28px 20px;
