@@ -54,7 +54,7 @@ export default function Login() {
           ))}
         </ul>
       </div>
-      <span className="login-credit">Photo : David Geneugelijk, Unsplash</span>
+      <span className="login-credit">Photo : Glenov Brankovic, Unsplash</span>
 
       <div className="login-form-side">
         <div className="login-form-card">
