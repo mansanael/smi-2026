@@ -320,6 +320,9 @@ export default function Login() {
             flex: none; min-height: 260px;
             padding: 20px 20px 24px;
           }
+          .login-brand::before {
+            background: linear-gradient(180deg, rgba(11,37,69,0.55) 0%, rgba(11,37,69,0.4) 35%, rgba(11,37,69,0.92) 100%);
+          }
           .login-marque { font-size: 18px; }
           .login-logo-icon { width: 38px; height: 38px; border-radius: 10px; }
           .login-brand h1 { font-size: 26px; margin-bottom: 6px; }
