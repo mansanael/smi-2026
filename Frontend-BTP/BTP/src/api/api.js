@@ -139,6 +139,8 @@ export const changerMotDePasse = (ancienMotDePasse, nouveauMotDePasse) =>
 
 // Projets
 export const getProjets = () => api('/projets');
+// Barre de recherche : chantiers, tâches et documents accessibles à l'utilisateur
+export const rechercher = (q) => api(`/recherche?q=${encodeURIComponent(q)}`);
 export const getProjet = (id) => api(`/projets/${id}`);
 export const createProjet = (data) => api('/projets', { method: 'POST', body: data });
 export const updateProjet = (id, data) => api(`/projets/${id}`, { method: 'PATCH', body: data });

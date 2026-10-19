@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { LogOut, Settings, User, ChevronDown, Search, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AlertesBadge from './AlertesBadge';
+import RechercheGlobale from './RechercheGlobale';
 
 const roleLabels = {
   directeur_general: 'Directeur Général',
@@ -19,7 +20,6 @@ export default function Topbar({ onToggleSidebar }) {
   const navigate = useNavigate();
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const userDropdownRef = useRef(null);
   const notifDropdownRef = useRef(null);
@@ -51,16 +51,7 @@ export default function Topbar({ onToggleSidebar }) {
         <button className="topbar-btn hamburger-btn" onClick={onToggleSidebar} aria-label="Menu">
           <Menu size={22} />
         </button>
-        <div className={`search-wrapper ${showMobileSearch ? 'mobile-visible' : ''}`}>
-          <Search size={18} className="search-icon" />
-          <input
-            type="text"
-            placeholder="Rechercher projets, documents..."
-            className="search-input"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+        <RechercheGlobale visibleMobile={showMobileSearch} onFermer={() => setShowMobileSearch(false)} />
         <button className="topbar-btn search-toggle-btn" onClick={() => setShowMobileSearch(!showMobileSearch)} aria-label="Rechercher">
           <Search size={20} />
         </button>
@@ -159,8 +150,49 @@ export default function Topbar({ onToggleSidebar }) {
         .search-wrapper {
           position: relative;
           width: 100%;
-          max-width: 320px;
+          max-width: 360px;
         }
+
+        .search-champ {
+          position: relative;
+        }
+
+        .search-effacer {
+          position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+          background: none; border: none; color: var(--text-muted); cursor: pointer;
+          padding: 6px; border-radius: var(--radius-sm); display: flex;
+        }
+        .search-effacer:hover { color: var(--text-primary); background: var(--bg-hover); }
+        .search-input::-webkit-search-cancel-button { display: none; }
+
+        .search-resultats {
+          position: absolute; top: calc(100% + 6px); left: 0;
+          width: min(460px, calc(100vw - 24px));
+          max-height: min(420px, 70vh); overflow-y: auto;
+          background: var(--bg-secondary);
+          border: 1px solid var(--surface-border);
+          border-radius: var(--radius-lg);
+          box-shadow: var(--shadow-lg);
+          padding: 6px; z-index: 1000;
+          animation: slideDown 0.15s ease;
+        }
+        .search-message { padding: 12px; font-size: 13px; color: var(--text-muted); }
+        .search-groupe + .search-groupe { border-top: 1px solid var(--surface-border); margin-top: 4px; padding-top: 4px; }
+        .search-groupe-titre {
+          padding: 8px 10px 4px; font-size: 11px; font-weight: 700;
+          text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted);
+        }
+        .search-ligne {
+          width: 100%; display: flex; align-items: center; gap: 10px;
+          padding: 9px 10px; min-height: 44px;
+          background: none; border: none; border-radius: var(--radius-sm);
+          text-align: left; cursor: pointer; color: var(--text-primary);
+        }
+        .search-ligne.actif { background: var(--bg-tertiary); }
+        .search-ligne-icone { color: var(--brand); flex-shrink: 0; }
+        .search-ligne-texte { display: flex; flex-direction: column; min-width: 0; }
+        .search-ligne-libelle { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .search-ligne-detail { font-size: 12px; color: var(--text-muted); }
         
         .search-icon {
           position: absolute;
@@ -529,6 +561,10 @@ export default function Topbar({ onToggleSidebar }) {
           }
           .search-wrapper.mobile-visible .search-input {
             max-width: 100%;
+            font-size: 16px; /* sous 16 px, iOS zoome sur le champ */
+          }
+          .search-wrapper.mobile-visible .search-resultats {
+            left: 12px; right: 12px; width: auto;
           }
 
           .search-toggle-btn {

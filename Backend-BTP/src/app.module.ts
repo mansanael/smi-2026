@@ -21,6 +21,7 @@ import { AccesModule } from './acces/acces.module';
 import { VoixModule } from './voix/voix.module'; // Commande vocale
 import { ParametresModule } from './parametres/parametres.module'; // Réglages de l'entreprise
 import { EstimationModule } from './estimation/estimation.module'; // Devis estimatif par l'IA
+import { RechercheModule } from './recherche/recherche.module'; // Barre de recherche
 import { ScheduleModule } from '@nestjs/schedule'; // M11 – Assistant IA
 
 @Module({
@@ -62,6 +63,7 @@ import { ScheduleModule } from '@nestjs/schedule'; // M11 – Assistant IA
     VoixModule,
     ParametresModule,
     EstimationModule,
+    RechercheModule,
   ],
   controllers: [AppController],
   providers: [AppService],
