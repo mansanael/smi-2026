@@ -132,7 +132,9 @@ export default function NotesVocales({ projetId, photos = [], datesRapports = []
         <div style={{ flex: '1 1 220px' }}>
           <div style={{ fontWeight: 600 }}>Rapport journalier</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            {notesDuJour} note{notesDuJour > 1 ? 's' : ''} ce jour-là — l'IA les transforme en rapport que vous validez.
+            {notesDuJour === 0
+              ? 'Aucune note vocale ce jour-là.'
+              : `${notesDuJour} note${notesDuJour > 1 ? 's' : ''} ce jour-là — l'IA ${notesDuJour > 1 ? 'les' : 'la'} transforme en rapport que vous validez.`}
           </div>
           {dejaValide ? (
             <div style={{ fontSize: 13, color: 'var(--accent-green)', marginTop: 4 }}>
