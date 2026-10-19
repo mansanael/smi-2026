@@ -524,7 +524,8 @@ export default function Planning({ projetIdFixe }) {
 
             {taches.length > 0 ? (
               <div style={{ overflowX: 'auto' }}>
-                <table className="data-table">
+                {/* Sur téléphone, chaque ligne devient une carte (index.css, .table-taches) */}
+                <table className="data-table table-taches">
                   <thead>
                     <tr>
                       <th style={{ width: 40 }}></th>
@@ -544,12 +545,12 @@ export default function Planning({ projetIdFixe }) {
 
                       return (
                         <tr key={t.id}>
-                          <td style={{ verticalAlign: 'middle', boxShadow: `inset 4px 0 0 ${etat.couleur}` }}>
+                          <td className="cell-statut" style={{ verticalAlign: 'middle', boxShadow: `inset 4px 0 0 ${etat.couleur}` }}>
                             <span title={statutLabels[t.statut] || t.statut}>
                               {statutIcon(t.statut)}
                             </span>
                           </td>
-                          <td style={{ verticalAlign: 'middle' }}>
+                          <td className="cell-nom" style={{ verticalAlign: 'middle' }}>
                             <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{t.nom}</div>
                             {t.description && (
                               <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
@@ -570,12 +571,12 @@ export default function Planning({ projetIdFixe }) {
                               <div style={{ fontSize: 12, color: etat.couleur, marginTop: 4 }}>{etat.explication}</div>
                             )}
                           </td>
-                          <td style={{ verticalAlign: 'middle' }}>
+                          <td className="cell-lot" style={{ verticalAlign: 'middle' }}>
                             <span className="badge badge-teal" style={{ textTransform: 'capitalize' }}>
                               {(lotOptions.find(o => o.value === t.lot)?.label) || t.lot}
                             </span>
                           </td>
-                          <td style={{ verticalAlign: 'middle', fontSize: 13, whiteSpace: 'nowrap' }}>
+                          <td className="cell-planning" style={{ verticalAlign: 'middle', fontSize: 13, whiteSpace: 'nowrap' }}>
                             <div><strong>Du :</strong> {t.dateDebutPrevue || '—'}</div>
                             <div><strong>Au :</strong> {t.dateFinPrevue || '—'}</div>
                             {t.dureeJours && (
@@ -584,7 +585,7 @@ export default function Planning({ projetIdFixe }) {
                           </td>
 
                           {/* ── COLONNE AVANCEMENT INTERACTIVE AVEC BOUTONS ── */}
-                          <td style={{ verticalAlign: 'middle' }}>
+                          <td className="cell-avancement" style={{ verticalAlign: 'middle' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <div
@@ -655,12 +656,12 @@ export default function Planning({ projetIdFixe }) {
                             </div>
                           </td>
 
-                          <td style={{ verticalAlign: 'middle', fontSize: 13 }}>
+                          <td className="cell-responsable" style={{ verticalAlign: 'middle', fontSize: 13 }}>
                             {t.responsable || <span style={{ color: 'var(--text-muted)' }}>Non assigné</span>}
                           </td>
 
                           {/* ── ACTIONS ── */}
-                          {!lectureSeule && <td style={{ verticalAlign: 'middle', textAlign: 'right' }}>
+                          {!lectureSeule && <td className="cell-actions" style={{ verticalAlign: 'middle', textAlign: 'right' }}>
                             <div style={{ display: 'inline-flex', gap: 6 }}>
                               <button
                                 type="button"

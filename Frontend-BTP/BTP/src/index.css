@@ -1008,9 +1008,10 @@ a:hover {
     margin-bottom: 12px;
   }
 
-  /* Tables — scroll horizontal */
+  /* Tables — scroll horizontal (!important : plusieurs cartes de tableau ont overflow: hidden en style direct,
+     qui coupait les dernières colonnes sans permettre de les faire défiler) */
   .glass-card {
-    overflow-x: auto;
+    overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
   }
 
@@ -2039,5 +2040,110 @@ html {
   /* Les cartes ne dépassent jamais l'écran */
   .glass-card {
     max-width: 100%;
+  }
+}
+
+/* ═══ PLANNING SUR TÉLÉPHONE : chaque tâche devient une carte ═══
+   (le tableau à 7 colonnes cachait l'avancement et ses boutons hors de l'écran) */
+@media (max-width: 768px) {
+  .table-taches,
+  .table-taches tbody {
+    display: block;
+    min-width: 0 !important;
+  }
+
+  .table-taches thead {
+    display: none;
+  }
+
+  .table-taches tbody tr {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "statut nom actions"
+      "statut lot lot"
+      "statut planning planning"
+      "statut avancement avancement"
+      "statut responsable responsable";
+    column-gap: 8px;
+    padding: 12px 12px 12px 0;
+    border-bottom: 1px solid var(--surface-border);
+  }
+
+  .table-taches tbody td {
+    display: block;
+    padding: 3px 0 !important;
+    border: none !important;
+  }
+
+  /* la bande de couleur de l'état court sur toute la hauteur de la carte */
+  .table-taches .cell-statut { grid-area: statut; padding: 2px 0 0 12px !important; }
+  .table-taches .cell-nom { grid-area: nom; }
+  .table-taches .cell-lot { grid-area: lot; }
+  .table-taches .cell-planning { grid-area: planning; white-space: normal !important; color: var(--text-secondary); }
+  .table-taches .cell-planning > div { display: inline; margin-right: 10px; }
+  .table-taches .cell-avancement { grid-area: avancement; padding-top: 8px !important; }
+  .table-taches .cell-responsable { grid-area: responsable; color: var(--text-secondary); }
+  .table-taches .cell-responsable::before { content: 'Responsable : '; color: var(--text-muted); }
+  .table-taches .cell-actions { grid-area: actions; }
+
+  .table-taches .progress-bar { flex: 1; width: auto !important; }
+
+  /* boutons d'avancement assez grands pour le doigt */
+  .table-taches .avancement-btn {
+    min-height: 38px;
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .table-taches .cell-actions .btn-icon {
+    min-width: 38px;
+    min-height: 38px;
+  }
+}
+
+/* ═══ CARTES DE CHIFFRES SUR TÉLÉPHONE : 2 par ligne, plus compactes ═══
+   (une par ligne, les 4 cartes occupaient plus d'un écran avant le contenu) */
+@media (max-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .kpi-card {
+    padding: 14px;
+  }
+
+  .kpi-card .kpi-icon {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 8px;
+  }
+
+  .kpi-card .kpi-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .kpi-card .kpi-value {
+    font-size: 20px;
+  }
+
+  /* montant : jamais coupé, même dans une demi-carte (« 110 448 000 FCFA ») */
+  .kpi-card .kpi-value.kpi-montant {
+    font-size: clamp(13px, 11cqi, 22px);
+  }
+}
+
+/* ═══ EN-TÊTES DE CARTE SUR TÉLÉPHONE : le bouton passe sous le titre au lieu d'être écrasé ═══ */
+@media (max-width: 768px) {
+  .glass-card > div[style*="space-between"] {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .glass-card > div[style*="space-between"] > .btn {
+    white-space: nowrap;
   }
 }
