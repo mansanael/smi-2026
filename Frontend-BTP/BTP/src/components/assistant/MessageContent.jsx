@@ -73,13 +73,14 @@ function parseBlocks(content) {
       continue;
     }
 
-    if (line.trim() === '') {
+    // Lignes vides et séparateurs « --- » : les titres sont déjà soulignés, inutile d'ajouter un trait
+    if (line.trim() === '' || /^\s*([-*_])(\s*\1){2,}\s*$/.test(line)) {
       i++;
       continue;
     }
 
     const paraLines = [];
-    while (i < lines.length && lines[i].trim() !== '' && !/^#{1,3}\s/.test(lines[i]) && !/^\s*[-*]\s+/.test(lines[i]) && !/^\s*\d+[.)]\s+/.test(lines[i]) && !lines[i].trim().startsWith('```')) {
+    while (i < lines.length && lines[i].trim() !== '' && !/^\s*([-*_])(\s*\1){2,}\s*$/.test(lines[i]) && !/^#{1,3}\s/.test(lines[i]) && !/^\s*[-*]\s+/.test(lines[i]) && !/^\s*\d+[.)]\s+/.test(lines[i]) && !lines[i].trim().startsWith('```')) {
       paraLines.push(lines[i]);
       i++;
     }
