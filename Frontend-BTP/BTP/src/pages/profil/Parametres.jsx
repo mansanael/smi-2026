@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { changerMotDePasse } from '../../api/api';
 import { Lock, Save, CheckCircle2 } from 'lucide-react';
+import ReglageVoix from '../../components/voix/ReglageVoix';
 
 export default function Parametres() {
     const [form, setForm] = useState({ ancienMotDePasse: '', nouveauMotDePasse: '', confirmation: '' });
@@ -34,7 +35,7 @@ export default function Parametres() {
             <div className="page-header">
                 <div>
                     <h1>Paramètres</h1>
-                    <p className="subtitle">Sécurité de votre compte</p>
+                    <p className="subtitle">Sécurité de votre compte et voix de l'assistant</p>
                 </div>
             </div>
 
@@ -66,6 +67,8 @@ export default function Parametres() {
                     </button>
                 </form>
             </div>
+
+            <ReglageVoix />
         </div>
     );
 }

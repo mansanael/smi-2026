@@ -37,11 +37,79 @@ function decouper(texte, max = 220) {
   return morceaux;
 }
 
+// ─── Choix de la voix ─────────────────────────────────────────────────────────
+// Sur téléphone, la première voix française « locale » est souvent la voix compacte hors ligne,
+// au son étouffé : on classe les voix par qualité, et chacun peut choisir la sienne (Paramètres).
+const CLE_PREFERENCES = 'batipme_voix_lecture';
+
+export function lirePreferencesVoix() {
+  try {
+    const p = JSON.parse(localStorage.getItem(CLE_PREFERENCES) ?? '{}');
+    return { voix: typeof p.voix === 'string' ? p.voix : '', vitesse: Number(p.vitesse) || 1 };
+  } catch {
+    return { voix: '', vitesse: 1 };
+  }
+}
+
+export function enregistrerPreferencesVoix(preferences) {
+  try { localStorage.setItem(CLE_PREFERENCES, JSON.stringify(preferences)); } catch { /* stockage indisponible : réglage non retenu */ }
+}
+
+// Note de qualité d'une voix : voix « naturelles » d'abord, voix compactes en dernier.
+// Les voix en ligne (Google…) sont les plus nettes, mais muettes sans réseau : sur le chantier, on reste sur l'appareil.
+function noteVoix(v) {
+  let note = 0;
+  if (/google|natural|naturel|neural|premium|enhanced|amélior|siri/i.test(v.name)) note += 50;
+  if (/compact|eloquence|espeak|low/i.test(v.name)) note -= 20;
+  if (v.lang === 'fr-FR' || v.lang === 'fr_FR') note += 30; // accent de France avant les autres accents
+  if (!v.localService) note += navigator.onLine ? 5 : -100;
+  return note;
+}
+
+// Voix françaises de l'appareil, de la meilleure à la moins bonne
+export function voixFrancaises() {
+  if (!lectureDisponible()) return [];
+  return window.speechSynthesis.getVoices()
+    .filter((v) => v.lang?.toLowerCase().replace('_', '-').startsWith('fr'))
+    .sort((a, b) => noteVoix(b) - noteVoix(a));
+}
+
 function voixFrancaise() {
-  const voix = window.speechSynthesis.getVoices();
-  return voix.find((v) => v.lang === 'fr-FR' && v.localService)
-    ?? voix.find((v) => v.lang?.toLowerCase().startsWith('fr'))
-    ?? null;
+  const liste = voixFrancaises();
+  const { voix } = lirePreferencesVoix();
+  return liste.find((v) => v.voiceURI === voix) ?? liste[0] ?? null;
+}
+
+// Sur téléphone, la liste des voix arrive après le chargement : on l'attend (une seconde au plus)
+function voixChargees() {
+  if (window.speechSynthesis.getVoices().length) return Promise.resolve();
+  return new Promise((resoudre) => {
+    const fini = () => { window.speechSynthesis.removeEventListener('voiceschanged', fini); resoudre(); };
+    window.speechSynthesis.addEventListener('voiceschanged', fini);
+    setTimeout(fini, 1000);
+  });
+}
+
+// Lecture d'un texte avec une voix et une vitesse données (morceau par morceau)
+function parler(texte, voix, vitesse, fin) {
+  const morceaux = decouper(texte);
+  morceaux.forEach((morceau, i) => {
+    const enonce = new SpeechSynthesisUtterance(morceau);
+    enonce.lang = voix?.lang ?? 'fr-FR';
+    if (voix) enonce.voice = voix;
+    enonce.rate = vitesse;
+    if (i === morceaux.length - 1) enonce.onend = fin;
+    enonce.onerror = fin;
+    window.speechSynthesis.speak(enonce);
+  });
+}
+
+// Essai d'une voix depuis les Paramètres
+export function essayerVoix(voiceURI, vitesse) {
+  if (!lectureDisponible()) return;
+  window.speechSynthesis.cancel();
+  const voix = voixFrancaises().find((v) => v.voiceURI === voiceURI) ?? voixFrancaise();
+  parler('Bonjour. Le coffrage de la dalle du premier étage est terminé, le coulage du béton est prévu demain matin.', voix, vitesse, () => {});
 }
 
 export function useLecteurVocal() {
@@ -66,17 +134,11 @@ export function useLecteurVocal() {
       return;
     }
     const fin = () => { if (lectureRef.current === numero) setEnLecture(false); };
-    const voix = voixFrancaise();
-    const morceaux = decouper(texte);
-    morceaux.forEach((morceau, i) => {
-      const enonce = new SpeechSynthesisUtterance(morceau);
-      enonce.lang = voix?.lang ?? 'fr-FR';
-      if (voix) enonce.voice = voix;
-      if (i === morceaux.length - 1) enonce.onend = fin;
-      enonce.onerror = fin;
-      window.speechSynthesis.speak(enonce);
-    });
     setEnLecture(true);
+    voixChargees().then(() => {
+      if (lectureRef.current !== numero) return; // arrêtée entre-temps
+      parler(texte, voixFrancaise(), lirePreferencesVoix().vitesse, fin);
+    });
   }, []);
 
   // Sur iPhone, la lecture n'est permise qu'après un geste de l'utilisateur :
